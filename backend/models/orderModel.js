@@ -8,7 +8,8 @@ const orderSchema = new mongoose.Schema({
   status: { type: String, default: 'Food Processing' },
   date: { type: Date, default: Date.now() },
   payment: { type: Boolean, default: false },
-  paymentTime: { type: Date }, // Добавили это поле для времени оплаты
+  paymentTime: { type: Date }, // Время оплаты
+  paymentMethod: { type: String, required: true }, // Метод оплаты
 });
 
 const orderModel = mongoose.models.order || mongoose.model('order', orderSchema);

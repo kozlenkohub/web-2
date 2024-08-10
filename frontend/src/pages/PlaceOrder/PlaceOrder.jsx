@@ -18,12 +18,13 @@ const PlaceOrder = () => {
     zipcode: '',
     country: '',
     phone: '',
-    location: { lat: null, lng: null }, // Добавляем координаты для расчета
+    location: { lat: null, lng: null },
   });
 
   const [isWithinDeliveryRadius, setIsWithinDeliveryRadius] = useState(true);
-  const [loading, setLoading] = useState(false); // Состояние для индикатора загрузки
-  const [deliveryCharge, setDeliveryCharge] = useState(8); // Начальная стоимость доставки
+  const [loading, setLoading] = useState(false);
+  const [deliveryCharge, setDeliveryCharge] = useState(8);
+  const [paymentMethod, setPaymentMethod] = useState('card'); // Новое состояние для метода оплаты
 
   const onChangeHandler = (event) => {
     const name = event.target.name;
@@ -31,9 +32,13 @@ const PlaceOrder = () => {
     setData((data) => ({ ...data, [name]: value }));
   };
 
+  const handlePaymentMethodChange = (event) => {
+    setPaymentMethod(event.target.value);
+  };
+
   const getLocation = () => {
     if (navigator.geolocation) {
-      setLoading(true); // Включаем индикатор загрузки
+      setLoading(true);
       navigator.geolocation.getCurrentPosition(getAddress, handleLocationError);
     } else {
       alert('Geolocation is not supported by this browser.');
@@ -81,7 +86,7 @@ const PlaceOrder = () => {
       console.error('Error fetching address:', error);
       alert('Error fetching address.');
     } finally {
-      setLoading(false); // Отключаем индикатор загрузки
+      setLoading(false);
     }
   };
 
@@ -90,11 +95,11 @@ const PlaceOrder = () => {
     const distance = getDistanceFromLatLonInKm(deliveryCenter.lat, deliveryCenter.lng, lat, lng);
 
     if (distance <= 2) {
-      setDeliveryCharge(0); // Бесплатная доставка
+      setDeliveryCharge(0);
     } else if (distance > 2 && distance <= 4) {
-      setDeliveryCharge(8); // Доставка 8 злотых
+      setDeliveryCharge(8);
     } else {
-      setDeliveryCharge(null); // За пределами зоны доставки
+      setDeliveryCharge(null);
     }
   };
 
@@ -117,7 +122,7 @@ const PlaceOrder = () => {
             }));
             calculateDeliveryCharge(location.lat, location.lng);
           } else {
-            setDeliveryCharge(null); // За пределами зоны доставки
+            setDeliveryCharge(null);
           }
         } catch (error) {
           console.error('Error fetching coordinates:', error);
@@ -129,7 +134,7 @@ const PlaceOrder = () => {
   }, [data.street, data.city, data.zipcode, data.country]);
 
   const handleLocationError = (error) => {
-    setLoading(false); // Отключаем индикатор загрузки
+    setLoading(false);
     switch (error.code) {
       case error.PERMISSION_DENIED:
         alert('User denied the request for Geolocation.');
@@ -157,7 +162,6 @@ const PlaceOrder = () => {
       return;
     }
 
-    // Проверка радиуса доставки и стоимости
     if (deliveryCharge === null) {
       alert('Adres dostawy znajduje się poza obszarem dostawy.');
       return;
@@ -170,20 +174,26 @@ const PlaceOrder = () => {
         itemInfo['quantity'] = cartItems[item._id];
         orderItems.push(itemInfo);
       }
-      return null; // Dodane, aby uniknąć ostrzeżeń
+      return null;
     });
 
     let orderData = {
       address: data,
       items: orderItems,
-      amount: getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge), // Кос стоимость доставки
+      amount: getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge),
+      paymentMethod, // Добавляем метод оплаты
     };
 
     try {
       let response = await axios.post(url + '/api/order/place', orderData, { headers: { token } });
       if (response.data.success) {
-        const { session_url } = response.data;
-        window.location.replace(session_url);
+        if (paymentMethod === 'cash') {
+          alert('Ваш заказ успешно оформлен и будет оплачен наличными при доставке.');
+          navigate('/');
+        } else {
+          const { session_url } = response.data;
+          window.location.replace(session_url);
+        }
       } else {
         alert('Błąd');
       }
@@ -311,6 +321,26 @@ const PlaceOrder = () => {
               </b>
             </div>
           </div>
+          <div className="payment-methods">
+            <label>
+              <input
+                type="radio"
+                value="card"
+                checked={paymentMethod === 'card'}
+                onChange={handlePaymentMethodChange}
+              />
+              Karta płatnicza/BLIK
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="cash"
+                checked={paymentMethod === 'cash'}
+                onChange={handlePaymentMethodChange}
+              />
+              Gotówka przy dostawie
+            </label>
+          </div>
           <button className="t6" type="submit">
             PRZEJDŹ DO PŁATНОŚCI
           </button>
@@ -322,14 +352,14 @@ const PlaceOrder = () => {
 
 // Utility function to calculate distance between two points in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Промежуток Земли в км
+  const R = 6371;
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c; // Расстояние в км
+  const distance = R * c;
   return distance;
 }
 

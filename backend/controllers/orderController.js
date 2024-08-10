@@ -52,7 +52,7 @@ const placeOrder = async (req, res) => {
 
   try {
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
-    const userLocation = req.body.address.location; // Координаты пользователя должны быть переданы с фронтенда
+    const userLocation = req.body.address.location;
     const distance = getDistanceFromLatLonInKm(
       deliveryCenter.lat,
       deliveryCenter.lng,
@@ -60,11 +60,11 @@ const placeOrder = async (req, res) => {
       userLocation.lng,
     );
 
-    let deliveryCharge = 800; // 8 злотых
+    let deliveryCharge = 800;
     if (distance <= 2) {
-      deliveryCharge = 0; // Бесплатная доставка
+      deliveryCharge = 0;
     } else if (distance > 2 && distance <= 4) {
-      deliveryCharge = 800; // 8 злотых
+      deliveryCharge = 800;
     }
 
     const newOrder = new orderModel({
@@ -72,43 +72,49 @@ const placeOrder = async (req, res) => {
       items: req.body.items,
       amount: req.body.amount + deliveryCharge / 100,
       address: req.body.address,
+      payment: req.body.paymentMethod === 'cash' ? false : true,
     });
     await newOrder.save();
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
-    const line_items = req.body.items.map((item) => ({
-      price_data: {
-        currency: 'pln',
-        product_data: {
-          name: item.name,
-        },
-        unit_amount: item.price * 100,
-      },
-      quantity: item.quantity,
-    }));
-
-    if (deliveryCharge > 0) {
-      line_items.push({
+    if (req.body.paymentMethod === 'cash') {
+      await sendOrderEmail(newOrder, null); // Отправляем email без ссылки на сессию Stripe
+      res.json({ success: true, message: 'Order placed with cash payment' });
+    } else {
+      const line_items = req.body.items.map((item) => ({
         price_data: {
           currency: 'pln',
           product_data: {
-            name: 'Delivery Charges',
+            name: item.name,
           },
-          unit_amount: deliveryCharge,
+          unit_amount: item.price * 100,
         },
-        quantity: 1,
+        quantity: item.quantity,
+      }));
+
+      if (deliveryCharge > 0) {
+        line_items.push({
+          price_data: {
+            currency: 'pln',
+            product_data: {
+              name: 'Delivery Charges',
+            },
+            unit_amount: deliveryCharge,
+          },
+          quantity: 1,
+        });
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        line_items: line_items,
+        mode: 'payment',
+        payment_method_types: ['blik', 'card'],
+        success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
+        cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
       });
+
+      res.json({ success: true, session_url: session.url });
     }
-
-    const session = await stripe.checkout.sessions.create({
-      line_items: line_items,
-      mode: 'payment',
-      payment_method_types: ['blik', 'card'],
-      success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
-      cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
-    });
-
-    res.json({ success: true, session_url: session.url });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: 'Error' });
@@ -135,8 +141,9 @@ function deg2rad(deg) {
 const verifyOrder = async (req, res) => {
   const { orderId, success, sessionUrl } = req.body;
   try {
-    if (success === 'true') {
-      const order = await orderModel.findByIdAndUpdate(
+    const order = await orderModel.findById(orderId);
+    if (order.payment === true || success === 'true') {
+      await orderModel.findByIdAndUpdate(
         orderId,
         { payment: true, paymentTime: new Date() },
         { new: true },
