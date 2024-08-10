@@ -14,6 +14,11 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendOrderEmail = async (order, sessionUrl) => {
+  const paymentMethodMessage =
+    order.paymentMethod === 'cash'
+      ? '<p style="color: red; font-weight: bold;">ОПЛАТА НАЛИЧНЫМИ</p>'
+      : `<p><a href="${sessionUrl}" style="color: #1a73e8; text-decoration: none;">Посмотреть транзакцию в Stripe</a></p>`;
+
   const mailOptions = {
     from: process.env.EMAIL,
     to: process.env.NOTIFICATION_EMAIL,
@@ -30,7 +35,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
           .map((item) => `${item.name} x ${item.quantity}`)
           .join(', ')}</p>
         <p><strong>Сумма:</strong> ${order.amount}</p>
-        <p><a href="${sessionUrl}" style="color: #1a73e8; text-decoration: none;">Посмотреть транзакцию в Stripe</a></p>
+        ${paymentMethodMessage}
       </div>
     `,
   };
