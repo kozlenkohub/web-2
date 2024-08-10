@@ -23,17 +23,32 @@ const addFood = async (req, res) => {
   }
 };
 
-// // all food list
-// const listFood = async (req, res) => {
-//   try {
-//     const foods = await foodModel.find({});
-//     res.json({ success: true, data: foods });
-//   } catch (error) {
-//     console.log(error);
-//     res.json({ success: false, message: 'Error' });
-//   }
-// };
+// update food item
+const updateFood = async (req, res) => {
+  try {
+    const food = await foodModel.findById(req.body.id);
 
+    if (req.file) {
+      fs.unlink(`uploads/${food.image}`, () => {});
+      food.image = req.file.filename;
+    }
+
+    food.name = req.body.name;
+    food.description = req.body.description;
+    food.price = req.body.price;
+    food.category = req.body.category;
+    food.sizes = req.body.sizes ? req.body.sizes.split(',') : [];
+
+    await food.save();
+
+    res.json({ success: true, message: 'Food Updated' });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: 'Error' });
+  }
+};
+
+// all food list
 const listFood = async (req, res) => {
   try {
     const foods = await foodModel.find({});
@@ -62,4 +77,4 @@ const removeFood = async (req, res) => {
   }
 };
 
-export { addFood, listFood, removeFood };
+export { addFood, updateFood, listFood, removeFood };
