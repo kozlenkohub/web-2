@@ -48,7 +48,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
 };
 
 const placeOrder = async (req, res) => {
-  const frontend_url = 'https://www.burgergastrofaza.pl';
+  const frontend_url = 'https://web-2-frontend.onrender.com';
   const token = req.headers.token;
 
   if (!token) {

@@ -188,7 +188,7 @@ const PlaceOrder = () => {
       let response = await axios.post(url + '/api/order/place', orderData, { headers: { token } });
       if (response.data.success) {
         if (paymentMethod === 'cash') {
-          alert('Ваш заказ успешно оформлен и будет оплачен наличными при доставке.');
+          alert('Twoje zamówienie zostało pomyślnie złożone. Płatność gotówką przy odbiorze.');
           navigate('/');
         } else {
           const { session_url } = response.data;
