@@ -159,7 +159,7 @@ const PlaceOrder = () => {
 
     // Проверка радиуса доставки и стоимости
     if (deliveryCharge === null) {
-      alert('Adres dostawy znajduje się poza нашим obszarem dostawy.');
+      alert('Adres dostawy znajduje się poza obszarem dostawy.');
       return;
     }
 
