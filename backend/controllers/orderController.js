@@ -48,7 +48,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
 };
 
 const placeOrder = async (req, res) => {
-  const frontend_url = 'https://www.burgergastrofaza.pl';
+  const s edfrontend_url = 'https://www.burgergastrofaza.pl';
   const token = req.headers.token;
 
   if (!token) {
