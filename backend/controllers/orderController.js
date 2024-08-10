@@ -72,15 +72,19 @@ const placeOrder = async (req, res) => {
       items: req.body.items,
       amount: req.body.amount + deliveryCharge / 100,
       address: req.body.address,
-      payment: req.body.paymentMethod === 'cash' ? false : true,
+      paymentMethod: req.body.paymentMethod,
+      payment: req.body.paymentMethod === 'cash' ? true : false, // Если наличные, сразу помечаем как оплаченный
     });
+
     await newOrder.save();
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
     if (req.body.paymentMethod === 'cash') {
-      await sendOrderEmail(newOrder, null); // Отправляем email без ссылки на сессию Stripe
+      // Если оплата наличными, сразу отправляем подтверждение
+      await sendOrderEmail(newOrder, null); // Отправляем email без ссылки на Stripe
       res.json({ success: true, message: 'Order placed with cash payment' });
     } else {
+      // Если оплата картой, создаем сессию Stripe и ожидаем подтверждения
       const line_items = req.body.items.map((item) => ({
         price_data: {
           currency: 'pln',
@@ -142,17 +146,19 @@ const verifyOrder = async (req, res) => {
   const { orderId, success, sessionUrl } = req.body;
   try {
     const order = await orderModel.findById(orderId);
-    if (order.payment === true || success === 'true') {
+    if (success === 'true') {
+      // Если оплата через Stripe успешна, обновляем статус оплаты и время
       await orderModel.findByIdAndUpdate(
         orderId,
         { payment: true, paymentTime: new Date() },
         { new: true },
       );
       await sendOrderEmail(order, sessionUrl);
-      res.json({ success: true, message: 'Paid' });
+      res.json({ success: true, message: 'Payment confirmed' });
     } else {
+      // Если оплата неуспешна, заказ удаляется
       await orderModel.findByIdAndDelete(orderId);
-      res.json({ success: false, message: 'Not Paid' });
+      res.json({ success: false, message: 'Payment failed, order canceled' });
     }
   } catch (error) {
     console.log(error);
