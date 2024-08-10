@@ -1,0 +1,340 @@
+import React, { useContext, useEffect, useState } from 'react';
+import './PlaceOrder.css';
+import { StoreContext } from '../../context/StoreContext';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const PlaceOrder = () => {
+  const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
+  const navigate = useNavigate();
+
+  const [data, setData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    street: '',
+    city: '',
+    state: 'Polska',
+    zipcode: '',
+    country: '',
+    phone: '',
+    location: { lat: null, lng: null }, // Добавляем координаты для расчета
+  });
+
+  const [isWithinDeliveryRadius, setIsWithinDeliveryRadius] = useState(true);
+  const [loading, setLoading] = useState(false); // Состояние для индикатора загрузки
+  const [deliveryCharge, setDeliveryCharge] = useState(8); // Начальная стоимость доставки
+
+  const onChangeHandler = (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setData((data) => ({ ...data, [name]: value }));
+  };
+
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      setLoading(true); // Включаем индикатор загрузки
+      navigator.geolocation.getCurrentPosition(getAddress, handleLocationError);
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  };
+
+  const getAddress = async (position) => {
+    const { latitude, longitude } = position.coords;
+    try {
+      const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+        params: {
+          latlng: `${latitude},${longitude}`,
+          key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE', // Замените на ваш действительный API-ключ
+        },
+      });
+
+      if (response.data.results.length > 0) {
+        const addressComponents = response.data.results[0].address_components;
+        const street =
+          addressComponents.find((component) => component.types.includes('route'))?.long_name || '';
+        const city =
+          addressComponents.find((component) => component.types.includes('locality'))?.long_name ||
+          '';
+        const zipcode =
+          addressComponents.find((component) => component.types.includes('postal_code'))
+            ?.long_name || '';
+        const country =
+          addressComponents.find((component) => component.types.includes('country'))?.long_name ||
+          '';
+
+        setData((data) => ({
+          ...data,
+          street,
+          city,
+          zipcode,
+          country,
+          location: { lat: latitude, lng: longitude },
+        }));
+
+        calculateDeliveryCharge(latitude, longitude);
+      } else {
+        alert('Could not fetch address information.');
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      alert('Error fetching address.');
+    } finally {
+      setLoading(false); // Отключаем индикатор загрузки
+    }
+  };
+
+  const calculateDeliveryCharge = (lat, lng) => {
+    const deliveryCenter = { lat: 51.154, lng: 16.9305 };
+    const distance = getDistanceFromLatLonInKm(deliveryCenter.lat, deliveryCenter.lng, lat, lng);
+
+    if (distance <= 2) {
+      setDeliveryCharge(0); // Бесплатная доставка
+    } else if (distance > 2 && distance <= 4) {
+      setDeliveryCharge(8); // Доставка 8 злотых
+    } else {
+      setDeliveryCharge(null); // За пределами зоны доставки
+    }
+  };
+
+  useEffect(() => {
+    const fetchCoordinates = async () => {
+      if (data.street && data.city && data.zipcode && data.country) {
+        try {
+          const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+            params: {
+              address: `${data.street}, ${data.city}, ${data.zipcode}, ${data.country}`,
+              key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE',
+            },
+          });
+
+          if (response.data.results.length > 0) {
+            const location = response.data.results[0].geometry.location;
+            setData((prevData) => ({
+              ...prevData,
+              location: { lat: location.lat, lng: location.lng },
+            }));
+            calculateDeliveryCharge(location.lat, location.lng);
+          } else {
+            setDeliveryCharge(null); // За пределами зоны доставки
+          }
+        } catch (error) {
+          console.error('Error fetching coordinates:', error);
+        }
+      }
+    };
+
+    fetchCoordinates();
+  }, [data.street, data.city, data.zipcode, data.country]);
+
+  const handleLocationError = (error) => {
+    setLoading(false); // Отключаем индикатор загрузки
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        alert('User denied the request for Geolocation.');
+        break;
+      case error.POSITION_UNAVAILABLE:
+        alert('Location information is unavailable.');
+        break;
+      case error.TIMEOUT:
+        alert('The request to get user location timed out.');
+        break;
+      case error.UNKNOWN_ERROR:
+        alert('An unknown error occurred.');
+        break;
+      default:
+        alert('An unknown error occurred.');
+    }
+  };
+
+  const placeOrder = async (event) => {
+    event.preventDefault();
+
+    if (!token) {
+      alert('Proszę się zalogować, aby złożyć zamówienie.');
+      navigate('/login');
+      return;
+    }
+
+    // Проверка радиуса доставки и стоимости
+    if (deliveryCharge === null) {
+      alert('Adres dostawy znajduje się poza нашим obszarem dostawy.');
+      return;
+    }
+
+    let orderItems = [];
+    food_list.map((item) => {
+      if (cartItems[item._id] > 0) {
+        let itemInfo = item;
+        itemInfo['quantity'] = cartItems[item._id];
+        orderItems.push(itemInfo);
+      }
+      return null; // Dodane, aby uniknąć ostrzeżeń
+    });
+
+    let orderData = {
+      address: data,
+      items: orderItems,
+      amount: getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge), // Кос стоимость доставки
+    };
+
+    try {
+      let response = await axios.post(url + '/api/order/place', orderData, { headers: { token } });
+      if (response.data.success) {
+        const { session_url } = response.data;
+        window.location.replace(session_url);
+      } else {
+        alert('Błąd');
+      }
+    } catch (error) {
+      alert('Wystąpił błąd. Proszę spróbować ponownie.');
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/cart');
+    } else if (getTotalCartAmount() === 0) {
+      navigate('/cart');
+    }
+  }, [token, navigate, getTotalCartAmount]);
+
+  return (
+    <form onSubmit={placeOrder} className="place-order">
+      <div className="place-order-left">
+        <p className="title t3">Informacje o dostawie</p>
+        <div className="multi-fields">
+          <input
+            required
+            name="firstName"
+            onChange={onChangeHandler}
+            value={data.firstName}
+            type="text"
+            placeholder="Imię"
+          />
+          <input
+            required
+            name="lastName"
+            onChange={onChangeHandler}
+            value={data.lastName}
+            type="text"
+            placeholder="Nazwisko"
+          />
+        </div>
+        <input
+          className="emaill"
+          required
+          name="email"
+          onChange={onChangeHandler}
+          value={data.email}
+          type="email"
+          placeholder="Adres e-mail"
+        />
+        <input
+          className="streett"
+          required
+          name="street"
+          onChange={onChangeHandler}
+          value={data.street}
+          type="text"
+          placeholder="Ulica"
+        />
+        <div className="multi-fields">
+          <input
+            required
+            name="city"
+            onChange={onChangeHandler}
+            value={data.city}
+            type="text"
+            placeholder="Miasto"
+          />
+        </div>
+        <div className="multi-fields">
+          <input
+            required
+            name="zipcode"
+            onChange={onChangeHandler}
+            value={data.zipcode}
+            type="text"
+            placeholder="Kod pocztowy"
+          />
+          <input
+            required
+            name="country"
+            onChange={onChangeHandler}
+            value={data.country}
+            type="text"
+            placeholder="Kraj"
+          />
+        </div>
+        <input
+          className="phonee"
+          required
+          name="phone"
+          onChange={onChangeHandler}
+          value={data.phone}
+          type="text"
+          placeholder="Telefon"
+        />
+        <button type="button" onClick={getLocation} disabled={loading} className="location-button">
+          {loading ? 'Loading...' : 'Wypełnij lokalizację'}
+        </button>
+      </div>
+      <div className="place-order-right">
+        <div className="cart-total">
+          <h2 className="t3">Podsumowanie Koszyka</h2>
+          <div>
+            <div className="cart-total-details">
+              <p className="t5">Suma częściowa</p>
+              <p className="t3">{getTotalCartAmount()} zł</p>
+            </div>
+            <hr />
+            <div className="cart-total-details">
+              <p className="t5">Opłata za dostawę</p>
+              <p className="t3">
+                {deliveryCharge === null
+                  ? 'Za przedziałem dostawy'
+                  : deliveryCharge === 0
+                  ? 'Bezpłatna'
+                  : `${deliveryCharge} zł`}
+              </p>
+            </div>
+            <hr />
+            <div className="cart-total-details">
+              <b className="t5">Suma</b>
+              <b className="t3">
+                {getTotalCartAmount() +
+                  (deliveryCharge === null || deliveryCharge === 0 ? 0 : deliveryCharge)}{' '}
+                zł
+              </b>
+            </div>
+          </div>
+          <button className="t6" type="submit">
+            PRZEJDŹ DO PŁATНОŚCI
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+};
+
+// Utility function to calculate distance between two points in km
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Промежуток Земли в км
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Расстояние в км
+  return distance;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+export default PlaceOrder;

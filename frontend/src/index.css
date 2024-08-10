@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: 0;
+  font-family: Outfit;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--body-color);
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.app {
+  width: 80%;
+  margin: auto;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@font-face {
+  font-family: 'Algeriatwo';
+  src: url('/fonts/algeriatwo.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'EnchantedLand';
+  src: url('/fonts/enchantedlandcyr_lat.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'FHA Modified Tuscan Roman';
+  src: url('/fonts/FHA Modified Tuscan Roman NCV Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'PoisonFreak';
+  src: url('/fonts/PoisonFreakRegular-RpXev.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Rafiquell';
+  src: url('/fonts/Rafiquell.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'VegeorgianBrush';
+  src: url('/fonts/vegeorgianbrushcyrillicgreek.ttf') format('truetype');
+}
+
+.t1 {
+  font-family: 'Algeriatwo', sans-serif;
+}
+
+.t2 {
+  font-family: 'EnchantedLand', sans-serif;
+}
+
+.t3 {
+  font-family: 'FHA Modified Tuscan Roman', serif;
+}
+
+.t4 {
+  font-family: 'PoisonFreak', sans-serif;
+}
+
+.t5 {
+  font-family: 'Rafiquell', sans-serif;
+}
+
+.t6 {
+  font-family: 'VegeorgianBrush', sans-serif;
+}
+
+.logotext {
+  color: #d18b62; /* Основной цвет текста */
+  text-shadow: 3px 3px 0 #8f4a45; /* Тень текста для создания эффекта обводки */
+  font-weight: bold;
+  font-size: 48px; /* Размер шрифта для крупного текста */
+  text-transform: uppercase; /* Преобразование текста в верхний регистр */
+  letter-spacing: 5px;
+}
+
+.substext {
+  color: #d18b62; /* Основной цвет текста */
+  text-shadow: 2px 2px 0 #8f4a45; /* Тень текста для создания эффекта обводки */
+  font-size: 24px; /* Размер шрифта для подзаголовка */
+  letter-spacing: 1px; /* Расстояние между буквами */
+}
+
+/* Адаптивный дизайн для экранов шириной до 768px */
+@media (max-width: 768px) {
+  .logotext {
+    font-size: 36px; /* Уменьшение размера шрифта для планшетов */
+  }
+
+  .substext {
+    font-size: 18px; /* Уменьшение размера шрифта для подзаголовка */
+  }
+}
+
+/* Адаптивный дизайн для экранов шириной до 480px */
+@media (max-width: 480px) {
+  .logotext {
+    font-size: 28px; /* Уменьшение размера шрифта для мобильных устройств */
+    letter-spacing: 3px; /* Уменьшение расстояния между буквами */
+  }
+
+  .substext {
+    font-size: 16px; /* Уменьшение размера шрифта для подзаголовка */
+    letter-spacing: 1px; /* Сохранение расстояния между буквами */
+  }
+}
