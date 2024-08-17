@@ -82,6 +82,7 @@ const Navbar = ({ setShowLogin }) => {
           KONTAKT
         </a>
       </ul>
+
       <div className="navbar-right">
         <div className="navbar">
           <label htmlFor="visual-toggle" id="visual-toggle-button" onClick="visualMode()">

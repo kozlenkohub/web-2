@@ -6,6 +6,10 @@ const ExploreMenu = ({ category, setCategory }) => {
   return (
     <div className="explore-menu" id="explore-menu">
       <h1 className="h1e t2 logotext">Poznaj nasze menu</h1>
+      <div className="working-hours">
+        <p>Dostawa: Pn-Czw 11:00 - 20:30, Pt-Nd 11:00 - 21:30</p>
+        <p>Grillujemy dla Was: Pn-Czw 11:00 - 21:00, Pt-Nd 11:00 - 22:00</p>
+      </div>
       <div className="block-text">
         <p className="explore-menu-text t6 substext">Amerykan street food...</p>
       </div>

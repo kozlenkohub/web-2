@@ -35,6 +35,7 @@ const Navbar = () => {
       }
     });
   }, []); // Empty dependency array to run the effect only once
+
   return (
     <div>
       <div className="navbar">
@@ -64,6 +65,8 @@ const Navbar = () => {
           <input type="checkbox" className="visual-toggle" id="visual-toggle" />
         </label>
       </div>
+
+      {/* Добавляем блок с информацией о времени работы */}
     </div>
   );
 };
