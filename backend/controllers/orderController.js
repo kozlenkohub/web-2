@@ -34,7 +34,8 @@ const sendOrderEmail = async (order, sessionUrl) => {
         <p><strong>Товары:</strong> ${order.items
           .map((item) => `${item.name} x ${item.quantity}`)
           .join(', ')}</p>
-        <p><strong>Сумма:</strong> ${order.amount}</p>
+        <p><strong>Сумма:</strong> ${order.amount} zł</p>
+        <p><strong>Opłata za opakowanie:</strong> ${order.packagingCharge} zł</p>
         ${paymentMethodMessage}
       </div>
     `,
@@ -65,7 +66,7 @@ const placeOrder = async (req, res) => {
       userLocation.lng,
     );
 
-    let deliveryCharge = 800;
+    let deliveryCharge = 0;
     if (distance <= 2) {
       deliveryCharge = 0;
     } else if (distance > 2 && distance <= 4) {
@@ -75,21 +76,20 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
-      amount: req.body.amount + deliveryCharge / 100,
+      amount: req.body.amount, // Сумма уже включает доставку и упаковку
+      packagingCharge: req.body.packagingCharge, // Добавляем упаковку
       address: req.body.address,
       paymentMethod: req.body.paymentMethod,
-      payment: req.body.paymentMethod === 'cash' ? true : false, // Если наличные, сразу помечаем как оплаченный
+      payment: req.body.paymentMethod === 'cash' ? true : false,
     });
 
     await newOrder.save();
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
     if (req.body.paymentMethod === 'cash') {
-      // Если оплата наличными, сразу отправляем подтверждение
-      await sendOrderEmail(newOrder, null); // Отправляем email без ссылки на Stripe
+      await sendOrderEmail(newOrder, null);
       res.json({ success: true, message: 'Order placed with cash payment' });
     } else {
-      // Если оплата картой, создаем сессию Stripe и ожидаем подтверждения
       const line_items = req.body.items.map((item) => ({
         price_data: {
           currency: 'pln',
@@ -106,9 +106,22 @@ const placeOrder = async (req, res) => {
           price_data: {
             currency: 'pln',
             product_data: {
-              name: 'Delivery Charges',
+              name: 'Opłata za dostawę',
             },
             unit_amount: deliveryCharge,
+          },
+          quantity: 1,
+        });
+      }
+
+      if (req.body.packagingCharge > 0) {
+        line_items.push({
+          price_data: {
+            currency: 'pln',
+            product_data: {
+              name: 'Opłata za opakowanie',
+            },
+            unit_amount: req.body.packagingCharge * 100,
           },
           quantity: 1,
         });
@@ -132,14 +145,14 @@ const placeOrder = async (req, res) => {
 
 // Utility function to calculate distance between two points in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Промежуток Земли в км
+  const R = 6371;
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c; // Расстояние в км
+  const distance = R * c;
   return distance;
 }
 
@@ -147,68 +160,4 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
-const verifyOrder = async (req, res) => {
-  const { orderId, success, sessionUrl } = req.body;
-  try {
-    const order = await orderModel.findById(orderId);
-    if (success === 'true') {
-      // Если оплата через Stripe успешна, обновляем статус оплаты и время
-      await orderModel.findByIdAndUpdate(
-        orderId,
-        { payment: true, paymentTime: new Date() },
-        { new: true },
-      );
-      await sendOrderEmail(order, sessionUrl);
-      res.json({ success: true, message: 'Payment confirmed' });
-    } else {
-      // Если оплата неуспешна, заказ удаляется
-      await orderModel.findByIdAndDelete(orderId);
-      res.json({ success: false, message: 'Payment failed, order canceled' });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-const userOrders = async (req, res) => {
-  try {
-    const orders = await orderModel.find({ userId: req.body.userId, payment: true });
-    res.json({ success: true, data: orders });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-const listOrders = async (req, res) => {
-  try {
-    const orders = await orderModel.find({ payment: true });
-    res.json({ success: true, data: orders });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-const updateStatus = async (req, res) => {
-  try {
-    await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
-    res.json({ success: true, message: 'Status Updated' });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-const deleteOrder = async (req, res) => {
-  try {
-    await orderModel.findByIdAndDelete(req.body.orderId);
-    res.json({ success: true, message: 'Order Deleted' });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus, deleteOrder };
+export { placeOrder };

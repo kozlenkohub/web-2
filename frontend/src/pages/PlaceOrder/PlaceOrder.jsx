@@ -21,10 +21,10 @@ const PlaceOrder = () => {
     location: { lat: null, lng: null },
   });
 
-  const [isWithinDeliveryRadius, setIsWithinDeliveryRadius] = useState(true);
   const [loading, setLoading] = useState(false);
   const [deliveryCharge, setDeliveryCharge] = useState(8);
-  const [paymentMethod, setPaymentMethod] = useState('card'); // Новое состояние для метода оплаты
+  const [packagingCharge, setPackagingCharge] = useState(0); // Новое состояние для стоимости упаковки
+  const [paymentMethod, setPaymentMethod] = useState('card');
 
   const onChangeHandler = (event) => {
     const name = event.target.name;
@@ -35,6 +35,25 @@ const PlaceOrder = () => {
   const handlePaymentMethodChange = (event) => {
     setPaymentMethod(event.target.value);
   };
+
+  const calculatePackagingCharge = (amount) => {
+    if (amount <= 50) return 2;
+    if (amount <= 100) return 3;
+    if (amount <= 150) return 5;
+    if (amount <= 200) return 6;
+    if (amount <= 250) return 7;
+    if (amount <= 300) return 8;
+    if (amount <= 350) return 9;
+    if (amount <= 400) return 10;
+
+    return 0;
+  };
+
+  useEffect(() => {
+    const totalCartAmount = getTotalCartAmount();
+    const calculatedPackagingCharge = calculatePackagingCharge(totalCartAmount);
+    setPackagingCharge(calculatedPackagingCharge);
+  }, [getTotalCartAmount]);
 
   const getLocation = () => {
     if (navigator.geolocation) {
@@ -51,7 +70,7 @@ const PlaceOrder = () => {
       const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
         params: {
           latlng: `${latitude},${longitude}`,
-          key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE', // Замените на ваш действительный API-ключ
+          key: 'Ваш_Google_API_ключ',
         },
       });
 
@@ -110,7 +129,7 @@ const PlaceOrder = () => {
           const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
             params: {
               address: `${data.street}, ${data.city}, ${data.zipcode}, ${data.country}`,
-              key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE',
+              key: 'Ваш_Google_API_ключ',
             },
           });
 
@@ -180,8 +199,10 @@ const PlaceOrder = () => {
     let orderData = {
       address: data,
       items: orderItems,
-      amount: getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge),
-      paymentMethod, // Добавляем метод оплаты
+      amount:
+        getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge) + packagingCharge,
+      paymentMethod,
+      packagingCharge, // Добавляем стоимость упаковки в данные заказа
     };
 
     try {
@@ -202,14 +223,6 @@ const PlaceOrder = () => {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    if (!token) {
-      navigate('/cart');
-    } else if (getTotalCartAmount() === 0) {
-      navigate('/cart');
-    }
-  }, [token, navigate, getTotalCartAmount]);
 
   return (
     <form onSubmit={placeOrder} className="place-order">
@@ -313,10 +326,16 @@ const PlaceOrder = () => {
             </div>
             <hr />
             <div className="cart-total-details">
+              <p className="t5">Opłata za opakowanie</p>
+              <p className="t3">{packagingCharge} zł</p>
+            </div>
+            <hr />
+            <div className="cart-total-details">
               <b className="t5">Suma</b>
               <b className="t3">
                 {getTotalCartAmount() +
-                  (deliveryCharge === null || deliveryCharge === 0 ? 0 : deliveryCharge)}{' '}
+                  (deliveryCharge === null || deliveryCharge === 0 ? 0 : deliveryCharge) +
+                  packagingCharge}{' '}
                 zł
               </b>
             </div>
