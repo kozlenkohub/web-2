@@ -70,7 +70,7 @@ const PlaceOrder = () => {
       const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
         params: {
           latlng: `${latitude},${longitude}`,
-          key: 'Ваш_Google_API_ключ',
+          key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE',
         },
       });
 
@@ -129,7 +129,7 @@ const PlaceOrder = () => {
           const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
             params: {
               address: `${data.street}, ${data.city}, ${data.zipcode}, ${data.country}`,
-              key: 'Ваш_Google_API_ключ',
+              key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE',
             },
           });
 
