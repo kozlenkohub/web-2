@@ -35,7 +35,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
           .map((item) => `${item.name} x ${item.quantity}`)
           .join(', ')}</p>
         <p><strong>Сумма:</strong> ${order.amount} zł</p>
-        <p><strong>Opłata za opakowanie:</strong> ${order.packagingCharge} zł</p>
+       <p><strong>Opłata za opakowanie:</strong> ${order.packagingCharge || 0} zł</p>
         ${paymentMethodMessage}
       </div>
     `,
