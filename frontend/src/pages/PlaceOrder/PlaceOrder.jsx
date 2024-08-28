@@ -38,15 +38,13 @@ const PlaceOrder = () => {
 
   const calculatePackagingCharge = (amount) => {
     if (amount <= 50) return 2;
-    if (amount <= 100) return 3;
-    if (amount <= 150) return 5;
-    if (amount <= 200) return 6;
-    if (amount <= 250) return 7;
-    if (amount <= 300) return 8;
-    if (amount <= 350) return 9;
-    if (amount <= 400) return 10;
+    if (amount > 10000) return 0;
 
-    return 0;
+    const baseCharge = 2;
+    const chargeIncrement = 1;
+    const step = 50;
+
+    return baseCharge + chargeIncrement * Math.ceil((amount - 50) / step);
   };
 
   useEffect(() => {
