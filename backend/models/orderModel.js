@@ -10,6 +10,7 @@ const orderSchema = new mongoose.Schema({
   payment: { type: Boolean, default: false },
   paymentTime: { type: Date }, // Время оплаты
   paymentMethod: { type: String, required: true }, // Метод оплаты
+  packagingCharge: { type: Number, required: true }, // Оплата за упаковку
 });
 
 const orderModel = mongoose.models.order || mongoose.model('order', orderSchema);

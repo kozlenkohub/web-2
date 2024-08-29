@@ -24,21 +24,21 @@ const sendOrderEmail = async (order, sessionUrl) => {
     to: process.env.NOTIFICATION_EMAIL,
     subject: 'Новый заказ',
     html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-        <h2 style="color: #333;">Поступил новый заказ</h2>
-        <p><strong>Имя:</strong> ${order.address.firstName} ${order.address.lastName}</p>
-        <p><strong>Адрес:</strong> ${order.address.street}, ${order.address.city},  ${
+        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+          <h2 style="color: #333;">Поступил новый заказ</h2>
+          <p><strong>Имя:</strong> ${order.address.firstName} ${order.address.lastName}</p>
+          <p><strong>Адрес:</strong> ${order.address.street}, ${order.address.city},  ${
       order.address.country
     }, ${order.address.zipcode}</p>
-        <p><strong>Телефон:</strong> ${order.address.phone}</p>
-        <p><strong>Товары:</strong> ${order.items
-          .map((item) => `${item.name} x ${item.quantity}`)
-          .join(', ')}</p>
-        <p><strong>Сумма:</strong> ${order.amount} zł</p>
-       <p><strong>Opłata za opakowanie:</strong> ${order.packagingCharge || 0} zł</p>
-        ${paymentMethodMessage}
-      </div>
-    `,
+          <p><strong>Телефон:</strong> ${order.address.phone}</p>
+          <p><strong>Товары:</strong> ${order.items
+            .map((item) => `${item.name} x ${item.quantity}`)
+            .join(', ')}</p>
+          <p><strong>Сумма:</strong> ${order.amount} zł</p>
+        <p><strong>Opłata za opakowanie:</strong> ${order.packagingCharge || 0} zł</p>
+          ${paymentMethodMessage}
+        </div>
+      `,
   };
 
   try {
@@ -76,11 +76,11 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
-      amount: req.body.amount, // Сумма уже включает доставку и упаковку
-      packagingCharge: req.body.packagingCharge, // Добавляем упаковку
+      amount: req.body.amount, // Includes total amount with packaging and delivery
       address: req.body.address,
       paymentMethod: req.body.paymentMethod,
       payment: req.body.paymentMethod === 'cash' ? true : false,
+      packagingCharge: req.body.packagingCharge, // Now this is included and will be stored in the database
     });
 
     await newOrder.save();
