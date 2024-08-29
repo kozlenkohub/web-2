@@ -201,6 +201,7 @@ const PlaceOrder = () => {
         getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge) + packagingCharge,
       paymentMethod,
       packagingCharge, // Добавляем стоимость упаковки в данные заказа
+      deliveryCharge: deliveryCharge !== null ? deliveryCharge : 0, // Стоимость доставки
     };
 
     try {
