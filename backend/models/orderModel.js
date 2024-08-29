@@ -11,6 +11,7 @@ const orderSchema = new mongoose.Schema({
   paymentTime: { type: Date }, // Время оплаты
   paymentMethod: { type: String, required: true }, // Метод оплаты
   packagingCharge: { type: Number, required: true }, // Оплата за упаковку
+  deliveryCharge: { type: Number, required: true }, // Оплата за доставку
 });
 
 const orderModel = mongoose.models.order || mongoose.model('order', orderSchema);
