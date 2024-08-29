@@ -25,22 +25,22 @@ const sendOrderEmail = async (order, sessionUrl) => {
     to: process.env.NOTIFICATION_EMAIL,
     subject: 'Новый заказ',
     html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-          <h2 style="color: #333;">Поступил новый заказ</h2>
-          <p><strong>Имя:</strong> ${order.address.firstName} ${order.address.lastName}</p>
-          <p><strong>Адрес:</strong> ${order.address.street}, ${order.address.city},  ${
+            <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+              <h2 style="color: #333;">Поступил новый заказ</h2>
+              <p><strong>Имя:</strong> ${order.address.firstName} ${order.address.lastName}</p>
+              <p><strong>Адрес:</strong> ${order.address.street}, ${order.address.city},  ${
       order.address.country
     }, ${order.address.zipcode}</p>
-          <p><strong>Телефон:</strong> ${order.address.phone}</p>
-          <p><strong>Товары:</strong> ${order.items
-            .map((item) => `${item.name} x ${item.quantity}`)
-            .join(', ')}</p>
-          <p><strong>Оплата за упаковку:</strong> ${order.packagingCharge || 0} zł</p>
-           <p><strong>Оплата за доставку:</strong> ${order.deliveryCharge || 0} zł</p>
-          <p><strong>Сумма:</strong> ${order.amount} zł</p>
-          ${paymentMethodMessage}
-        </div>
-      `,
+              <p><strong>Телефон:</strong> ${order.address.phone}</p>
+              <p><strong>Товары:</strong> ${order.items
+                .map((item) => `${item.name} x ${item.quantity}`)
+                .join(', ')}</p>
+              <p><strong>Оплата за упаковку:</strong> ${order.packagingCharge || 0} zł</p>
+              <p><strong>Оплата за доставку:</strong> ${order.deliveryCharge || 0} zł</p>
+              <p><strong>Сумма:</strong> ${order.amount} zł</p>
+              ${paymentMethodMessage}
+            </div>
+          `,
   };
 
   try {
