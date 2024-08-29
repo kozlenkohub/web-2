@@ -83,6 +83,7 @@ const placeOrder = async (req, res) => {
       paymentMethod: req.body.paymentMethod,
       payment: req.body.paymentMethod === 'cash' ? true : false,
       packagingCharge: req.body.packagingCharge, // Now this is included and will be stored in the database
+      deliveryCharge: deliveryCharge, // Now this is included and will be stored in the database
     });
 
     await newOrder.save();
