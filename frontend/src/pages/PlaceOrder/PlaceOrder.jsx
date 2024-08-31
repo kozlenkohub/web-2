@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const PlaceOrder = () => {
+  const api_google = 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE';
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -21,10 +22,13 @@ const PlaceOrder = () => {
     location: { lat: null, lng: null },
   });
 
+  const [comments, setComments] = useState({});
   const [loading, setLoading] = useState(false);
-  const [deliveryCharge, setDeliveryCharge] = useState(8);
-  const [packagingCharge, setPackagingCharge] = useState(0); // Новое состояние для стоимости упаковки
+  const [deliveryCharge, setDeliveryCharge] = useState(0);
+  const [packagingCharge, setPackagingCharge] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
+
+  const MIN_ORDER_AMOUNT = 20;
 
   const onChangeHandler = (event) => {
     const name = event.target.name;
@@ -32,11 +36,19 @@ const PlaceOrder = () => {
     setData((data) => ({ ...data, [name]: value }));
   };
 
+  const onCommentChangeHandler = (itemId, comment) => {
+    setComments((prevComments) => ({
+      ...prevComments,
+      [itemId]: comment,
+    }));
+  };
+
   const handlePaymentMethodChange = (event) => {
     setPaymentMethod(event.target.value);
   };
 
   const calculatePackagingCharge = (amount) => {
+    if (amount <= 1) return 0;
     if (amount <= 50) return 2;
     if (amount > 10000) return 0;
 
@@ -68,7 +80,7 @@ const PlaceOrder = () => {
       const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
         params: {
           latlng: `${latitude},${longitude}`,
-          key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE',
+          key: api_google,
         },
       });
 
@@ -127,7 +139,7 @@ const PlaceOrder = () => {
           const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
             params: {
               address: `${data.street}, ${data.city}, ${data.zipcode}, ${data.country}`,
-              key: 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE',
+              key: api_google,
             },
           });
 
@@ -173,9 +185,17 @@ const PlaceOrder = () => {
   const placeOrder = async (event) => {
     event.preventDefault();
 
+    const totalAmount =
+      getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge) + packagingCharge;
+
     if (!token) {
       alert('Proszę się zalogować, aby złożyć zamówienie.');
       navigate('/login');
+      return;
+    }
+
+    if (totalAmount < MIN_ORDER_AMOUNT) {
+      alert(`Twój koszyk jest pusty. `);
       return;
     }
 
@@ -187,8 +207,9 @@ const PlaceOrder = () => {
     let orderItems = [];
     food_list.map((item) => {
       if (cartItems[item._id] > 0) {
-        let itemInfo = item;
+        let itemInfo = { ...item };
         itemInfo['quantity'] = cartItems[item._id];
+        itemInfo['comment'] = comments[item._id] || '';
         orderItems.push(itemInfo);
       }
       return null;
@@ -197,11 +218,10 @@ const PlaceOrder = () => {
     let orderData = {
       address: data,
       items: orderItems,
-      amount:
-        getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge) + packagingCharge,
+      amount: totalAmount,
       paymentMethod,
-      packagingCharge, // Добавляем стоимость упаковки в данные заказа
-      deliveryCharge: deliveryCharge !== null ? deliveryCharge : 0, // Стоимость доставки
+      packagingCharge,
+      deliveryCharge: deliveryCharge !== null ? deliveryCharge : 0,
     };
 
     try {
@@ -313,17 +333,17 @@ const PlaceOrder = () => {
               <p className="t3">{getTotalCartAmount()} zł</p>
             </div>
             <hr />
-            <div className="cart-total-details">
-              <p className="t5">Opłata za dostawę</p>
-              <p className="t3">
-                {deliveryCharge === null
-                  ? 'Za przedziałem dostawy'
-                  : deliveryCharge === 0
-                  ? 'Bezpłatna'
-                  : `${deliveryCharge} zł`}
-              </p>
-            </div>
-            <hr />
+            {deliveryCharge > 0 && deliveryCharge !== null && (
+              <>
+                <div className="cart-total-details">
+                  <p className="t5">Opłata za dostawę</p>
+                  <p className="t3">
+                    {deliveryCharge === 0 ? 'Bezpłatna' : `${deliveryCharge} zł`}
+                  </p>
+                </div>
+                <hr />
+              </>
+            )}
             <div className="cart-total-details">
               <p className="t5">Opłata za opakowanie</p>
               <p className="t3">{packagingCharge} zł</p>
@@ -337,6 +357,31 @@ const PlaceOrder = () => {
                   packagingCharge}{' '}
                 zł
               </b>
+            </div>
+            <hr />
+
+            <div className="cart-items">
+              <div className="title t3 tac">Komentarz do zamówienia</div>
+              {food_list.map((item) =>
+                cartItems[item._id] > 0 ? (
+                  <div key={item._id} className="cart-item">
+                    <div className="item-details">
+                      <img src={url + '/images/' + item.image} alt="" className="item-image" />
+                      <div>
+                        <p>{item.name}</p>
+                        <p>
+                          {cartItems[item._id]} x {item.price} zł
+                        </p>
+                      </div>
+                    </div>
+                    <textarea
+                      placeholder="Chcesz dodać ostrości lub usunąć jakiś składnik z potrawy? Napisz o tym w komentarzu do zamówienia."
+                      value={comments[item._id] || ''}
+                      onChange={(e) => onCommentChangeHandler(item._id, e.target.value)}
+                    />
+                  </div>
+                ) : null,
+              )}
             </div>
           </div>
           <div className="payment-methods">

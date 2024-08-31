@@ -20,27 +20,57 @@ const sendOrderEmail = async (order, sessionUrl) => {
       ? '<p style="color: red; font-weight: bold;">ОПЛАТА НАЛИЧНЫМИ</p>'
       : `<p><a href="${sessionUrl}" style="color: #1a73e8; text-decoration: none;">Посмотреть транзакцию в Stripe</a></p>`;
 
+  // Добавляем комментарии к товарам в письмо
+  const itemsWithComments = order.items
+    .map(
+      (item) =>
+        `<p><strong>${item.name}</strong> x ${item.quantity}</p>` +
+        (item.comment ? `<p><em>Комментарий: ${item.comment}</em></p>` : ''),
+    )
+    .join('');
   const mailOptions = {
     from: process.env.EMAIL,
     to: process.env.NOTIFICATION_EMAIL,
     subject: 'Новый заказ',
     html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-              <h2 style="color: #333;">Поступил новый заказ</h2>
-              <p><strong>Имя:</strong> ${order.address.firstName} ${order.address.lastName}</p>
-              <p><strong>Адрес:</strong> ${order.address.street}, ${order.address.city},  ${
-      order.address.country
-    }, ${order.address.zipcode}</p>
-              <p><strong>Телефон:</strong> ${order.address.phone}</p>
-              <p><strong>Товары:</strong> ${order.items
-                .map((item) => `${item.name} x ${item.quantity}`)
-                .join(', ')}</p>
-              <p><strong>Оплата за упаковку:</strong> ${order.packagingCharge || 0} zł</p>
-              <p><strong>Оплата за доставку:</strong> ${order.deliveryCharge / 100 || 0} zł</p>
-              <p><strong>Сумма:</strong> ${order.amount} zł</p>
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; background-color: #f9f9f9;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+            <div style="padding: 20px; border-bottom: 2px solid #4CAF50;">
+              <h2 style="color: #4CAF50; text-align: center; margin-bottom: 10px;">🎉 Новый заказ!</h2>
+            </div>
+            <div style="padding: 20px;">
+              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Имя:</strong> ${
+                order.address.firstName
+              } ${order.address.lastName}</p>
+              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Адрес:</strong> ${
+                order.address.street
+              }, ${order.address.city}, ${order.address.country}, ${order.address.zipcode}</p>
+              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Телефон:</strong> ${
+                order.address.phone
+              }</p>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+              <h3 style="color: #333; margin-bottom: 10px;">🛒 Товары:</h3>
+              <div style="margin-bottom: 20px;">
+                ${itemsWithComments} <!-- Вставляем товары с комментариями -->
+              </div>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за упаковку:</strong> ${
+                order.packagingCharge || 0
+              } zł</p>
+              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за доставку:</strong> ${
+                order.deliveryCharge / 100 || 0
+              } zł</p>
+              <p style="font-size: 20px; margin: 20px 0; font-weight: bold; color: #4CAF50;"><strong>Сумма:</strong> ${
+                order.amount
+              } zł</p>
               ${paymentMethodMessage}
             </div>
-          `,
+            <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: #fff; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+              <p style="margin: 0;">УДАЧНОЙ ДОСТАВКИ РЕБЯТКИ!</p>
+            </div>
+          </div>
+        </div>
+      `,
   };
 
   try {
@@ -51,7 +81,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
 };
 
 const placeOrder = async (req, res) => {
-  const frontend_url = 'https://web-2-frontend.onrender.com';
+  const frontend_url = 'http://localhost:5173';
   const token = req.headers.token;
 
   if (!token) {
