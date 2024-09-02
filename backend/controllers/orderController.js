@@ -81,7 +81,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
 };
 
 const placeOrder = async (req, res) => {
-  const frontend_url = 'http://localhost:5173';
+  const frontend_url = 'https://web-2-frontend.onrender.com';
   const token = req.headers.token;
 
   if (!token) {
