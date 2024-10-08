@@ -28,3 +28,7 @@
 .lightcolors .pforbetter {
   color: black;
 }
+
+.uppercase {
+  text-transform: uppercase;
+}
