@@ -11,7 +11,7 @@ import menu_6 from './menu_6.png';
 import menu_7 from './menu_7.png';
 import menu_8 from './menu_8.png';
 
-import local from './local.png';
+import local from './map.jpeg';
 
 import food_1 from './food_1.png';
 import food_2 from './food_2.png';
