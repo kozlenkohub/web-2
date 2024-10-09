@@ -8,7 +8,7 @@ const orderSchema = new mongoose.Schema({
       name: String,
       price: Number,
       quantity: Number,
-      comment: String, // Новое поле для комментария
+      comment: String, // Поле для комментария
     },
   ],
   amount: { type: Number, required: true },
@@ -20,6 +20,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: { type: String, required: true },
   packagingCharge: { type: Number, required: true },
   deliveryCharge: { type: Number, required: true },
+  emailSent: { type: Boolean, default: false }, // Новое поле для отслеживания отправки письма
 });
 
 const orderModel = mongoose.models.order || mongoose.model('order', orderSchema);

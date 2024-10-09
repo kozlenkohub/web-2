@@ -9,18 +9,23 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASSWORD, // используем пароль приложения
+    pass: process.env.EMAIL_PASSWORD, // Используем пароль приложения
   },
 });
 
+// Функция для отправки письма
 const sendOrderEmail = async (order, sessionUrl) => {
-  console.log('Order packagingCharge:', order.packagingCharge); // Добавьте это для проверки
+  // Проверяем, было ли письмо уже отправлено
+  if (order.emailSent) {
+    console.log('Email already sent for this order.');
+    return; // Прерываем выполнение, если письмо уже отправлено
+  }
+
   const paymentMethodMessage =
     order.paymentMethod === 'cash'
       ? '<p style="color: red; font-weight: bold;">ОПЛАТА НАЛИЧНЫМИ</p>'
       : `<p><a href="${sessionUrl}" style="color: #1a73e8; text-decoration: none;">Посмотреть транзакцию в Stripe</a></p>`;
 
-  // Добавляем комментарии к товарам в письмо
   const itemsWithComments = order.items
     .map(
       (item) =>
@@ -28,58 +33,63 @@ const sendOrderEmail = async (order, sessionUrl) => {
         (item.comment ? `<p><em>Комментарий: ${item.comment}</em></p>` : ''),
     )
     .join('');
+
   const mailOptions = {
     from: process.env.EMAIL,
     to: process.env.NOTIFICATION_EMAIL,
     subject: 'Новый заказ',
     html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; background-color: #f9f9f9;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
-            <div style="padding: 20px; border-bottom: 2px solid #4CAF50;">
-              <h2 style="color: #4CAF50; text-align: center; margin-bottom: 10px;">🎉 Новый заказ!</h2>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+          <div style="padding: 20px; border-bottom: 2px solid #4CAF50;">
+            <h2 style="color: #4CAF50; text-align: center; margin-bottom: 10px;">🎉 Новый заказ!</h2>
+          </div>
+          <div style="padding: 20px;">
+            <p style="font-size: 18px; margin: 0 0 10px;"><strong>Имя:</strong> ${
+              order.address.firstName
+            } ${order.address.lastName}</p>
+            <p style="font-size: 18px; margin: 0 0 10px;"><strong>Адрес:</strong> ${
+              order.address.street
+            }, ${order.address.city}, ${order.address.country}, ${order.address.zipcode}</p>
+            <p style="font-size: 18px; margin: 0 0 10px;"><strong>Телефон:</strong> ${
+              order.address.phone
+            }</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <h3 style="color: #333; margin-bottom: 10px;">🛒 Товары:</h3>
+            <div style="margin-bottom: 20px;">
+              ${itemsWithComments}
             </div>
-            <div style="padding: 20px;">
-              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Имя:</strong> ${
-                order.address.firstName
-              } ${order.address.lastName}</p>
-              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Адрес:</strong> ${
-                order.address.street
-              }, ${order.address.city}, ${order.address.country}, ${order.address.zipcode}</p>
-              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Телефон:</strong> ${
-                order.address.phone
-              }</p>
-              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-              <h3 style="color: #333; margin-bottom: 10px;">🛒 Товары:</h3>
-              <div style="margin-bottom: 20px;">
-                ${itemsWithComments} <!-- Вставляем товары с комментариями -->
-              </div>
-              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за упаковку:</strong> ${
-                order.packagingCharge || 0
-              } zł</p>
-              <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за доставку:</strong> ${
-                order.deliveryCharge / 100 || 0
-              } zł</p>
-              <p style="font-size: 20px; margin: 20px 0; font-weight: bold; color: #4CAF50;"><strong>Сумма:</strong> ${
-                order.amount
-              } zł</p>
-              ${paymentMethodMessage}
-            </div>
-            <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: #fff; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-              <p style="margin: 0;">УДАЧНОЙ ДОСТАВКИ РЕБЯТКИ!</p>
-            </div>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за упаковку:</strong> ${
+              order.packagingCharge || 0
+            } zł</p>
+            <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за доставку:</strong> ${
+              order.deliveryCharge / 100 || 0
+            } zł</p>
+            <p style="font-size: 20px; margin: 20px 0; font-weight: bold; color: #4CAF50;"><strong>Сумма:</strong> ${
+              order.amount
+            } zł</p>
+            ${paymentMethodMessage}
+          </div>
+          <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: #fff; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+            <p style="margin: 0;">УДАЧНОЙ ДОСТАВКИ !</p>
           </div>
         </div>
-      `,
+      </div>
+    `,
   };
 
   try {
     await transporter.sendMail(mailOptions);
+    // Обновляем заказ, чтобы установить флаг emailSent
+    await orderModel.findByIdAndUpdate(order._id, { emailSent: true });
+    console.log('Email sent and order updated');
   } catch (error) {
     console.error('Error sending email:', error);
   }
 };
 
+// Основная функция для размещения заказа
 const placeOrder = async (req, res) => {
   const frontend_url = 'https://web-2-frontend.onrender.com';
   const token = req.headers.token;
@@ -108,12 +118,12 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
-      amount: req.body.amount, // Includes total amount with packaging and delivery
+      amount: req.body.amount, // Включает общую сумму с упаковкой и доставкой
       address: req.body.address,
       paymentMethod: req.body.paymentMethod,
       payment: req.body.paymentMethod === 'cash' ? true : false,
-      packagingCharge: req.body.packagingCharge, // Now this is included and will be stored in the database
-      deliveryCharge: deliveryCharge, // Now this is included and will be stored in the database
+      packagingCharge: req.body.packagingCharge,
+      deliveryCharge: deliveryCharge,
     });
 
     await newOrder.save();
@@ -152,7 +162,7 @@ const placeOrder = async (req, res) => {
           price_data: {
             currency: 'pln',
             product_data: {
-              name: 'Opłata za opakowanie',
+              name: 'Opłata за opakowanie',
             },
             unit_amount: req.body.packagingCharge * 100,
           },
@@ -176,9 +186,9 @@ const placeOrder = async (req, res) => {
   }
 };
 
-// Utility function to calculate distance between two points in km
+// Вспомогательная функция для расчета расстояния между двумя точками в км
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
+  const R = 6371; // Радиус Земли в км
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
   const a =
@@ -193,12 +203,12 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
 
+// Функция для подтверждения заказа
 const verifyOrder = async (req, res) => {
   const { orderId, success, sessionUrl } = req.body;
   try {
     const order = await orderModel.findById(orderId);
     if (success === 'true') {
-      // Если оплата через Stripe успешна, обновляем статус оплаты и время
       await orderModel.findByIdAndUpdate(
         orderId,
         { payment: true, paymentTime: new Date() },
@@ -207,7 +217,6 @@ const verifyOrder = async (req, res) => {
       await sendOrderEmail(order, sessionUrl);
       res.json({ success: true, message: 'Payment confirmed' });
     } else {
-      // Если оплата неуспешна, заказ удаляется
       await orderModel.findByIdAndDelete(orderId);
       res.json({ success: false, message: 'Payment failed, order canceled' });
     }
@@ -217,6 +226,7 @@ const verifyOrder = async (req, res) => {
   }
 };
 
+// Функция для получения заказов пользователя
 const userOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ userId: req.body.userId, payment: true });
@@ -227,6 +237,7 @@ const userOrders = async (req, res) => {
   }
 };
 
+// Функция для получения всех заказов
 const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ payment: true });
@@ -237,6 +248,7 @@ const listOrders = async (req, res) => {
   }
 };
 
+// Функция для обновления статуса заказа
 const updateStatus = async (req, res) => {
   try {
     await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
@@ -247,6 +259,7 @@ const updateStatus = async (req, res) => {
   }
 };
 
+// Функция для удаления заказа
 const deleteOrder = async (req, res) => {
   try {
     await orderModel.findByIdAndDelete(req.body.orderId);
