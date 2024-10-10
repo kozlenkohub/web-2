@@ -5,8 +5,9 @@
   background-size: cover;
   background-position: center;
   position: relative;
-  overflow: hidden; /* Чтобы псевдоэлемент оставался внутри родителя */
+  overflow: hidden;
   border-radius: 15px 15px 15px 15px;
+  /* Чтобы псевдоэлемент оставался внутри родителя */
 }
 
 .header::before {
@@ -19,11 +20,16 @@
   background: inherit; /* Наследуем фон, чтобы его размыть */
   background-size: cover;
   background-position: center;
+  z-index: 1;
+  border-radius: 15px 15px 15px 15px;
   filter: blur(8px); /* Размытие */
-  z-index: 1; /* Чтобы быть над фоном, но под контентом */
+
+  /* Чтобы быть над фоном, но под контентом */
 }
 
 .header::after {
+  filter: blur(8px); /* Размытие */
+
   content: '';
   position: absolute;
   top: 0;
@@ -31,7 +37,9 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачное затемнение */
-  z-index: 2; /* Чтобы затемнение было над размытым фоном, но под текстом */
+  z-index: 2;
+  border-radius: 15px 15px 15px 15px;
+  /* Чтобы затемнение было над размытым фоном, но под текстом */
 }
 
 .header-contents {

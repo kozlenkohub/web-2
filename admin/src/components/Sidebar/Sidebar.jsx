@@ -1,27 +1,53 @@
-import React from 'react'
-import './Sidebar.css'
-import { assets } from '../../assets/assets'
-import { NavLink } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import './Sidebar.css';
+import { assets } from '../../assets/assets';
+import { NavLink } from 'react-router-dom';
 
 const Sidebar = () => {
-  return (
-    <div className='sidebar'>
-        <div className="sidebar-options">
-            <NavLink to='/add' className="sidebar-option">
-                <img className='addd' src={assets.add_icon} alt="" />
-                <p>Add Items</p>
-            </NavLink>
-            <NavLink to='/list' className="sidebar-option">
-                <img className='listt' src={assets.order_icon} alt="" />
-                <p>List Items</p>
-                </NavLink>
-            <NavLink to='/orders' className="sidebar-option">
-                <img className='orderr' src={assets.order_icon} alt="" />
-                <p>Orders</p>
-                </NavLink>
-        </div>
-    </div>
-  )
-}
+  const [userCount, setUserCount] = useState(0);
 
-export default Sidebar
+  useEffect(() => {
+    // Функция для получения количества пользователей с бэкенда
+    const fetchUserCount = async () => {
+      try {
+        const response = await fetch('https://web-2-admin.onrender.com/api/user/count'); // Замените на ваш URL
+        const data = await response.json();
+        if (data.success) {
+          setUserCount(data.count);
+        } else {
+          console.error('Failed to fetch user count');
+        }
+      } catch (error) {
+        console.error('Error fetching user count:', error);
+      }
+    };
+
+    fetchUserCount();
+  }, []);
+
+  return (
+    <div className="sidebar">
+      <div className="sidebar-options">
+        <NavLink to="/add" className="sidebar-option">
+          <img className="addd" src={assets.add_icon} alt="" />
+          <p>Add Items</p>
+        </NavLink>
+        <NavLink to="/list" className="sidebar-option">
+          <img className="listt" src={assets.order_icon} alt="" />
+          <p>List Items</p>
+        </NavLink>
+        <NavLink to="/orders" className="sidebar-option">
+          <img className="orderr" src={assets.order_icon} alt="" />
+          <p>Orders</p>
+        </NavLink>
+      </div>
+
+      {/* Отображаем количество пользователей */}
+      <div className="sidebar-users">
+        <h3>Total Users: {userCount}</h3>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;

@@ -47,23 +47,40 @@ const PlaceOrder = () => {
     setPaymentMethod(event.target.value);
   };
 
-  const calculatePackagingCharge = (amount) => {
-    if (amount <= 1) return 0;
-    if (amount <= 50) return 2;
-    if (amount > 10000) return 0;
+  const calculatePackagingCharge = () => {
+    let zestawCharge = 0;
+    let totalCartAmountWithoutZestaw = 0;
 
-    const baseCharge = 2;
-    const chargeIncrement = 1;
-    const step = 50;
+    // Проходим по корзине и проверяем товары
+    food_list.forEach((item) => {
+      if (cartItems[item._id] > 0) {
+        if (item.name.includes('Zestaw')) {
+          zestawCharge = 3; // Если товар с названием Zestaw, то добавляем 3 злота за упаковку
+        } else {
+          // Суммируем остальные товары
+          totalCartAmountWithoutZestaw += item.price * cartItems[item._id];
+        }
+      }
+    });
 
-    return baseCharge + chargeIncrement * Math.ceil((amount - 50) / step);
+    // Логика для остальных товаров (старая логика)
+    let additionalPackagingCharge = 0;
+    if (totalCartAmountWithoutZestaw > 50) {
+      const baseCharge = 2;
+      const chargeIncrement = 1;
+      const step = 50;
+      additionalPackagingCharge =
+        baseCharge + chargeIncrement * Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
+    }
+
+    // Общая стоимость упаковки = 3 злота за Zestaw + упаковка для остальных товаров
+    return zestawCharge + additionalPackagingCharge;
   };
 
   useEffect(() => {
-    const totalCartAmount = getTotalCartAmount();
-    const calculatedPackagingCharge = calculatePackagingCharge(totalCartAmount);
+    const calculatedPackagingCharge = calculatePackagingCharge();
     setPackagingCharge(calculatedPackagingCharge);
-  }, [getTotalCartAmount]);
+  }, [getTotalCartAmount, cartItems]);
 
   const getLocation = () => {
     if (navigator.geolocation) {
