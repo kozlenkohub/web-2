@@ -159,7 +159,7 @@ const placeOrder = async (req, res) => {
         line_items.push({
           price_data: {
             currency: 'pln',
-            product_data: { name: 'Opłata за opакование' },
+            product_data: { name: 'Opłata za opakowanie' },
             unit_amount: req.body.packagingCharge * 100,
           },
           quantity: 1,

@@ -7,6 +7,7 @@ import { StoreContext } from '../../context/StoreContext';
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState('home');
+  const [isCartFixed, setIsCartFixed] = useState(false);
 
   const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
 
@@ -49,7 +50,22 @@ const Navbar = ({ setShowLogin }) => {
         document.getElementById('visual-toggle-button').classList.remove('lightmode');
       }
     });
-  }, []); // Empty dependency array to run the effect only once
+
+    // Handle scroll to fix the cart at the bottom right corner
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setIsCartFixed(true);
+      } else {
+        setIsCartFixed(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <div className="navbar">
@@ -106,9 +122,9 @@ const Navbar = ({ setShowLogin }) => {
             <input type="checkbox" className="visual-toggle" id="visual-toggle" />
           </label>
         </div>
-        <div className="navbar-search-icon">
+        <div className={`navbar-search-icon ${isCartFixed ? 'fixed-cart' : ''}`}>
           <Link to="/cart">
-            <img className="basketlogo" src={assets.basket_icon} alt="" />
+            <img className="basketlogo" src={assets.basket_icon} alt="Cart" />
           </Link>
           <div className={getTotalCartAmount() === 0 ? '' : 'dot'}></div>
         </div>
