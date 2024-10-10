@@ -199,7 +199,7 @@ const PlaceOrder = () => {
           name="phone"
           onChange={onChangeHandler}
           value={data.phone}
-          type="phone"
+          type="tel"
           placeholder="Telefon"
         />
       </div>
