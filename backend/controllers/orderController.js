@@ -178,4 +178,4 @@ const placeOrder = async (req, res) => {
   }
 };
 
-export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus, deleteOrder };
+export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus };
