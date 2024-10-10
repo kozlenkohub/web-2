@@ -55,9 +55,10 @@ const PlaceOrder = () => {
     food_list.forEach((item) => {
       if (cartItems[item._id] > 0) {
         if (item.name.includes('Zestaw')) {
-          zestawCharge = 3; // Если товар с названием Zestaw, то добавляем 3 злота за упаковку
+          // Добавляем по 3 злота за каждый товар "Zestaw"
+          zestawCharge += 3 * cartItems[item._id];
         } else {
-          // Суммируем остальные товары
+          // Суммируем стоимость остальных товаров
           totalCartAmountWithoutZestaw += item.price * cartItems[item._id];
         }
       }
@@ -73,7 +74,7 @@ const PlaceOrder = () => {
         baseCharge + chargeIncrement * Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
     }
 
-    // Общая стоимость упаковки = 3 злота за Zestaw + упаковка для остальных товаров
+    // Общая стоимость упаковки = стоимость за Zestaw + упаковка для остальных товаров
     return zestawCharge + additionalPackagingCharge;
   };
 

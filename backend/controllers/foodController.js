@@ -34,7 +34,7 @@ const updateFood = async (req, res) => {
     }
 
     food.name = req.body.name;
-    food.description = req.body.description;
+    food.description = req.body.description; // Обновление описания
     food.price = req.body.price;
     food.category = req.body.category;
     food.sizes = req.body.sizes ? req.body.sizes.split(',') : [];

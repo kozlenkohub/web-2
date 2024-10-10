@@ -6,7 +6,12 @@ import { toast } from 'react-toastify';
 const List = ({ url }) => {
   const [list, setList] = useState([]);
   const [editMode, setEditMode] = useState(null);
-  const [editData, setEditData] = useState({ name: '', description: '', price: '', category: '' });
+  const [editData, setEditData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    category: 'Burgery',
+  });
   const [editImage, setEditImage] = useState(null);
 
   const fetchList = async () => {
@@ -40,7 +45,7 @@ const List = ({ url }) => {
 
   const cancelEdit = () => {
     setEditMode(null);
-    setEditData({ name: '', description: '', price: '', category: '' });
+    setEditData({ name: '', description: '', price: '', category: 'Burgery' });
     setEditImage(null);
   };
 
@@ -81,31 +86,67 @@ const List = ({ url }) => {
         <div className="list-table-format title">
           <b>Obraz</b>
           <b>Nazwa</b>
-          <b>Kategoria</b>
+          <b>Категория</b>
           <b>Cena</b>
           <b>Akcja</b>
         </div>
         {list.map((item, index) => (
           <div key={index} className="list-table-format">
             {editMode === item._id ? (
-              <>
-                <input type="file" onChange={(e) => setEditImage(e.target.files[0])} />
-                <input type="text" name="name" value={editData.name} onChange={handleChange} />
-                <input
-                  type="text"
-                  name="category"
-                  value={editData.category}
-                  onChange={handleChange}
-                />
-                <input type="number" name="price" value={editData.price} onChange={handleChange} />
-                <div>
-                  <button onClick={() => saveEdit(item._id)}>Save</button>
-                  <button onClick={cancelEdit}>Cancel</button>
+              <div className="edit-form">
+                <div className="edit-field">
+                  <label htmlFor="name">Название</label>
+                  <input type="text" name="name" value={editData.name} onChange={handleChange} />
                 </div>
-              </>
+                <div className="edit-field">
+                  <label htmlFor="description">Описание</label>
+                  <textarea
+                    name="description"
+                    value={editData.description}
+                    onChange={handleChange}
+                    rows="6" // Увеличиваем до 6 строк
+                  />
+                </div>
+                <div className="edit-field">
+                  <label htmlFor="category">Категория</label>
+                  <select
+                    name="category"
+                    value={editData.category}
+                    onChange={handleChange}
+                    className="select-category">
+                    <option value="Burgery">Burgery</option>
+                    <option value="Kanapki">Kanapki</option>
+                    <option value="Sałatki">Sałatki</option>
+                    <option value="Breakfast">Śniadania</option>
+                    <option value="Dla dzieci">Dla dzieci</option>
+                    <option value="Zestawy">Zestawy</option>
+                    <option value="Dodatki">Dodatki</option>
+                    <option value="Napoje">Napoje</option>
+                  </select>
+                </div>
+                <div className="edit-field">
+                  <label htmlFor="price">Цена</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={editData.price}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label htmlFor="image">Изображение</label>
+                  <input type="file" onChange={(e) => setEditImage(e.target.files[0])} />
+                </div>
+                <div className="edit-actions">
+                  <button onClick={() => saveEdit(item._id)}>Save</button>
+                  <button className="cancel" onClick={cancelEdit}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
             ) : (
               <>
-                <img src={`${url}/images/` + item.image} alt="" />
+                <img src={`${url}/images/` + item.image} alt={item.name} />
                 <p>{item.name}</p>
                 <p>{item.category}</p>
                 <p>{item.price} zł</p>
