@@ -44,7 +44,7 @@ const Sidebar = () => {
 
       {/* Отображаем количество пользователей */}
       <div className="sidebar-users">
-        <h3>Total Users: {userCount + 10}</h3>
+        <h3>Всего пользователей: {userCount + 10}</h3>
       </div>
     </div>
   );
