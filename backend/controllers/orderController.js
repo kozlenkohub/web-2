@@ -15,10 +15,9 @@ const transporter = nodemailer.createTransport({
 
 // Функция для отправки письма
 const sendOrderEmail = async (order, sessionUrl) => {
-  // Проверяем, было ли письмо уже отправлено
   if (order.emailSent) {
     console.log('Email already sent for this order.');
-    return; // Прерываем выполнение, если письмо уже отправлено
+    return;
   }
 
   const paymentMethodMessage =
@@ -47,10 +46,10 @@ const sendOrderEmail = async (order, sessionUrl) => {
           <div style="padding: 20px;">
             <p style="font-size: 18px; margin: 0 0 10px;"><strong>Имя:</strong> ${
               order.address.firstName
-            } ${order.address.lastName}</p>
+            }</p>
             <p style="font-size: 18px; margin: 0 0 10px;"><strong>Адрес:</strong> ${
-              order.address.street
-            }, ${order.address.city}, ${order.address.country}, ${order.address.zipcode}</p>
+              order.address.address
+            }, ${order.address.apartmentNumber}</p>
             <p style="font-size: 18px; margin: 0 0 10px;"><strong>Телефон:</strong> ${
               order.address.phone
             }</p>
@@ -72,7 +71,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
             ${paymentMethodMessage}
           </div>
           <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: #fff; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-            <p style="margin: 0;">УДАЧНОЙ ДОСТАВКИ !</p>
+            <p style="margin: 0;">УДАЧНОЙ ДОСТАВКИ!</p>
           </div>
         </div>
       </div>
@@ -81,7 +80,6 @@ const sendOrderEmail = async (order, sessionUrl) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    // Обновляем заказ, чтобы установить флаг emailSent
     await orderModel.findByIdAndUpdate(order._id, { emailSent: true });
     console.log('Email sent and order updated');
   } catch (error) {
@@ -118,8 +116,8 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
-      amount: req.body.amount, // Включает общую сумму с упаковкой и доставкой
-      address: req.body.address,
+      amount: req.body.amount,
+      address: req.body.address, // Новая структура адреса
       paymentMethod: req.body.paymentMethod,
       payment: req.body.paymentMethod === 'cash' ? true : false,
       packagingCharge: req.body.packagingCharge,
@@ -136,9 +134,7 @@ const placeOrder = async (req, res) => {
       const line_items = req.body.items.map((item) => ({
         price_data: {
           currency: 'pln',
-          product_data: {
-            name: item.name,
-          },
+          product_data: { name: item.name },
           unit_amount: item.price * 100,
         },
         quantity: item.quantity,
@@ -148,9 +144,7 @@ const placeOrder = async (req, res) => {
         line_items.push({
           price_data: {
             currency: 'pln',
-            product_data: {
-              name: 'Opłata za dostawę',
-            },
+            product_data: { name: 'Opłata za dostawę' },
             unit_amount: deliveryCharge,
           },
           quantity: 1,
@@ -161,9 +155,7 @@ const placeOrder = async (req, res) => {
         line_items.push({
           price_data: {
             currency: 'pln',
-            product_data: {
-              name: 'Opłata за opakowanie',
-            },
+            product_data: { name: 'Opłata за opakowanie' },
             unit_amount: req.body.packagingCharge * 100,
           },
           quantity: 1,
@@ -186,88 +178,4 @@ const placeOrder = async (req, res) => {
   }
 };
 
-// Вспомогательная функция для расчета расстояния между двумя точками в км
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Радиус Земли в км
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c;
-  return distance;
-}
-
-function deg2rad(deg) {
-  return deg * (Math.PI / 180);
-}
-
-// Функция для подтверждения заказа
-const verifyOrder = async (req, res) => {
-  const { orderId, success, sessionUrl } = req.body;
-  try {
-    const order = await orderModel.findById(orderId);
-    if (success === 'true') {
-      await orderModel.findByIdAndUpdate(
-        orderId,
-        { payment: true, paymentTime: new Date() },
-        { new: true },
-      );
-      await sendOrderEmail(order, sessionUrl);
-      res.json({ success: true, message: 'Payment confirmed' });
-    } else {
-      await orderModel.findByIdAndDelete(orderId);
-      res.json({ success: false, message: 'Payment failed, order canceled' });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-// Функция для получения заказов пользователя
-const userOrders = async (req, res) => {
-  try {
-    const orders = await orderModel.find({ userId: req.body.userId, payment: true });
-    res.json({ success: true, data: orders });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-// Функция для получения всех заказов
-const listOrders = async (req, res) => {
-  try {
-    const orders = await orderModel.find({ payment: true });
-    res.json({ success: true, data: orders });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-// Функция для обновления статуса заказа
-const updateStatus = async (req, res) => {
-  try {
-    await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
-    res.json({ success: true, message: 'Status Updated' });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-// Функция для удаления заказа
-const deleteOrder = async (req, res) => {
-  try {
-    await orderModel.findByIdAndDelete(req.body.orderId);
-    res.json({ success: true, message: 'Order Deleted' });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
-  }
-};
-
-export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus, deleteOrder };
+export { placeOrder, sendOrderEmail };

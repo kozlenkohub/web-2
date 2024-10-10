@@ -12,7 +12,16 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   amount: { type: Number, required: true },
-  address: { type: Object, required: true },
+  address: {
+    firstName: { type: String, required: true },
+    address: { type: String, required: true },
+    apartmentNumber: { type: String, required: true },
+    phone: { type: String, required: true },
+    location: {
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true },
+    },
+  },
   status: { type: String, default: 'Food Processing' },
   date: { type: Date, default: Date.now },
   payment: { type: Boolean, default: false },
@@ -20,7 +29,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: { type: String, required: true },
   packagingCharge: { type: Number, required: true },
   deliveryCharge: { type: Number, required: true },
-  emailSent: { type: Boolean, default: false }, // Новое поле для отслеживания отправки письма
+  emailSent: { type: Boolean, default: false }, // Поле для отслеживания отправки письма
 });
 
 const orderModel = mongoose.models.order || mongoose.model('order', orderSchema);

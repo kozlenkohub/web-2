@@ -1,8 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import './PlaceOrder.css';
 import { StoreContext } from '../../context/StoreContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Autocomplete from 'react-google-autocomplete';
 
 const PlaceOrder = () => {
   const api_google = 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE';
@@ -11,13 +12,8 @@ const PlaceOrder = () => {
 
   const [data, setData] = useState({
     firstName: '',
-    lastName: '',
-    email: '',
-    street: '',
-    city: '',
-    state: 'Polska',
-    zipcode: '',
-    country: '',
+    address: '',
+    apartmentNumber: '',
     phone: '',
     location: { lat: null, lng: null },
   });
@@ -51,20 +47,17 @@ const PlaceOrder = () => {
     let zestawCharge = 0;
     let totalCartAmountWithoutZestaw = 0;
 
-    // Проходим по корзине и проверяем товары
+    // Iterate through the cart and calculate packaging charge
     food_list.forEach((item) => {
       if (cartItems[item._id] > 0) {
         if (item.name.includes('Zestaw')) {
-          // Добавляем по 3 злота за каждый товар "Zestaw"
           zestawCharge += 3 * cartItems[item._id];
         } else {
-          // Суммируем стоимость остальных товаров
           totalCartAmountWithoutZestaw += item.price * cartItems[item._id];
         }
       }
     });
 
-    // Логика для остальных товаров (старая логика)
     let additionalPackagingCharge = 0;
     if (totalCartAmountWithoutZestaw > 50) {
       const baseCharge = 2;
@@ -74,7 +67,6 @@ const PlaceOrder = () => {
         baseCharge + chargeIncrement * Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
     }
 
-    // Общая стоимость упаковки = стоимость за Zestaw + упаковка для остальных товаров
     return zestawCharge + additionalPackagingCharge;
   };
 
@@ -83,60 +75,6 @@ const PlaceOrder = () => {
     setPackagingCharge(calculatedPackagingCharge);
   }, [getTotalCartAmount, cartItems]);
 
-  const getLocation = () => {
-    if (navigator.geolocation) {
-      setLoading(true);
-      navigator.geolocation.getCurrentPosition(getAddress, handleLocationError);
-    } else {
-      alert('Geolocation is not supported by this browser.');
-    }
-  };
-
-  const getAddress = async (position) => {
-    const { latitude, longitude } = position.coords;
-    try {
-      const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-        params: {
-          latlng: `${latitude},${longitude}`,
-          key: api_google,
-        },
-      });
-
-      if (response.data.results.length > 0) {
-        const addressComponents = response.data.results[0].address_components;
-        const street =
-          addressComponents.find((component) => component.types.includes('route'))?.long_name || '';
-        const city =
-          addressComponents.find((component) => component.types.includes('locality'))?.long_name ||
-          '';
-        const zipcode =
-          addressComponents.find((component) => component.types.includes('postal_code'))
-            ?.long_name || '';
-        const country =
-          addressComponents.find((component) => component.types.includes('country'))?.long_name ||
-          '';
-
-        setData((data) => ({
-          ...data,
-          street,
-          city,
-          zipcode,
-          country,
-          location: { lat: latitude, lng: longitude },
-        }));
-
-        calculateDeliveryCharge(latitude, longitude);
-      } else {
-        alert('Could not fetch address information.');
-      }
-    } catch (error) {
-      console.error('Error fetching address:', error);
-      alert('Error fetching address.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const calculateDeliveryCharge = (lat, lng) => {
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
     const distance = getDistanceFromLatLonInKm(deliveryCenter.lat, deliveryCenter.lng, lat, lng);
@@ -144,60 +82,9 @@ const PlaceOrder = () => {
     if (distance <= 2) {
       setDeliveryCharge(0);
     } else if (distance > 2 && distance <= 5) {
-      // Changed from 4 to 5
       setDeliveryCharge(8);
     } else {
       setDeliveryCharge(null);
-    }
-  };
-
-  useEffect(() => {
-    const fetchCoordinates = async () => {
-      if (data.street && data.city && data.zipcode && data.country) {
-        try {
-          const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-            params: {
-              address: `${data.street}, ${data.city}, ${data.zipcode}, ${data.country}`,
-              key: api_google,
-            },
-          });
-
-          if (response.data.results.length > 0) {
-            const location = response.data.results[0].geometry.location;
-            setData((prevData) => ({
-              ...prevData,
-              location: { lat: location.lat, lng: location.lng },
-            }));
-            calculateDeliveryCharge(location.lat, location.lng);
-          } else {
-            setDeliveryCharge(null);
-          }
-        } catch (error) {
-          console.error('Error fetching coordinates:', error);
-        }
-      }
-    };
-
-    fetchCoordinates();
-  }, [data.street, data.city, data.zipcode, data.country]);
-
-  const handleLocationError = (error) => {
-    setLoading(false);
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        alert('User denied the request for Geolocation.');
-        break;
-      case error.POSITION_UNAVAILABLE:
-        alert('Location information is unavailable.');
-        break;
-      case error.TIMEOUT:
-        alert('The request to get user location timed out.');
-        break;
-      case error.UNKNOWN_ERROR:
-        alert('An unknown error occurred.');
-        break;
-      default:
-        alert('An unknown error occurred.');
     }
   };
 
@@ -214,7 +101,7 @@ const PlaceOrder = () => {
     }
 
     if (totalAmount < MIN_ORDER_AMOUNT) {
-      alert(`Twój koszyk jest pusty. `);
+      alert(`Twój koszyk jest pusty.`);
       return;
     }
 
@@ -266,70 +153,36 @@ const PlaceOrder = () => {
     <form onSubmit={placeOrder} className="place-order">
       <div className="place-order-left">
         <p className="title t3">Informacje o dostawie</p>
-        <div className="multi-fields">
-          <input
-            required
-            name="firstName"
-            onChange={onChangeHandler}
-            value={data.firstName}
-            type="text"
-            placeholder="Imię"
-          />
-          <input
-            required
-            name="lastName"
-            onChange={onChangeHandler}
-            value={data.lastName}
-            type="text"
-            placeholder="Nazwisko"
-          />
-        </div>
         <input
-          className="emaill"
           required
-          name="email"
+          name="firstName"
           onChange={onChangeHandler}
-          value={data.email}
-          type="email"
-          placeholder="Adres e-mail"
-        />
-        <input
-          className="streett"
-          required
-          name="street"
-          onChange={onChangeHandler}
-          value={data.street}
+          value={data.firstName}
           type="text"
-          placeholder="Ulica"
+          placeholder="Imię"
         />
-        <div className="multi-fields">
-          <input
-            required
-            name="city"
-            onChange={onChangeHandler}
-            value={data.city}
-            type="text"
-            placeholder="Miasto"
-          />
-        </div>
-        <div className="multi-fields">
-          <input
-            required
-            name="zipcode"
-            onChange={onChangeHandler}
-            value={data.zipcode}
-            type="text"
-            placeholder="Kod pocztowy"
-          />
-          <input
-            required
-            name="country"
-            onChange={onChangeHandler}
-            value={data.country}
-            type="text"
-            placeholder="Kraj"
-          />
-        </div>
+        <Autocomplete
+          apiKey={api_google}
+          onPlaceSelected={(place) => {
+            const address = place.formatted_address;
+            const location = {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+            };
+            setData((data) => ({ ...data, address, location }));
+            calculateDeliveryCharge(location.lat, location.lng);
+          }}
+          options={{ types: ['address'], componentRestrictions: { country: 'pl' } }}
+          placeholder="Adres dostawy"
+        />
+        <input
+          required
+          name="apartmentNumber"
+          onChange={onChangeHandler}
+          value={data.apartmentNumber}
+          type="text"
+          placeholder="Numer mieszkania"
+        />
         <input
           className="phonee"
           required
@@ -339,9 +192,6 @@ const PlaceOrder = () => {
           type="text"
           placeholder="Telefon"
         />
-        <button type="button" onClick={getLocation} disabled={loading} className="location-button">
-          {loading ? 'Loading...' : 'Wypełnij lokalizację'}
-        </button>
       </div>
       <div className="place-order-right">
         <div className="cart-total">
@@ -424,7 +274,7 @@ const PlaceOrder = () => {
             </label>
           </div>
           <button className="t6" type="submit">
-            PRZEJDŹ DO PŁATНОŚCI
+            PRZEJDź DO PŁATNOŚCI
           </button>
         </div>
       </div>
