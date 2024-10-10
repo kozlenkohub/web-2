@@ -63,7 +63,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
               order.packagingCharge || 0
             } zł</p>
             <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за доставку:</strong> ${
-              order.deliveryCharge / 100 || 0
+              order.deliveryCharge || 0
             } zł</p>
             <p style="font-size: 20px; margin: 20px 0; font-weight: bold; color: #4CAF50;"><strong>Сумма:</strong> ${
               order.amount
@@ -110,14 +110,14 @@ const placeOrder = async (req, res) => {
     if (distance <= 2) {
       deliveryCharge = 0;
     } else if (distance > 2 && distance <= 4) {
-      deliveryCharge = 800;
+      deliveryCharge = 800; // Ваша валюта: 800 единиц (8.00 zł)
     }
 
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
-      amount: req.body.amount,
-      address: req.body.address, // Новая структура адреса
+      amount: req.body.amount, // Включает общую сумму с упаковкой и доставкой
+      address: req.body.address,
       paymentMethod: req.body.paymentMethod,
       payment: req.body.paymentMethod === 'cash' ? true : false,
       packagingCharge: req.body.packagingCharge,
@@ -155,7 +155,7 @@ const placeOrder = async (req, res) => {
         line_items.push({
           price_data: {
             currency: 'pln',
-            product_data: { name: 'Opłata за opakowanie' },
+            product_data: { name: 'Opłata за opакование' },
             unit_amount: req.body.packagingCharge * 100,
           },
           quantity: 1,
@@ -174,8 +174,91 @@ const placeOrder = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Error' });
+    res.status(500).json({ success: false, message: 'Error placing order' });
   }
 };
 
-export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus };
+// Вспомогательная функция для расчета расстояния между двумя точками в км
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Радиус Земли в км
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+// Функция для подтверждения заказа
+const verifyOrder = async (req, res) => {
+  const { orderId, success, sessionUrl } = req.body;
+  try {
+    const order = await orderModel.findById(orderId);
+    if (success === 'true') {
+      await orderModel.findByIdAndUpdate(
+        orderId,
+        { payment: true, paymentTime: new Date() },
+        { new: true },
+      );
+      await sendOrderEmail(order, sessionUrl);
+      res.json({ success: true, message: 'Payment confirmed' });
+    } else {
+      await orderModel.findByIdAndDelete(orderId);
+      res.json({ success: false, message: 'Payment failed, order canceled' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Error confirming order' });
+  }
+};
+
+// Функция для получения заказов пользователя
+const userOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find({ userId: req.body.userId, payment: true });
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Error retrieving user orders' });
+  }
+};
+
+// Функция для получения всех заказов
+const listOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find({ payment: true });
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Error retrieving all orders' });
+  }
+};
+
+// Функция для обновления статуса заказа
+const updateStatus = async (req, res) => {
+  try {
+    await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
+    res.json({ success: true, message: 'Status updated' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Error updating status' });
+  }
+};
+
+// Функция для удаления заказа
+const deleteOrder = async (req, res) => {
+  try {
+    await orderModel.findByIdAndDelete(req.body.orderId);
+    res.json({ success: true, message: 'Order deleted' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Error deleting order' });
+  }
+};
+
+export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus, deleteOrder };
