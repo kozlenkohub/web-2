@@ -143,7 +143,8 @@ const PlaceOrder = () => {
 
     if (distance <= 2) {
       setDeliveryCharge(0);
-    } else if (distance > 2 && distance <= 4) {
+    } else if (distance > 2 && distance <= 5) {
+      // Changed from 4 to 5
       setDeliveryCharge(8);
     } else {
       setDeliveryCharge(null);
