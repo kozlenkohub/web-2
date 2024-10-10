@@ -46,10 +46,13 @@ const PlaceOrder = () => {
   const calculatePackagingCharge = () => {
     let zestawCharge = 0;
     let totalCartAmountWithoutZestaw = 0;
+    let totalItemsInCart = 0; // Для отслеживания количества товаров в корзине
 
-    // Iterate through the cart and calculate packaging charge
+    // Итерация по корзине и расчет стоимости упаковки
     food_list.forEach((item) => {
       if (cartItems[item._id] > 0) {
+        totalItemsInCart += cartItems[item._id]; // Считаем количество товаров в корзине
+
         if (item.name.includes('Zestaw')) {
           zestawCharge += 3 * cartItems[item._id];
         } else {
@@ -58,7 +61,14 @@ const PlaceOrder = () => {
       }
     });
 
-    let additionalPackagingCharge = 0;
+    // Если корзина пуста, возвращаем 0
+    if (totalItemsInCart === 0) {
+      return 0;
+    }
+
+    // Минимальный сбор за упаковку 2 злотых
+    let additionalPackagingCharge = 2;
+
     if (totalCartAmountWithoutZestaw > 50) {
       const baseCharge = 2;
       const chargeIncrement = 1;
