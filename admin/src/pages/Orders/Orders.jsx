@@ -60,7 +60,7 @@ const Orders = ({ url }) => {
               <p className="order-item-name">{order.address.firstName || 'Имя не указано'}</p>
               <div className="order-item-address">
                 <p>
-                  {order.address.address ? `${order.address.address},` : 'Адрес не указан'}{' '}
+                  {order.address.address ? `${order.address.address},` : ''}{' '}
                   {order.address.apartmentNumber ? `Кв. ${order.address.apartmentNumber},` : ''}
                 </p>
                 <p>{order.address.phone || 'Телефон не указан'}</p>
