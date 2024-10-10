@@ -49,7 +49,11 @@ const sendOrderEmail = async (order, sessionUrl) => {
             }</p>
             <p style="font-size: 18px; margin: 0 0 10px;"><strong>Адрес:</strong> ${
               order.address.address
-            }, ${order.address.apartmentNumber}</p>
+            }, </p>
+
+            <p style="font-size: 18px; margin: 0 0 10px;"><strong>Номер квартиры:</strong> ${
+              order.address.apartmentNumber
+            }</p>
             <p style="font-size: 18px; margin: 0 0 10px;"><strong>Телефон:</strong> ${
               order.address.phone
             }</p>
@@ -109,7 +113,7 @@ const placeOrder = async (req, res) => {
     let deliveryCharge = 0;
     if (distance <= 2) {
       deliveryCharge = 0;
-    } else if (distance > 2 && distance <= 4) {
+    } else if (distance > 2 && distance <= 5) {
       deliveryCharge = 800; // Ваша валюта: 800 единиц (8.00 zł)
     }
 
