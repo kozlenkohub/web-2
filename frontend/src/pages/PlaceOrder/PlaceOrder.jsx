@@ -94,14 +94,42 @@ const PlaceOrder = () => {
     setPackagingCharge(calculatedPackagingCharge);
   }, [cartItems, food_list]);
 
+  // New useEffect to watch for address changes
+  useEffect(() => {
+    if (data.address && data.isAddressManual) {
+      geocodeAddress(data.address);
+    }
+  }, [data.address]);
+
+  const geocodeAddress = (address) => {
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address }, (results, status) => {
+      if (status === 'OK') {
+        const location = {
+          lat: results[0].geometry.location.lat(),
+          lng: results[0].geometry.location.lng(),
+        };
+        setData((prev) => ({ ...prev, location }));
+        calculateDeliveryCharge(location.lat, location.lng);
+        setAddressValid(true);
+        setOutOfDeliveryZone(false);
+        setMapZoom(18); // Zoom in closer to the house level
+      } else {
+        console.error('Geocode was not successful for the following reason: ' + status);
+        setAddressValid(false);
+        setOutOfDeliveryZone(true);
+      }
+    });
+  };
+
   const calculateDeliveryCharge = (lat, lng) => {
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
     const distance = getDistanceFromLatLonInKm(deliveryCenter.lat, deliveryCenter.lng, lat, lng);
 
-    if (distance <= 2) {
+    if (distance <= 1.77) {
       setDeliveryCharge(0);
       setOutOfDeliveryZone(false);
-    } else if (distance > 2 && distance <= 5) {
+    } else if (distance > 1.77 && distance <= 5) {
       setDeliveryCharge(8);
       setOutOfDeliveryZone(false);
     } else {
