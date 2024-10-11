@@ -1,9 +1,11 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import './PlaceOrder.css';
 import { StoreContext } from '../../context/StoreContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Autocomplete from 'react-google-autocomplete';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 
 const PlaceOrder = () => {
   const api_google = 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE';
@@ -15,21 +17,31 @@ const PlaceOrder = () => {
     address: '',
     apartmentNumber: '',
     phone: '',
-    location: { lat: null, lng: null },
+    location: { lat: 51.154, lng: 16.9305 }, // Default location
+    isAddressManual: false,
   });
 
   const [comments, setComments] = useState({});
-  const [loading, setLoading] = useState(false);
   const [deliveryCharge, setDeliveryCharge] = useState(0);
   const [packagingCharge, setPackagingCharge] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [addressValid, setAddressValid] = useState(false);
+  const [outOfDeliveryZone, setOutOfDeliveryZone] = useState(false);
+
+  const [mapZoom, setMapZoom] = useState(14); // Added state for map zoom level
 
   const MIN_ORDER_AMOUNT = 20;
 
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: api_google,
+    libraries: ['places'],
+  });
+
+  // Handler for input changes
   const onChangeHandler = (event) => {
-    const name = event.target.name;
+    const name = event.target.name || 'address'; // Default to 'address' if name is undefined
     const value = event.target.value;
-    setData((data) => ({ ...data, [name]: value }));
+    setData((data) => ({ ...data, [name]: value, isAddressManual: name === 'address' }));
   };
 
   const onCommentChangeHandler = (itemId, comment) => {
@@ -46,12 +58,11 @@ const PlaceOrder = () => {
   const calculatePackagingCharge = () => {
     let zestawCharge = 0;
     let totalCartAmountWithoutZestaw = 0;
-    let totalItemsInCart = 0; // Для отслеживания количества товаров в корзине
+    let totalItemsInCart = 0;
 
-    // Итерация по корзине и расчет стоимости упаковки
     food_list.forEach((item) => {
       if (cartItems[item._id] > 0) {
-        totalItemsInCart += cartItems[item._id]; // Считаем количество товаров в корзине
+        totalItemsInCart += cartItems[item._id];
 
         if (item.name.includes('Zestaw')) {
           zestawCharge += 3 * cartItems[item._id];
@@ -61,12 +72,10 @@ const PlaceOrder = () => {
       }
     });
 
-    // Если корзина пуста, возвращаем 0
     if (totalItemsInCart === 0) {
       return 0;
     }
 
-    // Минимальный сбор за упаковку 2 злотых
     let additionalPackagingCharge = 2;
 
     if (totalCartAmountWithoutZestaw > 50) {
@@ -83,7 +92,7 @@ const PlaceOrder = () => {
   useEffect(() => {
     const calculatedPackagingCharge = calculatePackagingCharge();
     setPackagingCharge(calculatedPackagingCharge);
-  }, [getTotalCartAmount, cartItems]);
+  }, [cartItems, food_list]);
 
   const calculateDeliveryCharge = (lat, lng) => {
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
@@ -91,18 +100,20 @@ const PlaceOrder = () => {
 
     if (distance <= 2) {
       setDeliveryCharge(0);
+      setOutOfDeliveryZone(false);
     } else if (distance > 2 && distance <= 5) {
       setDeliveryCharge(8);
+      setOutOfDeliveryZone(false);
     } else {
       setDeliveryCharge(null);
+      setOutOfDeliveryZone(true);
     }
   };
 
   const placeOrder = async (event) => {
     event.preventDefault();
 
-    const totalAmount =
-      getTotalCartAmount() + (deliveryCharge === null ? 0 : deliveryCharge) + packagingCharge;
+    const totalAmount = getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge;
 
     if (!token) {
       alert('Proszę się zalogować, aby złożyć zamówienie.');
@@ -110,25 +121,29 @@ const PlaceOrder = () => {
       return;
     }
 
-    if (totalAmount < MIN_ORDER_AMOUNT) {
+    if (getTotalCartAmount() === 0) {
       alert(`Twój koszyk jest pusty.`);
       return;
     }
 
-    if (deliveryCharge === null) {
+    if (totalAmount < MIN_ORDER_AMOUNT) {
+      alert(`Minimalna kwota zamówienia to ${MIN_ORDER_AMOUNT} zł.`);
+      return;
+    }
+
+    if (outOfDeliveryZone) {
       alert('Adres dostawy znajduje się poza obszarem dostawy.');
       return;
     }
 
     let orderItems = [];
-    food_list.map((item) => {
+    food_list.forEach((item) => {
       if (cartItems[item._id] > 0) {
         let itemInfo = { ...item };
         itemInfo['quantity'] = cartItems[item._id];
         itemInfo['comment'] = comments[item._id] || '';
         orderItems.push(itemInfo);
       }
-      return null;
     });
 
     let orderData = {
@@ -137,11 +152,11 @@ const PlaceOrder = () => {
       amount: totalAmount,
       paymentMethod,
       packagingCharge,
-      deliveryCharge: deliveryCharge !== null ? deliveryCharge : 0,
+      deliveryCharge: deliveryCharge || 0,
     };
 
     try {
-      let response = await axios.post(url + '/api/order/place', orderData, { headers: { token } });
+      let response = await axios.post(`${url}/api/order/place`, orderData, { headers: { token } });
       if (response.data.success) {
         if (paymentMethod === 'cash') {
           alert('Twoje zamówienie zostało pomyślnie złożone. Płatność gotówką przy odbiorze.');
@@ -151,13 +166,55 @@ const PlaceOrder = () => {
           window.location.replace(session_url);
         }
       } else {
-        alert('Błąd');
+        alert('Wystąpił błąd podczas składania zamówienia.');
       }
     } catch (error) {
       alert('Wystąpił błąd. Proszę spróbować ponownie.');
       console.error(error);
     }
   };
+
+  // Map click handler
+  const onMapClick = useCallback((e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    setData((prev) => ({ ...prev, location: { lat, lng }, isAddressManual: false }));
+    calculateDeliveryCharge(lat, lng);
+    setAddressValid(true);
+    reverseGeocode(lat, lng);
+
+    // Update map zoom level when location is set manually
+    setMapZoom(18); // Zoom in closer to the house level
+  }, []);
+
+  const reverseGeocode = (lat, lng) => {
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK') {
+        if (results[0]) {
+          const address = results[0].formatted_address;
+          // Only update the address if the user is not manually typing
+          setData((prev) => {
+            if (!prev.isAddressManual) {
+              return { ...prev, address };
+            }
+            return prev;
+          });
+
+          // Update map zoom level when address is determined via reverse geocoding
+          setMapZoom(18); // Zoom in closer to the house level
+        } else {
+          console.error('No results found');
+        }
+      } else {
+        console.error('Geocoder failed due to: ' + status);
+      }
+    });
+  };
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <form onSubmit={placeOrder} className="place-order">
@@ -171,20 +228,53 @@ const PlaceOrder = () => {
           type="text"
           placeholder="Imię"
         />
-        <Autocomplete
-          apiKey={api_google}
-          onPlaceSelected={(place) => {
-            const address = place.formatted_address;
-            const location = {
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-            };
-            setData((data) => ({ ...data, address, location }));
-            calculateDeliveryCharge(location.lat, location.lng);
-          }}
-          options={{ types: ['address'], componentRestrictions: { country: 'pl' } }}
-          placeholder="Adres dostawy"
-        />
+        <div className="address-input">
+          {addressValid ? (
+            <div className="text-white">
+              {outOfDeliveryZone ? (
+                <>
+                  <FaTimesCircle color="red" className="address-icon" />
+                  <span>Adres dostawy znajduje się poza obszarem dostawy</span>
+                </>
+              ) : (
+                <>
+                  <FaCheckCircle color="green" className="address-icon" />
+                  <span>Adres został ustalony</span>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="text-white">
+              <FaTimesCircle color="red" className="address-icon" /> Adres jest nieustalony
+            </div>
+          )}
+          <Autocomplete
+            apiKey={api_google}
+            onPlaceSelected={(place) => {
+              const address = place.formatted_address;
+              const location = {
+                lat: place.geometry.location.lat(),
+                lng: place.geometry.location.lng(),
+              };
+              setData((data) => ({
+                ...data,
+                address,
+                location,
+                isAddressManual: false,
+              }));
+              calculateDeliveryCharge(location.lat, location.lng);
+              setAddressValid(true);
+
+              // Update map zoom level when address is selected from autocomplete
+              setMapZoom(18); // Zoom in closer to the house level
+            }}
+            options={{ types: ['address'], componentRestrictions: { country: 'pl' } }}
+            placeholder="Adres dostawy"
+            value={data.address}
+            onChange={onChangeHandler}
+            inputProps={{ name: 'address' }} // Added name attribute
+          />
+        </div>
         <input
           required
           name="apartmentNumber"
@@ -202,7 +292,17 @@ const PlaceOrder = () => {
           type="tel"
           placeholder="Telefon"
         />
+
+        {/* Map */}
+        <GoogleMap
+          center={data.location}
+          zoom={mapZoom} // Use the dynamic zoom level
+          mapContainerStyle={{ height: '400px', width: '100%' }}
+          onClick={onMapClick}>
+          <Marker position={data.location} draggable onDragEnd={onMapClick} />
+        </GoogleMap>
       </div>
+
       <div className="place-order-right">
         <div className="cart-total">
           <h2 className="t3">Podsumowanie Koszyka</h2>
@@ -212,7 +312,7 @@ const PlaceOrder = () => {
               <p className="t3">{getTotalCartAmount()} zł</p>
             </div>
             <hr />
-            {deliveryCharge > 0 && deliveryCharge !== null && (
+            {deliveryCharge !== null && (
               <>
                 <div className="cart-total-details">
                   <p className="t5">Opłata za dostawę</p>
@@ -231,10 +331,7 @@ const PlaceOrder = () => {
             <div className="cart-total-details">
               <b className="t5">Suma</b>
               <b className="t3">
-                {getTotalCartAmount() +
-                  (deliveryCharge === null || deliveryCharge === 0 ? 0 : deliveryCharge) +
-                  packagingCharge}{' '}
-                zł
+                {getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge} zł
               </b>
             </div>
             <hr />
@@ -245,7 +342,7 @@ const PlaceOrder = () => {
                 cartItems[item._id] > 0 ? (
                   <div key={item._id} className="cart-item">
                     <div className="item-details">
-                      <img src={url + '/images/' + item.image} alt="" className="item-image" />
+                      <img src={`${url}/images/${item.image}`} alt="" className="item-image" />
                       <div>
                         <p>{item.name}</p>
                         <p>
@@ -284,7 +381,7 @@ const PlaceOrder = () => {
             </label>
           </div>
           <button className="t6" type="submit">
-            PRZEJDź DO PŁATNOŚCI
+            PRZEJDŹ DO PŁATNOŚCI
           </button>
         </div>
       </div>
@@ -294,7 +391,7 @@ const PlaceOrder = () => {
 
 // Utility function to calculate distance between two points in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
+  const R = 6371; // Earth's radius in km
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
   const a =
