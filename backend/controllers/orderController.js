@@ -114,7 +114,7 @@ const placeOrder = async (req, res) => {
     if (distance <= 2) {
       deliveryCharge = 0;
     } else if (distance > 2 && distance <= 5) {
-      deliveryCharge = 800; // Ваша валюта: 800 единиц (8.00 zł)
+      deliveryCharge = 8; // Ваша валюта: 800 единиц (8.00 zł)
     }
 
     const newOrder = new orderModel({
