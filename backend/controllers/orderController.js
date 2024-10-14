@@ -67,7 +67,7 @@ const sendOrderEmail = async (order, sessionUrl) => {
               order.packagingCharge || 0
             } zł</p>
             <p style="font-size: 18px; margin: 0 0 10px;"><strong>Оплата за доставку:</strong> ${
-              order.deliveryCharge || 0
+              order.deliveryCharge / 100 || 0
             } zł</p>
             <p style="font-size: 20px; margin: 20px 0; font-weight: bold; color: #4CAF50;"><strong>Сумма:</strong> ${
               order.amount
@@ -114,7 +114,7 @@ const placeOrder = async (req, res) => {
     if (distance <= 2) {
       deliveryCharge = 0;
     } else if (distance > 2 && distance <= 5) {
-      deliveryCharge = 8; // Ваша валюта: 800 единиц (8.00 zł)
+      deliveryCharge = 800; // Ваша валюта: 800 единиц (8.00 zł)
     }
 
     const newOrder = new orderModel({
