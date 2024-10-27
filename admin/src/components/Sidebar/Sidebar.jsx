@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './Sidebar.css';
-import { assets } from '../../assets/assets';
 import { NavLink } from 'react-router-dom';
+import { FaPlus, FaList, FaShoppingCart, FaChartBar, FaUsers } from 'react-icons/fa'; // Importing icons
 
 const Sidebar = () => {
   const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
-    // Функция для получения количества пользователей с бэкенда
     const fetchUserCount = async () => {
       try {
-        const response = await fetch('https://web-2-backend-wbs4.onrender.com/api/user/count'); // Замените на ваш URL
+        const response = await fetch('https://web-2-backend-wbs4.onrender.com/api/user/count');
         const data = await response.json();
         if (data.success) {
           setUserCount(data.count);
@@ -29,26 +28,26 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-options">
         <NavLink to="/add" className="sidebar-option">
-          <img className="addd" src={assets.add_icon} alt="" />
+          <FaPlus className="sidebar-icon" />
           <p>Add Items</p>
         </NavLink>
         <NavLink to="/list" className="sidebar-option">
-          <img className="listt" src={assets.order_icon} alt="" />
+          <FaList className="sidebar-icon" />
           <p>List Items</p>
         </NavLink>
         <NavLink to="/orders" className="sidebar-option">
-          <img className="orderr" src={assets.order_icon} alt="" />
+          <FaShoppingCart className="sidebar-icon" />
           <p>Orders</p>
         </NavLink>
-
-        {/* Добавляем новый NavLink для статистики */}
         <NavLink to="/stats" className="sidebar-option">
+          <FaChartBar className="sidebar-icon" />
           <p>Statistics</p>
         </NavLink>
       </div>
 
-      {/* Отображаем количество пользователей */}
+      {/* Displaying user count */}
       <div className="sidebar-users">
+        <FaUsers className="sidebar-users-icon" />
         <h3>Всего пользователей: {userCount + 10}</h3>
       </div>
     </div>

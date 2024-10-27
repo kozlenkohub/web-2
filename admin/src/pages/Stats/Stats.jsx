@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { FaTimes, FaUser, FaChevronLeft, FaChevronRight } from 'react-icons/fa'; // Importing icons
 import './Stats.css';
 
 const Stats = ({ url }) => {
   const [stats, setStats] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null); // Для отображения выбранного пользователя
-  const [isModalOpen, setIsModalOpen] = useState(false); // Для управления модальным окном
-  const [currentPage, setCurrentPage] = useState(1); // Для управления пагинацией
-  const usersPerPage = 5; // Количество пользователей на странице
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 5;
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -14,7 +15,6 @@ const Stats = ({ url }) => {
         const response = await fetch(`${url}/stats`);
         const data = await response.json();
 
-        // Сортировка по количеству заказов
         const sortedData = data.sort((a, b) => b.orderCount - a.orderCount);
         setStats(sortedData);
       } catch (error) {
@@ -26,15 +26,14 @@ const Stats = ({ url }) => {
   }, [url]);
 
   const handleUserClick = (user) => {
-    setSelectedUser(user); // Устанавливаем выбранного пользователя
-    setIsModalOpen(true); // Открываем модальное окно
+    setSelectedUser(user);
+    setIsModalOpen(true);
   };
 
   const closeModal = () => {
-    setIsModalOpen(false); // Закрываем модальное окно
+    setIsModalOpen(false);
   };
 
-  // Пагинация
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = stats.slice(indexOfFirstUser, indexOfLastUser);
@@ -54,13 +53,19 @@ const Stats = ({ url }) => {
           <ul>
             {currentUsers.map((user) => (
               <li key={user._id} onClick={() => handleUserClick(user)} className="user-item">
-                {user.name}: {user.orderCount} заказов
+                <FaUser /> {user.name}: {user.orderCount} заказов
               </li>
             ))}
           </ul>
 
-          {/* Пагинация */}
+          {/* Pagination with icons */}
           <div className="pagination">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="pagination-button">
+              <FaChevronLeft />
+            </button>
             {Array.from({ length: totalPages }, (_, index) => (
               <button
                 key={index + 1}
@@ -69,13 +74,19 @@ const Stats = ({ url }) => {
                 {index + 1}
               </button>
             ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="pagination-button">
+              <FaChevronRight />
+            </button>
           </div>
         </>
       ) : (
         <p>Загрузка статистики...</p>
       )}
 
-      {/* Модальное окно */}
+      {/* Modal with close icon */}
       {isModalOpen && selectedUser && (
         <div className="modal-overlay">
           <div className="modal">
@@ -85,7 +96,7 @@ const Stats = ({ url }) => {
             <p>Телефон: {selectedUser.phoneNumber}</p>
             <p>Количество заказов: {selectedUser.orderCount}</p>
             <button onClick={closeModal} className="close-modal">
-              Закрыть
+              <FaTimes /> Закрыть
             </button>
           </div>
         </div>
