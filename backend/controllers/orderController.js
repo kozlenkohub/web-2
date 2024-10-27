@@ -394,13 +394,7 @@ bot.on('callback_query', async (query) => {
     bot.answerCallbackQuery(query.id, {
       text: 'У вас нет прав для выполнения этого действия.',
     });
-    if (order.deliveryTimeEmailSent) {
-      bot.sendMessage(
-        chatId,
-        `Вы уже отправили электронное письмо с временем доставки для заказа ${orderId}. Вы не можете изменить время доставки.`,
-      );
-      return;
-    }
+
     return;
   }
 
@@ -409,6 +403,13 @@ bot.on('callback_query', async (query) => {
     const orderId = data.replace('set_delivery_time_', '');
 
     const order = await orderModel.findById(orderId);
+    if (order.deliveryTimeEmailSent) {
+      bot.sendMessage(
+        chatId,
+        `Вы уже отправили электронное письмо с временем доставки для заказа ${orderId}. Вы не можете изменить время доставки.`,
+      );
+      return;
+    }
 
     bot.sendMessage(chatId, 'Пожалуйста, введите время доставки в минутах:');
     bot.once('message', async (msg) => {
