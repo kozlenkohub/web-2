@@ -14,4 +14,4 @@ export const assets = {
   parcel_icon,
 };
 
-export const url = 'http://localhost:4000/';
+export const url = 'https://web-2-backend-wbs4.onrender.com/';

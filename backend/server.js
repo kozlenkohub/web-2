@@ -84,7 +84,7 @@ app.get('/api/payments', getSuccessfulPaymentsByMonth);
 app.get('/api/payment/:id', getPaymentDetails);
 
 app.listen(port, () => {
-  console.log(`Server Started on http://localhost:${port}`);
+  console.log(`Server Started on https://web-2-backend-wbs4.onrender.com:${port}`);
 });
 
 // YOU CAN SAVE UR DATABASE IN THIS COMMENT IF U WANT -->

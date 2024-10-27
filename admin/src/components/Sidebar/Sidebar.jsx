@@ -10,7 +10,7 @@ const Sidebar = () => {
     // Функция для получения количества пользователей с бэкенда
     const fetchUserCount = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/user/count'); // Замените на ваш URL
+        const response = await fetch('https://web-2-backend-wbs4.onrender.com/api/user/count'); // Замените на ваш URL
         const data = await response.json();
         if (data.success) {
           setUserCount(data.count);

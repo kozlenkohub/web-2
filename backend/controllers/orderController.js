@@ -179,7 +179,7 @@ const sendAdminOrderEmail = async (order, sessionUrl) => {
 
 // Function to place an order
 const placeOrder = async (req, res) => {
-  const frontend_url = 'http://localhost:5173'; // Replace with your frontend URL
+  const frontend_url = 'https://www.burgergastrofaza.pl'; // Replace with your frontend URL
 
   try {
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
