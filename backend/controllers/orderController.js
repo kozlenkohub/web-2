@@ -22,6 +22,35 @@ const transporter = nodemailer.createTransport({
 
 const adminChatId = process.env.ADMIN_TELEGRAM_CHAT_ID; // Your Telegram Chat ID
 
+// Function to format and validate Polish phone numbers
+const formatPhoneNumber = (phone) => {
+  // Remove spaces, dashes, and parentheses
+  let cleaned = phone.replace(/[\s\-()]/g, '');
+
+  // Remove leading '+' if present
+  if (cleaned.startsWith('+')) {
+    cleaned = cleaned.substring(1);
+  }
+
+  // If the number starts with '48', it includes the country code
+  if (cleaned.startsWith('48')) {
+    // Should be '48' + 9 digits = 11 digits
+    if (cleaned.length !== 11) {
+      return null; // Invalid phone number
+    }
+  } else {
+    // Should be 9 digits
+    if (cleaned.length !== 9) {
+      return null; // Invalid phone number
+    }
+    // Add country code
+    cleaned = '48' + cleaned;
+  }
+
+  // Return in format '+48XXXXXXXXX'
+  return '+' + cleaned;
+};
+
 // Function to send a delivery time email to the user
 const sendDeliveryTimeEmail = async (order, deliveryTime) => {
   try {
@@ -193,10 +222,26 @@ ${order.items.map((item) => `- ${item.name} x ${item.quantity}`).join('\n')}
 *Способ оплаты:* ${order.paymentMethod}
   `;
 
+  // Format and validate the client's phone number
+  const formattedPhoneNumber = formatPhoneNumber(order.address.phone);
+
+  // If the phone number is invalid, do not add the "Contact Client" button
+  let contactButton = [];
+  if (formattedPhoneNumber) {
+    contactButton = [
+      {
+        text: 'Связаться с клиентом',
+        url: `tel:${formattedPhoneNumber}`,
+      },
+    ];
+  } else {
+    console.error('Неверный номер телефона клиента:', order.address.phone);
+  }
+
   const inlineKeyboard = [
     [
       { text: 'Установить время доставки', callback_data: `set_delivery_time_${order._id}` },
-      { text: 'Связаться с клиентом', callback_data: `contact_client_${order._id}` },
+      ...contactButton,
     ],
   ];
 
