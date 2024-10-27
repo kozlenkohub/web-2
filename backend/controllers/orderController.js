@@ -121,43 +121,43 @@ const sendAdminOrderEmail = async (order, sessionUrl) => {
   const mailOptions = {
     from: process.env.EMAIL,
     to: process.env.NOTIFICATION_EMAIL,
-    subject: '🎉 New Order',
+    subject: '🎉 Новый заказ',
     html: `
       <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
           <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
-            <h1 style="margin: 0;">New order from ${order.address.firstName}</h1>
+            <h1 style="margin: 0;">Новый заказ от ${order.address.firstName}</h1>
           </div>
           <div style="padding: 20px; color: #333;">
-            <p><strong>Order ID:</strong> ${order._id}</p>
-            <p><strong>Name:</strong> ${order.address.firstName}</p>
-            <p><strong>Address:</strong> ${order.address.address}</p>
-            <p><strong>Apartment Number:</strong> ${order.address.apartmentNumber}</p>
-            <p><strong>Phone:</strong> ${order.address.phone}</p>
-            <h2 style="color: #4CAF50;">Items:</h2>
+            <p><strong>ID заказа:</strong> ${order._id}</p>
+            <p><strong>Имя:</strong> ${order.address.firstName}</p>
+            <p><strong>Адрес:</strong> ${order.address.address}</p>
+            <p><strong>Номер квартиры:</strong> ${order.address.apartmentNumber}</p>
+            <p><strong>Телефон:</strong> ${order.address.phone}</p>
+            <h2 style="color: #4CAF50;">Товары:</h2>
             <table style="width: 100%; border-collapse: collapse;">
               <thead>
                 <tr>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Item</th>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Quantity</th>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Price</th>
+                  <th style="padding: 8px; border: 1px solid #ddd;">Товар</th>
+                  <th style="padding: 8px; border: 1px solid #ddd;">Количество</th>
+                  <th style="padding: 8px; border: 1px solid #ddd;">Цена</th>
                 </tr>
               </thead>
               <tbody>
                 ${itemsList}
               </tbody>
             </table>
-            <p style="font-size: 18px; font-weight: bold; text-align: right;">Total amount: ${
+            <p style="font-size: 18px; font-weight: bold; text-align: right;">Итоговая сумма: ${
               order.amount
             } zł</p>
-            <p><strong>PAYMENT METHOD:</strong> 
+            <p><strong>СПОСОБ ОПЛАТЫ:</strong> 
               <span style="text-transform: uppercase; color: #FF5733; font-weight: bold;">${
                 order.paymentMethod
               }</span>
             </p>
             ${
               sessionUrl
-                ? `<p><a href="${sessionUrl}" style="color: #4CAF50; text-decoration: none;">View payment details</a></p>`
+                ? `<p><a href="${sessionUrl}" style="color: #4CAF50; text-decoration: none;">Просмотреть детали оплаты</a></p>`
                 : ''
             }
           </div>
@@ -293,16 +293,16 @@ const verifyOrder = async (req, res) => {
 // Function to send a Telegram message about the order
 const sendTelegramOrderMessage = (order) => {
   const orderMessage = `
-📦 *New Order!*
-*Order ID:* ${order._id}
-*Name:* ${order.address.firstName}
-*Address:* ${order.address.address}
-*Apartment Number:* ${order.address.apartmentNumber}
-*Phone:* ${order.address.phone}
-*Items:*
+📦 *Новый заказ!*
+*ID заказа:* ${order._id}
+*Имя:* ${order.address.firstName}
+*Адрес:* ${order.address.address}
+*Номер квартиры:* ${order.address.apartmentNumber}
+*Телефон:* ${order.address.phone}
+*Товары:*
 ${order.items.map((item) => `- ${item.name} x ${item.quantity}`).join('\n')}
-*Total:* ${order.amount} zł
-*Payment Method:* ${order.paymentMethod}
+*Итого:* ${order.amount} zł
+*Способ оплаты:* ${order.paymentMethod}
   `;
 
   // Inline buttons for interaction
@@ -369,7 +369,7 @@ bot.on('callback_query', async (query) => {
   const hasAccess = await checkUserAccess(chatId);
   if (!hasAccess) {
     bot.answerCallbackQuery(query.id, {
-      text: 'You do not have permission to perform this action.',
+      text: 'У вас нет прав для выполнения этого действия.',
     });
     return;
   }
@@ -378,11 +378,11 @@ bot.on('callback_query', async (query) => {
   if (data.startsWith('set_delivery_time_')) {
     const orderId = data.replace('set_delivery_time_', '');
 
-    bot.sendMessage(chatId, 'Please enter the delivery time in minutes:');
+    bot.sendMessage(chatId, 'Пожалуйста, введите время доставки в минутах:');
     bot.once('message', async (msg) => {
       const deliveryTime = parseInt(msg.text, 10);
       if (isNaN(deliveryTime)) {
-        bot.sendMessage(chatId, 'Please enter a valid number.');
+        bot.sendMessage(chatId, 'Пожалуйста, введите корректное число.');
         return;
       }
 
