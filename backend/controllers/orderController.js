@@ -36,10 +36,15 @@ const checkUserAccess = async (chatId) => {
 // Function to send a delivery time email to the user
 const sendDeliveryTimeEmail = async (order, deliveryTime) => {
   try {
+    if (order.deliveryTimeEmailSent) {
+      console.log('Delivery time email has already been sent to the user');
+      return false; // Indicate that the email was not sent again
+    }
+
     const user = await userModel.findById(order.userId);
     if (!user) {
       console.error(`User with ID ${order.userId} not found`);
-      return;
+      return false;
     }
 
     const itemsList = order.items
@@ -97,8 +102,15 @@ const sendDeliveryTimeEmail = async (order, deliveryTime) => {
 
     await transporter.sendMail(mailOptions);
     console.log('Delivery time email sent to the user');
+
+    // Mark the email as sent
+    order.deliveryTimeEmailSent = true;
+    await order.save();
+
+    return true; // Indicate that the email was sent
   } catch (error) {
     console.error('Error sending delivery time email:', error);
+    return false;
   }
 };
 
@@ -382,12 +394,21 @@ bot.on('callback_query', async (query) => {
     bot.answerCallbackQuery(query.id, {
       text: 'У вас нет прав для выполнения этого действия.',
     });
+    if (order.deliveryTimeEmailSent) {
+      bot.sendMessage(
+        chatId,
+        `Вы уже отправили электронное письмо с временем доставки для заказа ${orderId}. Вы не можете изменить время доставки.`,
+      );
+      return;
+    }
     return;
   }
 
   // Handle inline buttons
   if (data.startsWith('set_delivery_time_')) {
     const orderId = data.replace('set_delivery_time_', '');
+
+    const order = await orderModel.findById(orderId);
 
     bot.sendMessage(chatId, 'Пожалуйста, введите время доставки в минутах:');
     bot.once('message', async (msg) => {
@@ -398,15 +419,24 @@ bot.on('callback_query', async (query) => {
       }
 
       try {
-        await orderModel.findByIdAndUpdate(orderId, { deliveryTime });
-        const order = await orderModel.findById(orderId);
+        // Update the delivery time
+        order.deliveryTime = deliveryTime;
+        await order.save();
 
-        await sendDeliveryTimeEmail(order, deliveryTime);
+        // Attempt to send the email
+        const emailSent = await sendDeliveryTimeEmail(order, deliveryTime);
 
-        bot.sendMessage(
-          chatId,
-          `Время доставки для заказа ${orderId} установлено на ${deliveryTime} минут. Электронное письмо отправлено пользователю.`,
-        );
+        if (emailSent) {
+          bot.sendMessage(
+            chatId,
+            `Время доставки для заказа ${orderId} установлено на ${deliveryTime} минут. Электронное письмо отправлено пользователю.`,
+          );
+        } else {
+          bot.sendMessage(
+            chatId,
+            `Время доставки для заказа ${orderId} обновлено на ${deliveryTime} минут. Электронное письмо НЕ было отправлено, так как оно уже было отправлено ранее.`,
+          );
+        }
       } catch (error) {
         console.error('Ошибка при установке времени доставки:', error);
         bot.sendMessage(chatId, 'Произошла ошибка при установке времени доставки.');
