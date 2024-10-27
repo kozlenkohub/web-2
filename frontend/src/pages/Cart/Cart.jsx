@@ -42,7 +42,7 @@ const Cart = () => {
             return (
               <div key={index}>
                 <div className="cart-items-title cart-items-item">
-                  <img src={url + '/images/' + item.image} alt="" />
+                  <img src={item.image} alt="" />
                   <p className="t3">{item.name}</p>
                   <p className="t3">{item.price} zł</p>
                   <p className="t3">{cartItems[item._id]}</p>

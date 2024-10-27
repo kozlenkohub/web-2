@@ -370,7 +370,7 @@ const PlaceOrder = () => {
                 cartItems[item._id] > 0 ? (
                   <div key={item._id} className="cart-item">
                     <div className="item-details">
-                      <img src={`${url}/images/${item.image}`} alt="" className="item-image" />
+                      <img src={`${item.image}`} alt="" className="item-image" />
                       <div>
                         <p>{item.name}</p>
                         <p>
