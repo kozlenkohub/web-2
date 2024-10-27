@@ -291,7 +291,7 @@ const verifyOrder = async (req, res) => {
 };
 
 // Function to send a Telegram message about the order
-const sendTelegramOrderMessage = (order) => {
+const sendTelegramOrderMessage = async (order) => {
   const orderMessage = `
 📦 *Новый заказ!*
 *ID заказа:* ${order._id}
@@ -305,15 +305,26 @@ ${order.items.map((item) => `- ${item.name} x ${item.quantity}`).join('\n')}
 *Способ оплаты:* ${order.paymentMethod}
   `;
 
-  // Inline buttons for interaction
   const inlineKeyboard = [
-    [{ text: 'Set Delivery Time', callback_data: `set_delivery_time_${order._id}` }],
+    [{ text: 'Установить время доставки', callback_data: `set_delivery_time_${order._id}` }],
   ];
 
-  bot.sendMessage(adminChatId, orderMessage, {
-    parse_mode: 'Markdown',
-    reply_markup: { inline_keyboard: inlineKeyboard },
-  });
+  try {
+    // Retrieve all users with access
+    const usersWithAccess = await UserAccessModel.find({});
+
+    // Loop through each user and send the message
+    usersWithAccess.forEach((user) => {
+      bot.sendMessage(user.chatId, orderMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: inlineKeyboard },
+      });
+    });
+
+    console.log('Order notifications sent to all users with access.');
+  } catch (error) {
+    console.error('Error sending order notifications:', error);
+  }
 };
 
 // Function to get user orders
@@ -394,11 +405,11 @@ bot.on('callback_query', async (query) => {
 
         bot.sendMessage(
           chatId,
-          `Delivery time for order ${orderId} set to ${deliveryTime} minutes. Email sent to the user.`,
+          `Время доставки для заказа ${orderId} установлено на ${deliveryTime} минут. Электронное письмо отправлено пользователю.`,
         );
       } catch (error) {
-        console.error('Error setting delivery time:', error);
-        bot.sendMessage(chatId, 'An error occurred while setting the delivery time.');
+        console.error('Ошибка при установке времени доставки:', error);
+        bot.sendMessage(chatId, 'Произошла ошибка при установке времени доставки.');
       }
     });
   }
