@@ -1,10 +1,8 @@
-// bot.js
-
 import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
 import UserAccessModel from '../models/userAccessModel.js';
 import orderModel from '../models/orderModel.js';
-import { sendDeliveryTimeEmail } from './orderController.js'; // Adjust the path as needed
+import { sendDeliveryTimeEmail } from './emailService.js';
 
 dotenv.config();
 
@@ -22,7 +20,7 @@ const getBotInstance = () => {
 };
 
 const initializeBot = (bot) => {
-  // Access check function
+  // Функция для проверки доступа пользователя
   const checkUserAccess = async (chatId) => {
     if (chatId.toString() === adminChatId.toString()) {
       return true;
@@ -31,29 +29,29 @@ const initializeBot = (bot) => {
     return userAccess !== null;
   };
 
-  // Function to add user access
+  // Функция для добавления доступа пользователю
   const addUserAccess = async (chatId) => {
     try {
       const existingUser = await UserAccessModel.findOne({ chatId });
       if (existingUser) {
-        return false; // User already has access
+        return false; // Пользователь уже имеет доступ
       }
 
       const newUser = new UserAccessModel({ chatId });
       await newUser.save();
       return true;
     } catch (error) {
-      console.error('Error adding user access:', error);
+      console.error('Ошибка при добавлении доступа пользователю:', error);
       return false;
     }
   };
 
-  // Handler for callback queries
+  // Обработчик callback_query
   bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     const data = query.data;
 
-    // Access check
+    // Проверка доступа
     const hasAccess = await checkUserAccess(chatId);
     if (!hasAccess) {
       bot.answerCallbackQuery(query.id, {
@@ -83,11 +81,11 @@ const initializeBot = (bot) => {
         }
 
         try {
-          // Update the delivery time
+          // Обновляем время доставки
           order.deliveryTime = deliveryTime;
           await order.save();
 
-          // Attempt to send the email
+          // Пытаемся отправить письмо
           const emailSent = await sendDeliveryTimeEmail(order, deliveryTime);
 
           if (emailSent) {
@@ -108,15 +106,15 @@ const initializeBot = (bot) => {
       });
     }
 
-    // Other callback_query handlers remain unchanged
+    // Другие обработчики остаются без изменений
   });
 
-  // Handler for the /adduser command
+  // Обработчик команды /adduser
   bot.onText(/\/adduser (\d+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const userIdToAdd = match[1];
 
-    // Check if the command was sent by the administrator
+    // Проверяем, что команду отправил администратор
     if (chatId.toString() !== adminChatId.toString()) {
       bot.sendMessage(chatId, 'У вас нет прав на выполнение этого действия.');
       return;
@@ -136,11 +134,11 @@ const initializeBot = (bot) => {
     }
   });
 
-  // Handler for the /start command
+  // Обработчик команды /start
   bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
 
-    // Access check
+    // Проверка доступа
     const hasAccess = await checkUserAccess(chatId);
     if (!hasAccess) {
       bot.sendMessage(
@@ -156,7 +154,7 @@ const initializeBot = (bot) => {
     );
   });
 
-  // You can add other bot handlers here as needed
+  // Вы можете добавить другие обработчики по необходимости
 };
 
 export default getBotInstance();

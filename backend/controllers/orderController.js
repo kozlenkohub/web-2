@@ -2,271 +2,15 @@
 
 import orderModel from '../models/orderModel.js';
 import userModel from '../models/userModel.js';
-import UserAccessModel from '../models/userAccessModel.js';
-import Stripe from 'stripe';
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-import bot from './bot.js'; // Import the singleton bot instance
+import { getDistanceFromLatLonInKm } from './utils.js';
+import { sendDeliveryTimeEmail, sendAdminOrderEmail } from './emailService.js';
+import { createStripeSession } from './paymentService.js';
+import { sendTelegramOrderMessage } from './notificationService.js';
 
-dotenv.config();
+const frontend_url = 'https://www.burgergastrofaza.pl'; // Замените на ваш URL
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail', // Or your email service
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
-
-const adminChatId = process.env.ADMIN_TELEGRAM_CHAT_ID; // Your Telegram Chat ID
-
-// Function to format and validate Polish phone numbers
-const formatPhoneNumber = (phone) => {
-  // Remove spaces, dashes, and parentheses
-  let cleaned = phone.replace(/[\s\-()]/g, '');
-
-  // Remove leading '+' if present
-  if (cleaned.startsWith('+')) {
-    cleaned = cleaned.substring(1);
-  }
-
-  // If the number starts with '48', it includes the country code
-  if (cleaned.startsWith('48')) {
-    // Should be '48' + 9 digits = 11 digits
-    if (cleaned.length !== 11) {
-      return null; // Invalid phone number
-    }
-  } else {
-    // Should be 9 digits
-    if (cleaned.length !== 9) {
-      return null; // Invalid phone number
-    }
-    // Add country code
-    cleaned = '48' + cleaned;
-  }
-
-  // Return in format '+48XXXXXXXXX'
-  return '+' + cleaned;
-};
-
-// Function to send a delivery time email to the user
-const sendDeliveryTimeEmail = async (order, deliveryTime) => {
-  try {
-    if (order.deliveryTimeEmailSent) {
-      console.log('Delivery time email has already been sent to the user');
-      return false; // Indicate that the email was not sent again
-    }
-
-    const user = await userModel.findById(order.userId);
-    if (!user) {
-      console.error(`User with ID ${order.userId} not found`);
-      return false;
-    }
-
-    const itemsList = order.items
-      .map(
-        (item) => `
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${item.quantity}</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${item.price} zł</td>
-          </tr>
-        `,
-      )
-      .join('');
-
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: user.email,
-      subject: 'GastroFaza Delivery',
-      html: `
-        <div style="font-family: Arial, sans-serif; background-color: #f2f2f2; padding: 20px;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
-              <h1 style="margin: 0;">Thank you for your order!</h1>
-            </div>
-            <div style="padding: 20px; color: #333333;">
-              <p>Hello, <strong>${order.address.firstName}</strong>!</p>
-              <p>Your order will be delivered in approximately <strong>${deliveryTime} minutes</strong>.</p>
-              <h2 style="color: #4CAF50;">Order Details:</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                  <tr>
-                    <th style="padding: 8px; border: 1px solid #ddd;">Item</th>
-                    <th style="padding: 8px; border: 1px solid #ddd;">Quantity</th>
-                    <th style="padding: 8px; border: 1px solid #ddd;">Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsList}
-                </tbody>
-              </table>
-              <p style="font-size: 18px; font-weight: bold; text-align: right;">Total amount: ${
-                order.amount
-              } zł</p>
-              <p>If you have any questions, please contact us by phone at ${
-                process.env.CONTACT_PHONE
-              }.</p>
-            </div>
-            <div style="background-color: #f1f1f1; color: #777777; padding: 10px; text-align: center;">
-              <p style="margin: 0;">&copy; ${new Date().getFullYear()} GASTROFAZA</p>
-            </div>
-          </div>
-        </div>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-    console.log('Delivery time email sent to the user');
-
-    // Mark the email as sent
-    order.deliveryTimeEmailSent = true;
-    await order.save();
-
-    return true; // Indicate that the email was sent
-  } catch (error) {
-    console.error('Error sending delivery time email:', error);
-    return false;
-  }
-};
-
-// Function to send an email to the administrator
-const sendAdminOrderEmail = async (order, sessionUrl) => {
-  const itemsList = order.items
-    .map(
-      (item) =>
-        `<tr>
-          <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
-          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${item.price} zł</td>
-        </tr>` +
-        (item.comment
-          ? `<tr><td colspan="3" style="padding: 8px; border: 1px solid #ddd; color: #666;">Comment: ${item.comment}</td></tr>`
-          : ''),
-    )
-    .join('');
-
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: process.env.NOTIFICATION_EMAIL,
-    subject: '🎉 Новый заказ',
-    html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
-            <h1 style="margin: 0;">Новый заказ от ${order.address.firstName}</h1>
-          </div>
-          <div style="padding: 20px; color: #333;">
-            <p><strong>ID заказа:</strong> ${order._id}</p>
-            <p><strong>Имя:</strong> ${order.address.firstName}</p>
-            <p><strong>Адрес:</strong> ${order.address.address}</p>
-            <p><strong>Номер квартиры:</strong> ${order.address.apartmentNumber}</p>
-            <p><strong>Телефон:</strong> ${order.address.phone}</p>
-            <h2 style="color: #4CAF50;">Товары:</h2>
-            <table style="width: 100%; border-collapse: collapse;">
-              <thead>
-                <tr>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Товар</th>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Количество</th>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Цена</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsList}
-              </tbody>
-            </table>
-            <p style="font-size: 18px; font-weight: bold; text-align: right;">Итоговая сумма: ${
-              order.amount
-            } zł</p>
-            <p><strong>СПОСОБ ОПЛАТЫ:</strong> 
-              <span style="text-transform: uppercase; color: #FF5733; font-weight: bold;">${
-                order.paymentMethod
-              }</span>
-            </p>
-            ${
-              sessionUrl
-                ? `<p><a href="${sessionUrl}" style="color: #4CAF50; text-decoration: none;">Просмотреть детали оплаты</a></p>`
-                : ''
-            }
-          </div>
-          <div style="background-color: #f1f1f1; color: #777777; padding: 10px; text-align: center;">
-            <p style="margin: 0;">&copy; ${new Date().getFullYear()} GASTROFAZA</p>
-          </div>
-        </div>
-      </div>
-    `,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log('Admin notification email sent');
-  } catch (error) {
-    console.error('Error sending admin email:', error);
-  }
-};
-
-// Function to send a Telegram message about the order
-const sendTelegramOrderMessage = async (order) => {
-  const orderMessage = `
-📦 *Новый заказ!*
-*ID заказа:* ${order._id}
-*Имя:* ${order.address.firstName}
-*Адрес:* ${order.address.address}
-*Номер квартиры:* ${order.address.apartmentNumber}
-*Телефон:* ${order.address.phone}
-*Товары:*
-${order.items.map((item) => `- ${item.name} x ${item.quantity}`).join('\n')}
-*Итого:* ${order.amount} zł
-*Способ оплаты:* ${order.paymentMethod}
-  `;
-
-  // Format and validate the client's phone number
-  const formattedPhoneNumber = formatPhoneNumber(order.address.phone);
-
-  // If the phone number is invalid, do not add the "Contact Client" button
-  let contactButton = [];
-  if (formattedPhoneNumber) {
-    contactButton = [
-      {
-        text: 'Связаться с клиентом',
-        url: `tel:${formattedPhoneNumber}`,
-      },
-    ];
-  } else {
-    console.error('Неверный номер телефона клиента:', order.address.phone);
-  }
-
-  const inlineKeyboard = [
-    [
-      { text: 'Установить время доставки', callback_data: `set_delivery_time_${order._id}` },
-      ...contactButton,
-    ],
-  ];
-
-  try {
-    // Retrieve all users with access
-    const usersWithAccess = await UserAccessModel.find({});
-
-    // Loop through each user and send the message
-    usersWithAccess.forEach((user) => {
-      bot.sendMessage(user.chatId, orderMessage, {
-        parse_mode: 'Markdown',
-        reply_markup: { inline_keyboard: inlineKeyboard },
-      });
-    });
-
-    console.log('Order notifications sent to all users with access.');
-  } catch (error) {
-    console.error('Error sending order notifications:', error);
-  }
-};
-
-// Function to place an order
-const placeOrder = async (req, res) => {
-  const frontend_url = 'https://www.burgergastrofaza.pl'; // Replace with your frontend URL
-
+// Функция для оформления заказа
+export const placeOrder = async (req, res) => {
   try {
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
     const userLocation = req.body.address.location;
@@ -299,61 +43,23 @@ const placeOrder = async (req, res) => {
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
     if (req.body.paymentMethod === 'cash') {
-      // For cash payment, send notifications immediately
+      // Для оплаты наличными отправляем уведомления сразу
       await sendAdminOrderEmail(newOrder, null);
-      sendTelegramOrderMessage(newOrder);
-      res.json({ success: true, message: 'Order placed with cash payment' });
+      await sendTelegramOrderMessage(newOrder);
+      res.json({ success: true, message: 'Заказ оформлен с оплатой наличными' });
     } else {
-      // Create Stripe session
-      const line_items = req.body.items.map((item) => ({
-        price_data: {
-          currency: 'pln',
-          product_data: { name: item.name },
-          unit_amount: item.price * 100,
-        },
-        quantity: item.quantity,
-      }));
-
-      if (deliveryCharge > 0) {
-        line_items.push({
-          price_data: {
-            currency: 'pln',
-            product_data: { name: 'Delivery Fee' },
-            unit_amount: deliveryCharge * 100,
-          },
-          quantity: 1,
-        });
-      }
-
-      if (req.body.packagingCharge > 0) {
-        line_items.push({
-          price_data: {
-            currency: 'pln',
-            product_data: { name: 'Packaging Fee' },
-            unit_amount: req.body.packagingCharge * 100,
-          },
-          quantity: 1,
-        });
-      }
-
-      const session = await stripe.checkout.sessions.create({
-        line_items: line_items,
-        mode: 'payment',
-        payment_method_types: ['blik', 'card'],
-        success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
-        cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
-      });
-
-      res.json({ success: true, session_url: session.url });
+      // Создаем платежную сессию Stripe
+      const sessionUrl = await createStripeSession(newOrder, frontend_url);
+      res.json({ success: true, session_url: sessionUrl });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Error placing order' });
+    res.status(500).json({ success: false, message: 'Ошибка при оформлении заказа' });
   }
 };
 
-// Function to verify the order
-const verifyOrder = async (req, res) => {
+// Функция для подтверждения заказа
+export const verifyOrder = async (req, res) => {
   const { orderId, success, sessionUrl } = req.body;
   try {
     const order = await orderModel.findById(orderId);
@@ -364,84 +70,58 @@ const verifyOrder = async (req, res) => {
         { new: true },
       );
       await sendAdminOrderEmail(order, sessionUrl);
-      sendTelegramOrderMessage(order);
-      res.json({ success: true, message: 'Payment confirmed' });
+      await sendTelegramOrderMessage(order);
+      res.json({ success: true, message: 'Платеж подтвержден' });
     } else {
       await orderModel.findByIdAndDelete(orderId);
-      res.json({ success: false, message: 'Payment failed, order canceled' });
+      res.json({ success: false, message: 'Платеж не прошел, заказ отменен' });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Error confirming order' });
+    res.status(500).json({ success: false, message: 'Ошибка при подтверждении заказа' });
   }
 };
 
-// Function to get user orders
-const userOrders = async (req, res) => {
+// Функция для получения заказов пользователя
+export const userOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ userId: req.body.userId, payment: true });
     res.json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Error retrieving user orders' });
+    res.status(500).json({ success: false, message: 'Ошибка при получении заказов пользователя' });
   }
 };
 
-// Function to list all orders
-const listOrders = async (req, res) => {
+// Функция для получения всех заказов
+export const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ payment: true });
     res.json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Error retrieving all orders' });
+    res.status(500).json({ success: false, message: 'Ошибка при получении всех заказов' });
   }
 };
 
-// Function to update order status
-const updateStatus = async (req, res) => {
+// Функция для обновления статуса заказа
+export const updateStatus = async (req, res) => {
   try {
     await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
-    res.json({ success: true, message: 'Status updated' });
+    res.json({ success: true, message: 'Статус обновлен' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Error updating status' });
+    res.status(500).json({ success: false, message: 'Ошибка при обновлении статуса' });
   }
 };
 
-// Function to delete an order
-const deleteOrder = async (req, res) => {
+// Функция для удаления заказа
+export const deleteOrder = async (req, res) => {
   try {
     await orderModel.findByIdAndDelete(req.body.orderId);
-    res.json({ success: true, message: 'Order deleted' });
+    res.json({ success: true, message: 'Заказ удален' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Error deleting order' });
+    res.status(500).json({ success: false, message: 'Ошибка при удалении заказа' });
   }
-};
-
-// Function to calculate the distance between two points
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Radius of the Earth in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function deg2rad(deg) {
-  return deg * (Math.PI / 180);
-}
-
-export {
-  placeOrder,
-  verifyOrder,
-  userOrders,
-  listOrders,
-  updateStatus,
-  deleteOrder,
-  sendDeliveryTimeEmail, // Exported for use in bot.js
 };
