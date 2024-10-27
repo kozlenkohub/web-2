@@ -22,7 +22,7 @@ export async function createStripeSession(order, frontendUrl) {
     line_items.push({
       price_data: {
         currency: 'pln',
-        product_data: { name: 'Delivery Fee' },
+        product_data: { name: 'Доставка' },
         unit_amount: order.deliveryCharge * 100,
       },
       quantity: 1,
@@ -33,7 +33,7 @@ export async function createStripeSession(order, frontendUrl) {
     line_items.push({
       price_data: {
         currency: 'pln',
-        product_data: { name: 'Package Fee' },
+        product_data: { name: 'Упаковка' },
         unit_amount: order.packagingCharge * 100,
       },
       quantity: 1,

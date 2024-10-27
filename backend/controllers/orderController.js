@@ -3,7 +3,7 @@
 import orderModel from '../models/orderModel.js';
 import userModel from '../models/userModel.js';
 import { getDistanceFromLatLonInKm } from './utils.js';
-import { sendDeliveryTimeEmail, sendAdminOrderEmail } from './emailService.js';
+import { sendAdminOrderEmail } from './emailService.js';
 import { createStripeSession } from './paymentService.js';
 import { sendTelegramOrderMessage } from './notificationService.js';
 

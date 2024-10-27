@@ -1,8 +1,11 @@
+// bot.js
+
 import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
 import UserAccessModel from '../models/userAccessModel.js';
 import orderModel from '../models/orderModel.js';
 import { sendDeliveryTimeEmail } from './emailService.js';
+import { formatPhoneNumber } from './utils.js';
 
 dotenv.config();
 
@@ -104,6 +107,34 @@ const initializeBot = (bot) => {
           bot.sendMessage(chatId, 'Произошла ошибка при установке времени доставки.');
         }
       });
+    } else if (data.startsWith('contact_client_')) {
+      const orderId = data.replace('contact_client_', '');
+
+      try {
+        const order = await orderModel.findById(orderId);
+        if (!order) {
+          bot.sendMessage(chatId, `Заказ с ID ${orderId} не найден.`);
+          return;
+        }
+
+        // Получаем номер телефона клиента
+        let phoneNumber = order.address.phone;
+        let firstName = order.address.firstName || 'Клиент';
+
+        // Форматируем номер телефона
+        const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+
+        if (!formattedPhoneNumber) {
+          bot.sendMessage(chatId, `Неверный формат номера телефона клиента: ${phoneNumber}`);
+          return;
+        }
+
+        // Отправляем контакт
+        bot.sendContact(chatId, formattedPhoneNumber, firstName);
+      } catch (error) {
+        console.error('Ошибка при отправке контакта клиента:', error);
+        bot.sendMessage(chatId, 'Произошла ошибка при отправке контакта клиента.');
+      }
     }
 
     // Другие обработчики остаются без изменений

@@ -2,7 +2,6 @@
 
 import UserAccessModel from '../models/userAccessModel.js';
 import bot from './bot.js'; // Убедитесь, что путь к боту корректен
-import { formatPhoneNumber } from './utils.js';
 
 // Функция для отправки сообщения о новом заказе в Telegram
 export async function sendTelegramOrderMessage(order) {
@@ -19,26 +18,10 @@ ${order.items.map((item) => `- ${item.name} x ${item.quantity}`).join('\n')}
 *Способ оплаты:* ${order.paymentMethod}
   `;
 
-  // Форматируем номер телефона клиента
-  const formattedPhoneNumber = formatPhoneNumber(order.address.phone);
-
-  // Если номер телефона недействителен, не добавляем кнопку "Связаться с клиентом"
-  let contactButton = [];
-  if (formattedPhoneNumber) {
-    contactButton = [
-      {
-        text: 'Связаться с клиентом',
-        url: `tel:${formattedPhoneNumber}`,
-      },
-    ];
-  } else {
-    console.error('Неверный номер телефона клиента:', order.address.phone);
-  }
-
   const inlineKeyboard = [
     [
       { text: 'Установить время доставки', callback_data: `set_delivery_time_${order._id}` },
-      ...contactButton,
+      { text: 'Связаться с клиентом', callback_data: `contact_client_${order._id}` },
     ],
   ];
 
