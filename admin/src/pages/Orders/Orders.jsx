@@ -11,32 +11,44 @@ const Orders = ({ url }) => {
   const ordersPerPage = 10;
 
   const fetchAllOrders = async () => {
-    const response = await axios.get(url + '/api/order/list');
-    if (response.data.success) {
-      const sortedOrders = response.data.data.sort((a, b) => new Date(b.date) - new Date(a.date));
-      setOrders(sortedOrders);
-    } else {
-      toast.error('Błąd');
+    try {
+      const response = await axios.get(url + '/api/order/list');
+      if (response.data.success) {
+        const sortedOrders = response.data.data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setOrders(sortedOrders);
+      } else {
+        toast.error('Ошибка');
+      }
+    } catch (error) {
+      toast.error('Ошибка при получении заказов');
     }
   };
 
   const statusHandler = async (event, orderId) => {
-    const response = await axios.post(url + '/api/order/status', {
-      orderId,
-      status: event.target.value,
-    });
-    if (response.data.success) {
-      await fetchAllOrders();
+    try {
+      const response = await axios.post(url + '/api/order/status', {
+        orderId,
+        status: event.target.value,
+      });
+      if (response.data.success) {
+        await fetchAllOrders();
+      }
+    } catch (error) {
+      toast.error('Ошибка при обновлении статуса');
     }
   };
 
   const deleteOrderHandler = async (orderId) => {
-    const response = await axios.post(url + '/api/order/delete', { orderId });
-    if (response.data.success) {
-      toast.success('Zamówienie usunięte');
-      await fetchAllOrders();
-    } else {
-      toast.error('Błąd przy usuwaniu zamówienia');
+    try {
+      const response = await axios.post(url + '/api/order/delete', { orderId });
+      if (response.data.success) {
+        toast.success('Заказ удалён');
+        await fetchAllOrders();
+      } else {
+        toast.error('Ошибка при удалении заказа');
+      }
+    } catch (error) {
+      toast.error('Ошибка при удалении заказа');
     }
   };
 
@@ -44,61 +56,72 @@ const Orders = ({ url }) => {
     fetchAllOrders();
   }, []);
 
-  // Функция для отображения заказов на текущей странице
   const displayOrders = orders
     .slice(currentPage * ordersPerPage, (currentPage + 1) * ordersPerPage)
     .map((order, index) => (
       <div key={index} className="order-item">
-        <img src={assets.parcel_icon} alt="Parcel Icon" />
-        <div>
+        <div className="order-header">
+          <img src={assets.parcel_icon} alt="Иконка посылки" />
+          <div className="order-info">
+            <p className="order-item-name">{order.address.firstName || 'Имя неизвестно'}</p>
+            <p className="order-item-payment-time">
+              {order.payment && order.paymentTime
+                ? `Оплачено: ${new Date(order.paymentTime).toLocaleString('ru-RU')}`
+                : 'Не оплачено'}
+            </p>
+          </div>
+          <button className="delete-button" onClick={() => deleteOrderHandler(order._id)}>
+            Удалить
+          </button>
+        </div>
+        <div className="order-body">
           <p className="order-item-food">
-            {order.items.map((item, index) => {
-              if (index === order.items.length - 1) {
-                return item.name + ' x ' + item.quantity;
-              } else {
-                return item.name + ' x ' + item.quantity + ', ';
-              }
-            })}
+            {order.items.map((item) => `${item.name} x ${item.quantity}`).join(', ')}
           </p>
-          <p className="order-item-name">{order.address.firstName || 'Имя не указано'}</p>
           <div className="order-item-address">
             <p>
-              {order.address.address ? `${order.address.address},` : ''}{' '}
-              {order.address.apartmentNumber ? `Кв. ${order.address.apartmentNumber},` : ''}
+              {order.address.address ? `${order.address.address}, ` : ''}
+              {order.address.apartmentNumber ? `Кв. ${order.address.apartmentNumber}, ` : ''}
+              {order.address.phone || 'Телефон неизвестен'}
             </p>
-            <p>{order.address.phone || 'Телефон не указан'}</p>
           </div>
-          <p className="order-item-payment-time">
-            {order.payment && order.paymentTime
-              ? `Zamówienie opłacone o: ${new Date(order.paymentTime).toLocaleString()}`
-              : 'Zamówienie nieopłacone'}
-          </p>
+          <div className="order-details">
+            <p>
+              <strong>Товары:</strong> {order.items.length}
+            </p>
+            <p>
+              <strong>Сумма:</strong> {order.amount} zl.
+            </p>
+            <p>
+              <strong>Доставка:</strong> {order.deliveryCharge} zl.
+            </p>
+            <p>
+              <strong>Упаковка:</strong> {order.packagingCharge} zl.
+            </p>
+          </div>
+          <select
+            onChange={(event) => statusHandler(event, order._id)}
+            value={order.status}
+            className="status-select">
+            <option value="Food Processing">Приготовление еды</option>
+            <option value="Out for delivery">В пути</option>
+            <option value="Delivered">Доставлено</option>
+          </select>
         </div>
-        <p>Przedmioty : {order.items.length}</p>
-        <p>{order.amount} zł</p>
-        <p>Opłata za dostawę: {order.deliveryCharge} zł</p>
-        <p>Opłata za opakowanie: {order.packagingCharge} zł</p>
-        <select onChange={(event) => statusHandler(event, order._id)} value={order.status}>
-          <option value="Food Processing">Przygotowywanie jedzenia</option>
-          <option value="Out for delivery">W drodze</option>
-          <option value="Delivered">Dostarczone</option>
-        </select>
-        <button onClick={() => deleteOrderHandler(order._id)}>Usuń</button>
       </div>
     ));
 
-  // Функция для обработки смены страницы
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
 
   return (
-    <div className="order add">
-      <h3>Strona Zamówień</h3>
+    <div className="order-container">
+      <h3>Страница заказов</h3>
       <div className="order-list">{displayOrders}</div>
       <ReactPaginate
-        previousLabel={'Poprzednia'}
-        nextLabel={'Następna'}
+        previousLabel={'Предыдущая'}
+        nextLabel={'Следующая'}
         breakLabel={'...'}
         pageCount={Math.ceil(orders.length / ordersPerPage)}
         marginPagesDisplayed={2}

@@ -10,27 +10,35 @@ const List = ({ url }) => {
     name: '',
     description: '',
     price: '',
-    category: 'Burgery',
-    isActive: true, // Добавляем поле активности
+    category: 'Бургеры',
+    isActive: true,
   });
   const [editImage, setEditImage] = useState(null);
 
   const fetchList = async () => {
-    const response = await axios.get(`${url}/api/food/list`);
-    if (response.data.success) {
-      setList(response.data.data);
-    } else {
-      toast.error('Błąd');
+    try {
+      const response = await axios.get(`${url}/api/food/list`);
+      if (response.data.success) {
+        setList(response.data.data);
+      } else {
+        toast.error('Ошибка при получении списка продуктов');
+      }
+    } catch (error) {
+      toast.error('Ошибка сервера');
     }
   };
 
   const removeFood = async (foodId) => {
-    const response = await axios.post(`${url}/api/food/remove`, { id: foodId });
-    await fetchList();
-    if (response.data.success) {
-      toast.success(response.data.message);
-    } else {
-      toast.error('Błąd');
+    try {
+      const response = await axios.post(`${url}/api/food/remove`, { id: foodId });
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await fetchList();
+      } else {
+        toast.error('Ошибка при удалении продукта');
+      }
+    } catch (error) {
+      toast.error('Ошибка сервера');
     }
   };
 
@@ -41,13 +49,19 @@ const List = ({ url }) => {
       description: item.description,
       price: item.price,
       category: item.category,
-      isActive: item.isActive, // Инициализируем поле активности
+      isActive: item.isActive,
     });
   };
 
   const cancelEdit = () => {
     setEditMode(null);
-    setEditData({ name: '', description: '', price: '', category: 'Burgery', isActive: true });
+    setEditData({
+      name: '',
+      description: '',
+      price: '',
+      category: 'Бургеры',
+      isActive: true,
+    });
     setEditImage(null);
   };
 
@@ -58,18 +72,22 @@ const List = ({ url }) => {
     formData.append('description', editData.description);
     formData.append('price', Number(editData.price));
     formData.append('category', editData.category);
-    formData.append('isActive', editData.isActive); // Передаём состояние активности
+    formData.append('isActive', editData.isActive);
     if (editImage) {
       formData.append('image', editImage);
     }
 
-    const response = await axios.post(`${url}/api/food/update`, formData);
-    if (response.data.success) {
-      toast.success(response.data.message);
-      await fetchList();
-      cancelEdit();
-    } else {
-      toast.error(response.data.message);
+    try {
+      const response = await axios.post(`${url}/api/food/update`, formData);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await fetchList();
+        cancelEdit();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error('Ошибка при обновлении продукта');
     }
   };
 
@@ -87,18 +105,18 @@ const List = ({ url }) => {
   }, []);
 
   return (
-    <div className="list add flex-col">
-      <p>Lista wszystkich produktów</p>
+    <div className="list-container">
+      <h3>Список всех продуктов</h3>
       <div className="list-table">
-        <div className="list-table-format title">
-          <b>Obraz</b>
-          <b>Nazwa</b>
-          <b>Категория</b>
-          <b>Cena</b>
-          <b>Akcja</b>
+        <div className="list-header">
+          <p>Изображение</p>
+          <p>Название</p>
+          <p>Категория</p>
+          <p>Цена</p>
+          <p>Действие</p>
         </div>
         {list.map((item, index) => (
-          <div key={index} className="list-table-format">
+          <div key={index} className="list-row">
             {editMode === item._id ? (
               <div className="edit-form">
                 <div className="edit-field">
@@ -111,7 +129,7 @@ const List = ({ url }) => {
                     name="description"
                     value={editData.description}
                     onChange={handleChange}
-                    rows="6"
+                    rows="4"
                   />
                 </div>
                 <div className="edit-field">
@@ -121,14 +139,14 @@ const List = ({ url }) => {
                     value={editData.category}
                     onChange={handleChange}
                     className="select-category">
-                    <option value="Burgery">Burgery</option>
-                    <option value="Kanapki">Kanapki</option>
-                    <option value="Sałatki">Sałatki</option>
-                    <option value="Breakfast">Śniadania</option>
-                    <option value="Dla dzieci">Dla dzieci</option>
-                    <option value="Zestawy">Zestawy</option>
-                    <option value="Dodatki">Dodatki</option>
-                    <option value="Napoje">Napoje</option>
+                    <option value="Бургеры">Бургеры</option>
+                    <option value="Сэндвичи">Сэндвичи</option>
+                    <option value="Салаты">Салаты</option>
+                    <option value="Завтраки">Завтраки</option>
+                    <option value="Для детей">Для детей</option>
+                    <option value="Сеты">Сеты</option>
+                    <option value="Добавки">Добавки</option>
+                    <option value="Напитки">Напитки</option>
                   </select>
                 </div>
                 <div className="edit-field">
@@ -144,19 +162,19 @@ const List = ({ url }) => {
                   <label htmlFor="image">Изображение</label>
                   <input type="file" onChange={(e) => setEditImage(e.target.files[0])} />
                 </div>
-                <div className="edit-field">
+                <div className="edit-field checkbox-field">
                   <label htmlFor="isActive">Активен</label>
                   <input
                     type="checkbox"
                     name="isActive"
                     checked={editData.isActive}
-                    onChange={handleCheckboxChange} // Обработка изменений чекбокса
+                    onChange={handleCheckboxChange}
                   />
                 </div>
                 <div className="edit-actions">
-                  <button onClick={() => saveEdit(item._id)}>Save</button>
+                  <button onClick={() => saveEdit(item._id)}>Сохранить</button>
                   <button className="cancel" onClick={cancelEdit}>
-                    Cancel
+                    Отмена
                   </button>
                 </div>
               </div>
@@ -165,10 +183,12 @@ const List = ({ url }) => {
                 <img src={item.image} alt={item.name} />
                 <p>{item.name}</p>
                 <p>{item.category}</p>
-                <p>{item.price} zł</p>
-                <div>
-                  <button onClick={() => startEdit(item)}>Edit</button>
-                  <button onClick={() => removeFood(item._id)}>X</button>
+                <p>{item.price} руб.</p>
+                <div className="action-buttons">
+                  <button onClick={() => startEdit(item)}>Редактировать</button>
+                  <button className="delete" onClick={() => removeFood(item._id)}>
+                    Удалить
+                  </button>
                 </div>
               </>
             )}

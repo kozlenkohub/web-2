@@ -1,74 +1,137 @@
-.order-item {
-  display: grid;
-  grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr;
-  align-items: start;
-  gap: 30px;
-  border: 1px solid tomato;
+/* Theme Variables */
+:root {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --secondary-text-color: #555555;
+  --border-color: #dddddd;
+  --primary-color: #007bff;
+  --danger-color: #ff4d4f;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --secondary-text-color: #bbbbbb;
+    --border-color: #444444;
+    --primary-color: #1a73e8;
+    --danger-color: #ff6b6b;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Container Styles */
+.order-container {
   padding: 20px;
-  margin: 30px 0px;
-  font-size: 14px;
-  color: #505050;
+  max-width: 1200px;
+  margin: auto;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
-.order-item-food,
+.order-container h3 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Order Item Styles */
+.order-item {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  background-color: var(--background-color);
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.order-header {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: var(--background-color);
+}
+
+.order-header img {
+  width: 50px;
+  height: 50px;
+  margin-right: 15px;
+}
+
+.order-info {
+  flex: 1;
+}
+
 .order-item-name {
-  font-weight: 600;
-}
-
-.order-item-name {
-  margin-top: 30px;
-  margin-bottom: 5px;
-}
-
-.order-item-address {
-  margin-bottom: 10px;
-}
-
-.order-item select {
-  background-color: #ffe8e4;
-  border: 1px solid tomato;
-  width: max(10vw, 120px);
-  padding: 10px;
-  outline: none;
-}
-
-:root .order-item select {
-  background-color: black;
-  color: white;
-  border: 1px solid tomato;
-}
-
-.lightcolors .order-item select {
-  background-color: #ffe8e4;
-  color: black;
-  border: 1px solid tomato;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
 }
 
 .order-item-payment-time {
   font-size: 14px;
-  color: green;
-  margin-top: 5px;
-} /* Добавили стили для времени оплаты */
-
-@media (max-width: 1000px) {
-  .order-item {
-    font-size: 12px;
-    grid-template-columns: 0.5fr 2fr 1fr;
-    padding: 15px 8px;
-  }
-  .order-item select {
-    padding: 5px;
-    font-size: 12px;
-  }
-  .order-item img {
-    width: 40px;
-  }
+  color: var(--secondary-text-color);
+  margin: 5px 0 0;
 }
 
+.delete-button {
+  background-color: var(--danger-color);
+  color: var(--text-color);
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.delete-button:hover {
+  opacity: 0.8;
+}
+
+.order-body {
+  padding: 15px;
+}
+
+.order-item-food {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.order-item-address p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--secondary-text-color);
+}
+
+.order-details {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.order-details p {
+  flex: 1 1 45%;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.status-select {
+  margin-top: 15px;
+  padding: 8px;
+  width: 100%;
+  max-width: 200px;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Pagination Styles */
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 30px;
   list-style-type: none;
 }
 
@@ -77,17 +140,55 @@
 }
 
 .page-link {
-  padding: 10px;
-  border: 1px solid #ddd;
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
   cursor: pointer;
+  color: var(--primary-color);
+  text-decoration: none;
+  border-radius: 4px;
+  background-color: var(--background-color);
 }
 
 .active .page-link {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  border-color: var(--primary-color);
 }
 
 .page-link:hover {
-  background-color: #f0f0f0;
+  background-color: var(--shadow-color);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .order-details {
+    flex-direction: column;
+  }
+
+  .order-details p {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .order-header img {
+    margin-bottom: 10px;
+  }
+
+  .order-item-name {
+    font-size: 18px;
+  }
+
+  .order-item-food {
+    font-size: 16px;
+  }
+
+  .status-select {
+    width: 100%;
+  }
 }

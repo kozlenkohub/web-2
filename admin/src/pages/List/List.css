@@ -1,145 +1,219 @@
-/* Общие стили */
+/* Переменные темы */
+:root {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --secondary-text-color: #555555;
+  --border-color: #dddddd;
+  --primary-color: #007bff;
+  --danger-color: #ff4d4f;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --input-background: #f9f9f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --secondary-text-color: #bbbbbb;
+    --border-color: #444444;
+    --primary-color: #1a73e8;
+    --danger-color: #ff6b6b;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+    --input-background: #1e1e1e;
+  }
+}
+
+/* Стили контейнера */
+.list-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.list-container h3 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Таблица списка */
 .list-table {
   width: 100%;
-  border-spacing: 0;
-  margin: 20px 0;
 }
 
-.list-table-format {
+.list-header,
+.list-row {
   display: grid;
-  grid-template-columns: 0.5fr 1.5fr 1.5fr 0.5fr 1fr; /* Adjusted grid proportions */
-  gap: 15px;
+  grid-template-columns: 1fr 2fr 1.5fr 1fr 1fr;
+  align-items: center;
   padding: 10px;
-  border-bottom: 1px solid #444;
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  color: white;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.list-table-format.title {
+.list-header {
+  background-color: var(--input-background);
   font-weight: bold;
-  background-color: #111;
-  padding: 10px;
-  text-align: left;
-  border-radius: 8px;
 }
 
-/* Image styling */
-.list-table-format img {
-  width: 50px;
-  height: 50px;
+.list-row {
+  background-color: var(--background-color);
+}
+
+.list-row img {
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 5px;
-  border: 1px solid #555;
+  border: 1px solid var(--border-color);
 }
 
-/* Editing form */
-.edit-form {
+.action-buttons {
   display: flex;
-  flex-direction: column;
   gap: 10px;
+}
+
+.action-buttons button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.action-buttons button:hover {
+  opacity: 0.8;
+}
+
+.action-buttons .delete {
+  background-color: var(--danger-color);
+  color: var(--text-color);
+}
+
+.action-buttons button {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+}
+
+/* Форма редактирования */
+.edit-form {
+  grid-column: 1 / -1;
+  background-color: var(--input-background);
   padding: 20px;
-  background-color: #222;
   border-radius: 8px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+  margin-bottom: 20px;
 }
 
 .edit-field {
   display: flex;
   flex-direction: column;
+  margin-bottom: 15px;
 }
 
 .edit-field label {
   margin-bottom: 5px;
   font-weight: bold;
-  color: #ffffff;
 }
 
 .edit-field input[type='text'],
 .edit-field input[type='number'],
 .edit-field select,
+.edit-field textarea,
 .edit-field input[type='file'] {
-  padding: 8px;
-  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  border: 1px solid #555;
-  background-color: #333;
-  color: #ffffff;
-  font-size: 14px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.edit-field textarea {
+  resize: vertical;
+}
+
+.checkbox-field {
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox-field label {
+  margin-right: 10px;
+  margin-bottom: 0;
 }
 
 .edit-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 10px;
 }
 
 .edit-actions button {
   padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s;
 }
 
 .edit-actions button:hover {
-  background-color: #0056b3;
+  opacity: 0.8;
 }
 
-.edit-actions button.cancel {
-  background-color: #ff4c4c;
+.edit-actions button {
+  background-color: var(--primary-color);
+  color: var(--background-color);
 }
 
-.edit-actions button.cancel:hover {
-  background-color: #d83b3b;
+.edit-actions .cancel {
+  background-color: var(--danger-color);
+  color: var(--text-color);
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .list-table-format {
-    grid-template-columns: 1fr 1.5fr 1fr; /* Reduced columns for readability */
-    padding: 8px;
-  }
-  .list-table-format img {
-    width: 45px;
-    height: 45px;
-  }
-  .edit-actions button {
-    font-size: 13px;
-  }
-}
-
+/* Адаптивные стили */
 @media (max-width: 768px) {
-  .list-table-format {
-    grid-template-columns: 0.5fr 1.5fr 1fr;
-    gap: 10px;
+  .list-header,
+  .list-row {
+    grid-template-columns: 1fr 2fr 1fr;
   }
-  .list-table-format img {
-    width: 40px;
-    height: 40px;
+
+  .list-header p:nth-child(3),
+  .list-header p:nth-child(4),
+  .list-row p:nth-child(3),
+  .list-row p:nth-child(4) {
+    display: none;
   }
-  .edit-actions button {
-    padding: 6px 12px;
+
+  .action-buttons button {
     font-size: 12px;
+    padding: 5px 10px;
   }
 }
 
-@media (max-width: 480px) {
-  .list-table-format {
-    grid-template-columns: 1fr;
-    gap: 8px;
+@media (max-width: 576px) {
+  .list-header,
+  .list-row {
+    grid-template-columns: 1fr 2fr;
   }
-  .list-table-format.title {
-    display: none; /* Hide the title row on small screens */
+
+  .list-header p:nth-child(5),
+  .list-row div.action-buttons {
+    grid-column: 1 / -1;
+    margin-top: 10px;
   }
-  .list-table-format img {
-    width: 35px;
-    height: 35px;
+
+  .list-row img {
+    width: 50px;
+    height: 50px;
   }
-  .edit-actions button {
-    font-size: 12px;
+
+  .edit-form {
+    padding: 15px;
+  }
+
+  .edit-field input[type='text'],
+  .edit-field input[type='number'],
+  .edit-field select,
+  .edit-field textarea {
+    padding: 8px;
+    font-size: 14px;
   }
 }
