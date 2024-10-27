@@ -30,6 +30,7 @@ const orderSchema = new mongoose.Schema({
   packagingCharge: { type: Number, required: true },
   deliveryCharge: { type: Number, required: true },
   emailSent: { type: Boolean, default: false }, // Поле для отслеживания отправки письма
+  deliveryTime: { type: Number },
 });
 
 const orderModel = mongoose.models.order || mongoose.model('order', orderSchema);

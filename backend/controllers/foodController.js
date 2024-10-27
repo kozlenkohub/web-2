@@ -1,80 +1,122 @@
+import axios from 'axios';
 import foodModel from '../models/foodModel.js';
-import fs from 'fs';
+import FormData from 'form-data';
 
-// add food item
+// Add food item
 const addFood = async (req, res) => {
-  let image_filename = `${req.file.filename}`;
-
-  const food = new foodModel({
-    name: req.body.name,
-    description: req.body.description,
-    price: req.body.price,
-    category: req.body.category,
-    image: image_filename,
-    sizes: req.body.sizes ? req.body.sizes.split(',') : [], // Обработка размеров
-  });
-
   try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image file provided' });
+    }
+
+    const formData = new FormData();
+    formData.append('image', req.file.buffer.toString('base64'));
+
+    const imgurResponse = await axios.post('https://api.imgur.com/3/upload', formData, {
+      headers: {
+        Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
+        ...formData.getHeaders(),
+      },
+    });
+
+    const imageUrl = imgurResponse.data.data.link;
+
+    const food = new foodModel({
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      category: req.body.category,
+      image: imageUrl,
+      sizes: req.body.sizes ? req.body.sizes.split(',') : [],
+      isActive: req.body.isActive || true, // Продукт по умолчанию активен
+    });
+
     await food.save();
     res.json({ success: true, message: 'Food Added' });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error' });
+    res.json({ success: false, message: 'Error adding food' });
   }
 };
 
-// update food item
+// Update food item
 const updateFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.body.id);
+    if (!food) {
+      return res.status(404).json({ success: false, message: 'Food not found' });
+    }
 
     if (req.file) {
-      fs.unlink(`uploads/${food.image}`, () => {});
-      food.image = req.file.filename;
+      const formData = new FormData();
+      formData.append('image', req.file.buffer.toString('base64'));
+
+      const imgurResponse = await axios.post('https://api.imgur.com/3/upload', formData, {
+        headers: {
+          Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
+          ...formData.getHeaders(),
+        },
+      });
+
+      food.image = imgurResponse.data.data.link;
     }
 
     food.name = req.body.name;
-    food.description = req.body.description; // Обновление описания
+    food.description = req.body.description;
     food.price = req.body.price;
     food.category = req.body.category;
     food.sizes = req.body.sizes ? req.body.sizes.split(',') : [];
+    food.isActive = req.body.isActive; // Обновляем состояние активности
 
     await food.save();
-
     res.json({ success: true, message: 'Food Updated' });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error' });
+    res.json({ success: false, message: 'Error updating food' });
   }
 };
 
-// all food list
+// All food list
 const listFood = async (req, res) => {
   try {
-    const foods = await foodModel.find({});
-
-    // Сортировка продуктов по категориям
+    const foods = await foodModel.find({}); // Получаем все продукты
     const sortedFoods = foods.sort((a, b) => a.category.localeCompare(b.category));
 
     res.json({ success: true, data: sortedFoods });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error' });
+    res.json({ success: false, message: 'Error fetching food list' });
   }
 };
 
-// remove food item
+// Active food list (только активные продукты)
+const listActiveFood = async (req, res) => {
+  try {
+    const foods = await foodModel.find({ isActive: true });
+    const sortedFoods = foods.sort((a, b) => a.category.localeCompare(b.category));
+
+    res.json({ success: true, data: sortedFoods });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: 'Error fetching active food list' });
+  }
+};
+
+// Remove food item
 const removeFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.body.id);
-    fs.unlink(`uploads/${food.image}`, () => {});
+    if (!food) {
+      return res.status(404).json({ success: false, message: 'Food not found' });
+    }
 
     await foodModel.findByIdAndDelete(req.body.id);
+
     res.json({ success: true, message: 'Food Removed' });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error' });
+    res.json({ success: false, message: 'Error removing food' });
   }
 };
 
-export { addFood, updateFood, listFood, removeFood };
+export { addFood, updateFood, listFood, removeFood, listActiveFood };

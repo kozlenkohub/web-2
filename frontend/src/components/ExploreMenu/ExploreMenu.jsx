@@ -1,18 +1,21 @@
 import React from 'react';
 import './ExploreMenu.css';
 import { menu_list } from '../../assets/assets';
+import { useTranslation } from 'react-i18next'; // Импортируем хук для перевода
 
 const ExploreMenu = ({ category, setCategory }) => {
+  const { t } = useTranslation(); // Подключаем хук для перевода
+
   return (
     <div className="explore-menu" id="explore-menu">
-      <h1 className="h1e t2 logotext">Poznaj nasze menu</h1>
-    <div className="working-hours">
-  <p>Dostawa: Pn-Czw 11:00 - 20:30, Pt-Sb 11:00 - 21:30, Nd 11:00 - 20:30</p>
-  <p>Grillujemy dla Was: Pn-Czw 11:00 - 21:00, Pt-Sb 11:00 - 22:00, Nd 11:00 - 21:00</p>
-</div>
-
+      <h1 className="h1e t2 logotext">{t('exploreMenu.title')}</h1> {/* Перевод заголовка */}
+      <div className="working-hours">
+        <p>{t('exploreMenu.workingHours')}</p> {/* Перевод для времени работы доставки */}
+        <p>{t('exploreMenu.grillHours')}</p> {/* Перевод для времени работы гриля */}
+      </div>
       <div className="block-text">
-        <p className="explore-menu-text t6 substext">Amerykan street food...</p>
+        <p className="explore-menu-text t6 substext">{t('exploreMenu.streetFood')}</p>{' '}
+        {/* Перевод описания стритфуда */}
       </div>
       <div className="explore-menu-list">
         {menu_list.map((item, index) => {

@@ -3,16 +3,30 @@ import './Navbar.css';
 import { assets } from '../../assets/assets';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useContext } from 'react';
+import { useTranslation } from 'react-i18next'; // Импорт для перевода
 import { StoreContext } from '../../context/StoreContext';
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState('home');
   const [isCartFixed, setIsCartFixed] = useState(false);
-
   const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
+  const { t, i18n } = useTranslation(); // Подключаем i18n для смены языка
   const location = useLocation(); // Получаем текущий маршрут
-
   const navigate = useNavigate();
+
+  // Функция для смены языка и сохранения его в localStorage
+  const changeLanguage = (lang) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('language', lang); // Сохраняем выбранный язык в localStorage
+  };
+
+  // При первом запуске считываем язык из localStorage
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('language');
+    if (storedLanguage) {
+      i18n.changeLanguage(storedLanguage);
+    }
+  }, [i18n]);
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -78,29 +92,38 @@ const Navbar = ({ setShowLogin }) => {
           to="/"
           onClick={() => setMenu('home')}
           className={menu === 'home' ? 'active t3' : 't3'}>
-          HOME
+          {t('navbar.home')} {/* Перевод для "ГЛАВНАЯ" */}
         </Link>
         <a
           href="#explore-menu"
           onClick={() => setMenu('menu')}
           className={menu === 'menu' ? 'active t3' : 't3'}>
-          MENU
+          {t('navbar.menu')} {/* Перевод для "МЕНЮ" */}
         </a>
         <a
           href="#app-download"
           onClick={() => setMenu('mobile-app')}
           className={menu === 'mobile-app' ? 'active t3' : 't3'}>
-          DOSTAWA
+          {t('navbar.delivery')} {/* Перевод для "ДОСТАВКА" */}
         </a>
         <a
           href="#footer"
           onClick={() => setMenu('contact-us')}
           className={menu === 'contact-us' ? 'active t3' : 't3'}>
-          KONTAKT
+          {t('navbar.contact')} {/* Перевод для "КОНТАКТ" */}
         </a>
       </ul>
 
       <div className="navbar-right">
+        {/* Language Selection Menu */}
+        <div className="language-select">
+          <select onChange={(e) => changeLanguage(e.target.value)} value={i18n.language}>
+            <option value="en">English</option>
+            <option value="pl">Polski</option>
+            <option value="ru">Русский</option>
+          </select>
+        </div>
+
         <div className="navbar">
           <label htmlFor="visual-toggle" id="visual-toggle-button">
             {/* Ваш переключатель темы */}
@@ -115,7 +138,7 @@ const Navbar = ({ setShowLogin }) => {
         </div>
         {!token ? (
           <button className="signbutton t5" onClick={() => setShowLogin(true)}>
-            Zaloguj się 
+            {t('loginPopup.login')} {/* Перевод для "Вход" */}
           </button>
         ) : (
           <div className="navbar-profile">
@@ -123,12 +146,12 @@ const Navbar = ({ setShowLogin }) => {
             <ul className="nav-profile-dropdown">
               <li onClick={() => navigate('/myorders')}>
                 <img src={assets.bag_icon} alt="Orders" />
-                <p className="t4">Orders</p>
+                <p className="t4">{t('navbar.orders')}</p> {/* Перевод для "Orders" */}
               </li>
               <hr />
               <li onClick={logout}>
                 <img src={assets.logout_icon} alt="Logout" />
-                <p className="t4">Logout</p>
+                <p className="t4">{t('navbar.logout')}</p> {/* Перевод для "Logout" */}
               </li>
             </ul>
           </div>

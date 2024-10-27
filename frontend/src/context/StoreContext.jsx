@@ -5,7 +5,7 @@ export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
-  const url = 'https://web-2-backend-wbs4.onrender.com';
+  const url = 'http://localhost:4000';
 
   const [token, setToken] = useState('');
   const [food_list, setFoodList] = useState([]);
@@ -46,7 +46,7 @@ const StoreContextProvider = (props) => {
 
   const fetchFoodList = async () => {
     try {
-      const response = await axios.get(url + '/api/food/list');
+      const response = await axios.get(url + '/api/food/active-list');
       setFoodList(response.data.data);
     } catch (error) {
       console.error('Error fetching food list:', error);

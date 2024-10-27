@@ -11,6 +11,7 @@ const List = ({ url }) => {
     description: '',
     price: '',
     category: 'Burgery',
+    isActive: true, // Добавляем поле активности
   });
   const [editImage, setEditImage] = useState(null);
 
@@ -40,12 +41,13 @@ const List = ({ url }) => {
       description: item.description,
       price: item.price,
       category: item.category,
+      isActive: item.isActive, // Инициализируем поле активности
     });
   };
 
   const cancelEdit = () => {
     setEditMode(null);
-    setEditData({ name: '', description: '', price: '', category: 'Burgery' });
+    setEditData({ name: '', description: '', price: '', category: 'Burgery', isActive: true });
     setEditImage(null);
   };
 
@@ -56,6 +58,7 @@ const List = ({ url }) => {
     formData.append('description', editData.description);
     formData.append('price', Number(editData.price));
     formData.append('category', editData.category);
+    formData.append('isActive', editData.isActive); // Передаём состояние активности
     if (editImage) {
       formData.append('image', editImage);
     }
@@ -73,6 +76,10 @@ const List = ({ url }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEditData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleCheckboxChange = (e) => {
+    setEditData((prevData) => ({ ...prevData, isActive: e.target.checked }));
   };
 
   useEffect(() => {
@@ -104,7 +111,7 @@ const List = ({ url }) => {
                     name="description"
                     value={editData.description}
                     onChange={handleChange}
-                    rows="6" // Увеличиваем до 6 строк
+                    rows="6"
                   />
                 </div>
                 <div className="edit-field">
@@ -137,6 +144,15 @@ const List = ({ url }) => {
                   <label htmlFor="image">Изображение</label>
                   <input type="file" onChange={(e) => setEditImage(e.target.files[0])} />
                 </div>
+                <div className="edit-field">
+                  <label htmlFor="isActive">Активен</label>
+                  <input
+                    type="checkbox"
+                    name="isActive"
+                    checked={editData.isActive}
+                    onChange={handleCheckboxChange} // Обработка изменений чекбокса
+                  />
+                </div>
                 <div className="edit-actions">
                   <button onClick={() => saveEdit(item._id)}>Save</button>
                   <button className="cancel" onClick={cancelEdit}>
@@ -146,7 +162,7 @@ const List = ({ url }) => {
               </div>
             ) : (
               <>
-                <img src={`${url}/images/` + item.image} alt={item.name} />
+                <img src={item.image} alt={item.name} />
                 <p>{item.name}</p>
                 <p>{item.category}</p>
                 <p>{item.price} zł</p>

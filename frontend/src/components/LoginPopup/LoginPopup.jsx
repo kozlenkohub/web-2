@@ -3,8 +3,10 @@ import './LoginPopup.css';
 import { assets } from '../../assets/assets';
 import { StoreContext } from '../../context/StoreContext';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next'; // Импортируем хук для перевода
 
 const LoginPopup = ({ setShowLogin }) => {
+  const { t } = useTranslation(); // Подключаем i18n для перевода
   const { url, setToken } = useContext(StoreContext);
 
   const [currState, setCurrState] = useState('Login');
@@ -44,19 +46,18 @@ const LoginPopup = ({ setShowLogin }) => {
     <div className="login-popup">
       <form onSubmit={onLogin} className="login-popup-container">
         <div className="login-popup-title">
-          <h2>{currState}</h2>
+          <h2>{currState === 'Login' ? t('loginPopup.login') : t('loginPopup.signup')}</h2>{' '}
+          {/* Перевод заголовка */}
           <img onClick={() => setShowLogin(false)} src={assets.cross_icon} alt="" />
         </div>
         <div className="login-popup-inputs">
-          {currState === 'Login' ? (
-            <></>
-          ) : (
+          {currState === 'Login' ? null : (
             <input
               name="name"
               onChange={onChangeHandler}
               value={data.name}
               type="text"
-              placeholder="Twoje imię"
+              placeholder={t('loginPopup.namePlaceholder')}
               required
             />
           )}
@@ -65,7 +66,7 @@ const LoginPopup = ({ setShowLogin }) => {
             onChange={onChangeHandler}
             value={data.email}
             type="email"
-            placeholder="Twój email"
+            placeholder={t('loginPopup.emailPlaceholder')}
             required
           />
           <input
@@ -73,24 +74,26 @@ const LoginPopup = ({ setShowLogin }) => {
             onChange={onChangeHandler}
             value={data.password}
             type="password"
-            placeholder="Hasło"
+            placeholder={t('loginPopup.passwordPlaceholder')}
             required
           />
         </div>
-        <button type="submit">{currState === 'Sign Up' ? 'Utwórz konto' : 'Zaloguj się'}</button>
+        <button type="submit">
+          {currState === 'Sign Up' ? t('loginPopup.signupButton') : t('loginPopup.loginButton')}
+        </button>
         <div className="login-popup-condition">
           <input type="checkbox" required />
-          <p className="continuee">
-            Kontynuując, zgadzam się na warunki użytkowania i politykę prywatności
-          </p>
+          <p className="continuee">{t('loginPopup.terms')}</p> {/* Перевод условий */}
         </div>
         {currState === 'Login' ? (
           <p>
-            Utworzyć nowe konto? <span onClick={() => setCurrState('Sign Up')}>Kliknij tutaj</span>
+            {t('loginPopup.createAccount')}{' '}
+            <span onClick={() => setCurrState('Sign Up')}>{t('loginPopup.clickHere')}</span>
           </p>
         ) : (
           <p>
-            Masz już konto? <span onClick={() => setCurrState('Login')}>Zaloguj się tutaj</span>
+            {t('loginPopup.alreadyHaveAccount')}{' '}
+            <span onClick={() => setCurrState('Login')}>{t('loginPopup.loginHere')}</span>
           </p>
         )}
       </form>

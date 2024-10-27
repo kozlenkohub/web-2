@@ -2,8 +2,10 @@ import React, { useContext, useState } from 'react';
 import './Cart.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // Импортируем хук для перевода
 
 const Cart = () => {
+  const { t } = useTranslation(); // Подключаем хук для перевода
   const { cartItems, food_list, removeFromCart, getTotalCartAmount, url, token } =
     useContext(StoreContext);
   const navigate = useNavigate();
@@ -21,17 +23,17 @@ const Cart = () => {
     <div className="cart">
       {showNotification && (
         <div className="notification">
-          <p>Proszę się zalogować, aby kontynuować zamówienie.</p>
+          <p>{t('cart.notificationLogin')}</p> {/* Перевод сообщения уведомления */}
         </div>
       )}
       <div className="cart-items">
         <div className="cart-items-title">
-          <p className="t3 cart-items-title-item">Przedmioty</p>
-          <p className="t3 cart-items-title-item">Nazwa</p>
-          <p className="t3 cart-items-title-item">Cena</p>
-          <p className="t3 cart-items-title-item">Ilość</p>
-          <p className="t3 cart-items-title-item">Suma</p>
-          <p className="t3 cart-items-title-item">Usuń</p>
+          <p className="t3 cart-items-title-item">{t('cart.items')}</p>
+          <p className="t3 cart-items-title-item">{t('cart.name')}</p>
+          <p className="t3 cart-items-title-item">{t('cart.price')}</p>
+          <p className="t3 cart-items-title-item">{t('cart.quantity')}</p>
+          <p className="t3 cart-items-title-item">{t('cart.total')}</p>
+          <p className="t3 cart-items-title-item">{t('cart.remove')}</p>
         </div>
         <br />
         <hr />
@@ -53,38 +55,29 @@ const Cart = () => {
               </div>
             );
           }
-          return null; // Dodane, aby uniknąć ostrzeżeń
+          return null;
         })}
       </div>
       <div className="cart-bottom">
         <div className="cart-total">
-          <h2 className="t3">Podsumowanie Koszyka</h2>
+          <h2 className="t3">{t('cart.title')}</h2>
           <div>
             <div className="cart-total-details">
-              <p className="t5">Suma częściowa</p>
+              <p className="t5">{t('cart.subtotal')}</p>
               <p className="t5">{getTotalCartAmount()} zł</p>
             </div>
             <hr />
-            {/* <div className="cart-total-details">
-              <p className="t5">Opłata za dostawę</p>
-              <p className="t5">{getTotalCartAmount() === 0 ? 0 : 8} zł</p>
-            </div>
-            <hr />
-            <div className="cart-total-details ">
-              <b className="t5">Suma</b>
-              <b className="t5">{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 8} zł</b>
-            </div> */}
           </div>
           <button className="t6" onClick={handleCheckout}>
-            PRZEJDŹ DO KASY
+            {t('cart.proceed')}
           </button>
         </div>
         <div className="cart-promocode">
           <div>
-            <p className="promocodep t3">Jeśli masz kod promocyjny, wpisz go tutaj</p>
+            <p className="promocodep t3">{t('cart.promoCodeText')}</p>
             <div className="cart-promocode-input">
-              <input className="t6" type="text" placeholder="Kod promocyjny" />
-              <button className="t6">Zatwierdź</button>
+              <input className="t6" type="text" placeholder={t('cart.promoCodePlaceholder')} />
+              <button className="t6">{t('cart.applyButton')}</button>
             </div>
           </div>
         </div>

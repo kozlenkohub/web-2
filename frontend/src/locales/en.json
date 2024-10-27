@@ -1,0 +1,93 @@
+{
+  "appDownload": {
+    "systemWorks": "The delivery system operates in three areas",
+    "areas": "Maślice, Stabłowice, and Kozanów"
+  },
+  "exploreMenu": {
+    "title": "Explore our menu",
+    "workingHours": "Delivery: Mon-Thu 11:00 - 20:30, Fri-Sat 11:00 - 21:30, Sun 11:00 - 20:30",
+    "grillHours": "We grill for you: Mon-Thu 11:00 - 21:00, Fri-Sat 11:00 - 22:00, Sun 11:00 - 21:00",
+    "streetFood": "American street food..."
+  },
+  "foodDisplay": {
+    "title": "We always find something delicious for you"
+  },
+  "footer": {
+    "intro": "GastroFaza... Come with friends for a tasty burger and delicious snacks...",
+    "contactUs": "CONTACT US",
+    "phone": "+48-511-781-179",
+    "email": "gastrofaza2024@gmail.com",
+    "rights": "Copyright 2024 © GastroFaza - All rights reserved."
+  },
+  "header": {
+    "new": "New ‼️ GastroFaza Set",
+    "description": "The 'GastroFaza' set 🍔🍟🥤 is a perfect option for a quick and tasty hunger satisfaction! Inside you will find a juicy burger, crispy fries, and a refreshing drink. 'Kill' your hunger simply and deliciously! Order now and enjoy the full taste without leaving home!",
+    "button": "View menu"
+  },
+  "loginPopup": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "Your email",
+    "passwordPlaceholder": "Password",
+    "loginButton": "Login",
+    "signupButton": "Create an account",
+    "terms": "By continuing, I agree to the terms of use and privacy policy",
+    "createAccount": "Create a new account?",
+    "clickHere": "Click here",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginHere": "Login here"
+  },
+  "navbar": {
+    "home": "HOME",
+    "menu": "MENU",
+    "delivery": "DELIVERY",
+    "contact": "CONTACT",
+    "orders": "ORDERS",
+    "logout": "LOGOUT"
+  },
+  "cart": {
+    "notificationLogin": "Please log in to proceed with the order.",
+    "items": "Items",
+    "name": "Name",
+    "price": "Price",
+    "quantity": "Quantity",
+    "sum": "Total",
+    "remove": "Remove",
+    "title": "Cart Summary",
+    "subtotal": "Subtotal",
+    "proceed": "PROCEED TO CHECKOUT",
+    "promoCodeText": "If you have a promo code, enter it here",
+    "promoCodePlaceholder": "Promo code",
+    "applyButton": "Apply",
+    "total": "Total"
+  },
+  "placeOrder": {
+    "deliveryInfo": "Delivery Information",
+    "firstNamePlaceholder": "First Name",
+    "addressPlaceholder": "Delivery Address",
+    "apartmentPlaceholder": "Apartment Number",
+    "phonePlaceholder": "Phone",
+    "outOfDeliveryZone": "Delivery address is outside the delivery zone",
+    "addressSet": "Address is set",
+    "addressUnset": "Address is not set",
+    "comment": "Order Comment",
+    "deliveryFee": "Delivery Fee",
+    "freeDelivery": "Free Delivery",
+    "packagingFee": "Packaging Fee",
+    "commentPlaceholder": "Would you like to add spice or remove any ingredients? Write your comment here.",
+    "paymentMethodCard": "Credit Card/BLIK",
+    "paymentMethodCash": "Cash on delivery",
+    "proceed": "PROCEED TO PAYMENT"
+  },
+  "myOrders": {
+    "title": "My Orders",
+    "items": "Items",
+    "trackOrder": "Track Order",
+    "status": {
+      "pending": "Pending",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    }
+  }
+}

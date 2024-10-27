@@ -1,0 +1,89 @@
+{
+  "appDownload": {
+    "systemWorks": "System dostawy działa w trzech obszarach",
+    "areas": "Maślice, Stabłowice i Kozanów"
+  },
+  "exploreMenu": {
+    "title": "Poznaj nasze menu",
+    "workingHours": "Dostawa: Pn-Czw 11:00 - 20:30, Pt-Sb 11:00 - 21:30, Nd 11:00 - 20:30",
+    "grillHours": "Grillujemy dla Was: Pn-Czw 11:00 - 21:00, Pt-Sb 11:00 - 22:00, Nd 11:00 - 21:00",
+    "streetFood": "Amerykan street food..."
+  },
+  "foodDisplay": {
+    "title": "Zawsze znajdziemy coś pysznego dla Was"
+  },
+  "footer": {
+    "intro": "GastroFaza... Wpadaj do nas ze znajomymi na pysznego burgerka i smaczne przekąski...",
+    "contactUs": "SKONTAKTUJ SIĘ Z NAMI",
+    "phone": "+48-511-781-179",
+    "email": "gastrofaza2024@gmail.com",
+    "rights": "Copyright 2024 © GastroFaza - Wszelkie prawa zastrzeżone."
+  },
+  "header": {
+    "new": "Nowość ‼️ Zestaw 'GastroFaza'",
+    "description": "Zestaw 'GastroFaza' 🍔🍟🥤 to idealna opcja na szybkie i pyszne zaspokojenie głodu! W zestawie znajdziesz soczystego burgera, chrupiące frytki oraz orzeźwiający napój. 'Zabij' swój głód w prosty i smaczny sposób! Zamów już teraz i poczuj pełnię smaku bez wychodzenia z domu!",
+    "button": "Wyświetl menu"
+  },
+  "loginPopup": {
+    "login": "Zaloguj się",
+    "signup": "Zarejestruj się",
+    "namePlaceholder": "Twoje imię",
+    "emailPlaceholder": "Twój email",
+    "passwordPlaceholder": "Hasło",
+    "loginButton": "Zaloguj się",
+    "signupButton": "Utwórz konto",
+    "terms": "Kontynuując, zgadzam się na warunki użytkowania i politykę prywatności",
+    "createAccount": "Utworzyć nowe konto?",
+    "clickHere": "Kliknij tutaj",
+    "alreadyHaveAccount": "Masz już konto?",
+    "loginHere": "Zaloguj się tutaj"
+  },
+  "navbar": {
+    "home": "STRONA GŁÓWNA",
+    "menu": "MENU",
+    "delivery": "DOSTAWA",
+    "contact": "KONTAKT",
+    "orders": "ZAMÓWIENIA",
+    "logout": "Wyloguj"
+  },
+  "cart": {
+    "notificationLogin": "Proszę się zalogować, aby kontynuować zamówienie.",
+    "items": "Przedmioty",
+    "name": "Nazwa",
+    "price": "Cena",
+    "quantity": "Ilość",
+    "sum": "Suma",
+    "remove": "Usuń",
+    "title": "Podsumowanie Koszyka",
+    "subtotal": "Suma częściowa",
+    "proceed": "PRZEJDŹ DO KASY",
+    "promoCodeText": "Jeśli masz kod promocyjny, wpisz go tutaj",
+    "promoCodePlaceholder": "Kod promocyjny",
+    "applyButton": "Zatwierdź",
+    "total": "Razem"
+  },
+  "placeOrder": {
+    "deliveryInfo": "Informacje o dostawie",
+    "firstNamePlaceholder": "Imię",
+    "addressPlaceholder": "Adres dostawy",
+    "apartmentPlaceholder": "Numer mieszkania",
+    "phonePlaceholder": "Telefon",
+    "deliverySummary": "Podsumowanie Koszyka",
+    "paymentMethodCard": "Karta płatnicza/BLIK",
+    "paymentMethodCash": "Gotówka przy dostawie",
+    "deliveryFee": "Opłata za dostawę",
+    "freeDelivery": "Bezpłatna dostawa",
+    "packagingFee": "Opłata za opakowanie",
+    "commentPlaceholder": "Chcesz dodać ostrości lub usunąć jakiś składnik z potrawy? Napisz o tym w komentarzu do zamówienia."
+  },
+  "myOrders": {
+    "title": "Moje Zamówienia",
+    "items": "Przedmioty",
+    "trackOrder": "Śledź Zamówienie",
+    "status": {
+      "pending": "Oczekujące",
+      "completed": "Zakończone",
+      "canceled": "Anulowane"
+    }
+  }
+}

@@ -6,9 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import Autocomplete from 'react-google-autocomplete';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { useTranslation } from 'react-i18next';
 
 const PlaceOrder = () => {
-  const api_google = 'AIzaSyB9zR_JSCYR7XLP_6j6GmU8qxG-ZJri3wE';
+  const { t } = useTranslation();
+  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc';
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -247,14 +249,14 @@ const PlaceOrder = () => {
   return (
     <form onSubmit={placeOrder} className="place-order">
       <div className="place-order-left">
-        <p className="title t3">Informacje o dostawie</p>
+        <p className="title white t3">{t('placeOrder.deliveryInfo')}</p>
         <input
           required
           name="firstName"
           onChange={onChangeHandler}
           value={data.firstName}
           type="text"
-          placeholder="Imię"
+          placeholder={t('placeOrder.firstNamePlaceholder')}
         />
         <div className="address-input">
           {addressValid ? (
@@ -262,18 +264,18 @@ const PlaceOrder = () => {
               {outOfDeliveryZone ? (
                 <>
                   <FaTimesCircle color="red" className="address-icon" />
-                  <span>Adres dostawy znajduje się poza obszarem dostawy</span>
+                  <span>{t('placeOrder.outOfDeliveryZone')}</span>
                 </>
               ) : (
                 <>
                   <FaCheckCircle color="green" className="address-icon" />
-                  <span>Adres został ustalony</span>
+                  <span>{t('placeOrder.addressSet')}</span>
                 </>
               )}
             </div>
           ) : (
             <div className="text-white">
-              <FaTimesCircle color="red" className="address-icon" /> Adres jest nieustalony
+              <FaTimesCircle color="red" className="address-icon" /> {t('placeOrder.addressUnset')}
             </div>
           )}
           <Autocomplete
@@ -292,12 +294,10 @@ const PlaceOrder = () => {
               }));
               calculateDeliveryCharge(location.lat, location.lng);
               setAddressValid(true);
-
-              // Update map zoom level when address is selected from autocomplete
               setMapZoom(18); // Zoom in closer to the house level
             }}
             options={{ types: ['address'], componentRestrictions: { country: 'pl' } }}
-            placeholder="Adres dostawy"
+            placeholder={t('placeOrder.addressPlaceholder')}
             value={data.address}
             onChange={onChangeHandler}
             inputProps={{ name: 'address' }} // Added name attribute
@@ -309,7 +309,7 @@ const PlaceOrder = () => {
           onChange={onChangeHandler}
           value={data.apartmentNumber}
           type="text"
-          placeholder="Numer mieszkania"
+          placeholder={t('placeOrder.apartmentPlaceholder')}
         />
         <input
           className="phonee"
@@ -318,7 +318,7 @@ const PlaceOrder = () => {
           onChange={onChangeHandler}
           value={data.phone}
           type="tel"
-          placeholder="Telefon"
+          placeholder={t('placeOrder.phonePlaceholder')}
         />
 
         {/* Map */}
@@ -333,31 +333,31 @@ const PlaceOrder = () => {
 
       <div className="place-order-right">
         <div className="cart-total">
-          <h2 className="t3">Podsumowanie Koszyka</h2>
+          <h2 className="t3">{t('cart.title')}</h2>
           <div>
             <div className="cart-total-details">
-              <p className="t5">Suma częściowa</p>
+              <p className="t5">{t('cart.subtotal')}</p>
               <p className="t3">{getTotalCartAmount()} zł</p>
             </div>
             <hr />
             {deliveryCharge !== null && (
               <>
                 <div className="cart-total-details">
-                  <p className="t5">Opłata za dostawę</p>
+                  <p className="t5">{t('placeOrder.deliveryFee')}</p>
                   <p className="t3">
-                    {deliveryCharge === 0 ? 'Bezpłatna' : `${deliveryCharge} zł`}
+                    {deliveryCharge === 0 ? t('placeOrder.freeDelivery') : `${deliveryCharge} zł`}
                   </p>
                 </div>
                 <hr />
               </>
             )}
             <div className="cart-total-details">
-              <p className="t5">Opłata za opakowanie</p>
+              <p className="t5">{t('placeOrder.packagingFee')}</p>
               <p className="t3">{packagingCharge} zł</p>
             </div>
             <hr />
             <div className="cart-total-details">
-              <b className="t5">Suma</b>
+              <b className="t5">{t('cart.total')}</b>
               <b className="t3">
                 {getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge} zł
               </b>
@@ -365,7 +365,7 @@ const PlaceOrder = () => {
             <hr />
 
             <div className="cart-items">
-              <div className="title t3 tac">Komentarz do zamówienia</div>
+              <div className="title t3 tac">{t('placeOrder.comment')}</div>
               {food_list.map((item) =>
                 cartItems[item._id] > 0 ? (
                   <div key={item._id} className="cart-item">
@@ -379,7 +379,7 @@ const PlaceOrder = () => {
                       </div>
                     </div>
                     <textarea
-                      placeholder="Chcesz dodać ostrości lub usunąć jakiś składnik z potrawy? Napisz o tym w komentarzu do zamówienia."
+                      placeholder={t('placeOrder.commentPlaceholder')}
                       value={comments[item._id] || ''}
                       onChange={(e) => onCommentChangeHandler(item._id, e.target.value)}
                     />
@@ -396,7 +396,7 @@ const PlaceOrder = () => {
                 checked={paymentMethod === 'card'}
                 onChange={handlePaymentMethodChange}
               />
-              Karta płatnicza/BLIK
+              {t('placeOrder.paymentMethodCard')}
             </label>
             <label>
               <input
@@ -405,11 +405,11 @@ const PlaceOrder = () => {
                 checked={paymentMethod === 'cash'}
                 onChange={handlePaymentMethodChange}
               />
-              Gotówka przy dostawie
+              {t('placeOrder.paymentMethodCash')}
             </label>
           </div>
           <button className="t6" type="submit">
-            PRZEJDŹ DO PŁATNOŚCI
+            {t('placeOrder.proceed')}
           </button>
         </div>
       </div>

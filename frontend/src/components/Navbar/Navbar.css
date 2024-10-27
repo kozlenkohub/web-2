@@ -350,3 +350,46 @@
     width: 35px;
   }
 }
+
+/* Добавим стили для блока выбора языка */
+.language-select {
+  margin-right: 20px; /* Отступ справа */
+  display: flex;
+  align-items: center;
+}
+
+.language-select select {
+  background-color: #ffffff; /* Цвет фона */
+  border: 1px solid #ccc; /* Обводка */
+  border-radius: 5px; /* Скругленные углы */
+  padding: 5px 10px; /* Внутренние отступы */
+  font-size: 16px; /* Размер текста */
+  color: #333; /* Цвет текста */
+  cursor: pointer;
+  outline: none; /* Убираем обводку при фокусе */
+  transition: all 0.3s ease; /* Анимация при наведении */
+}
+
+.language-select select:hover {
+  border-color: #555; /* Обводка при наведении */
+}
+
+.language-select select:focus {
+  border-color: #007bff; /* Цвет обводки при фокусе */
+}
+
+/* Стили для выпадающего списка */
+.language-select select option {
+  background-color: #ffffff; /* Цвет фона опций */
+  color: #333; /* Цвет текста опций */
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center; /* Выравнивание по вертикали */
+}
+
+/* Настройки для визуального переключателя */
+#visual-toggle-button {
+  margin-right: 20px; /* Отступ справа */
+}

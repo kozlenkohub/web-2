@@ -3,10 +3,12 @@ import './MyOrders.css';
 import { StoreContext } from '../../context/StoreContext';
 import axios from 'axios';
 import { assets } from '../../assets/assets';
+import { useTranslation } from 'react-i18next'; // Import for translation
 
 const MyOrders = () => {
   const { url, token } = useContext(StoreContext);
   const [data, setData] = useState([]);
+  const { t } = useTranslation(); // Initialize translation
 
   const fetchOrders = async () => {
     const response = await axios.post(url + '/api/order/userorders', {}, { headers: { token } });
@@ -21,7 +23,7 @@ const MyOrders = () => {
 
   return (
     <div className="my-orders">
-      <h2 className="myordersp t3">Moje Zamówienia</h2>
+      <h2 className="myordersp t3">{t('myOrders.title')}</h2>
       <div className="container">
         {data.map((order, index) => {
           return (
@@ -37,12 +39,15 @@ const MyOrders = () => {
                 })}
               </p>
               <p className="t3">{order.amount}.00 zł</p>
-              <p className="t3">Przedmioty: {order.items.length}</p>
+              <p className="t3">
+                {t('myOrders.items')}: {order.items.length}
+              </p>
               <p>
-                <span className="t3">&#x25cf;</span> <b className="t3">{order.status}</b>
+                <span className="t3">&#x25cf;</span>{' '}
+                <b className="t3">{t(`myOrders.status.${order.status}`)}</b>
               </p>
               <button className="t3" onClick={fetchOrders}>
-                Śledź Zamówienie
+                {t('myOrders.trackOrder')}
               </button>
             </div>
           );

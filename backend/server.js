@@ -4,10 +4,13 @@ import { connectDB } from './config/db.js';
 import foodRouter from './routes/foodRoute.js';
 import userRouter from './routes/userRoute.js';
 import 'dotenv/config';
+import userModel from './models/userModel.js'; // Импорт модели пользователя
+
 import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
+import { getPaymentDetails, getSuccessfulPaymentsByMonth } from './controllers/stripeController.js';
 
-// app config
+// app configa
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -27,6 +30,58 @@ app.use('/api/order', orderRouter);
 app.get('/', (req, res) => {
   res.send('API Working');
 });
+app.get('/stats', async (req, res) => {
+  try {
+    const stats = await userModel.aggregate([
+      {
+        $addFields: {
+          idAsString: { $toString: '$_id' }, // Преобразуем ObjectId в строку
+        },
+      },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'idAsString',
+          foreignField: 'userId',
+          as: 'orders',
+        },
+      },
+      {
+        $addFields: {
+          orderCount: { $size: '$orders' }, // Подсчет количества заказов
+          lastOrder: { $arrayElemAt: ['$orders', -1] }, // Берем последний заказ
+        },
+      },
+      {
+        $addFields: {
+          phoneNumber: '$lastOrder.address.phone', // Берем номер телефона из последнего заказа
+        },
+      },
+      {
+        $match: {
+          orderCount: { $gt: 0 }, // Показывать только тех, у кого больше 0 заказов
+          email: { $ne: 'ggkozlenko@gmail.com' }, // Исключаем пользователя с этим email
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          phoneNumber: 1, // Отображаем номер телефона
+          orderCount: 1,
+        },
+      },
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Ошибка при получении статистики:', error);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+app.get('/api/payments', getSuccessfulPaymentsByMonth);
+app.get('/api/payment/:id', getPaymentDetails);
 
 app.listen(port, () => {
   console.log(`Server Started on http://localhost:${port}`);
