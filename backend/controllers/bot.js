@@ -67,6 +67,11 @@ const initializeBot = (bot) => {
       const orderId = data.replace('set_delivery_time_', '');
 
       const order = await orderModel.findById(orderId);
+      if (!order) {
+        bot.sendMessage(chatId, `Заказ с ID ${orderId} не найден.`);
+        return;
+      }
+
       if (order.deliveryTimeEmailSent) {
         bot.sendMessage(
           chatId,
