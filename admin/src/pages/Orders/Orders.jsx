@@ -67,7 +67,7 @@ const Orders = ({ url }) => {
             <p className="order-item-payment-time">
               {order.payment && order.paymentTime
                 ? `Оплачено: ${new Date(order.paymentTime).toLocaleString('ru-RU')}`
-                : 'Не оплачено'}
+                : 'Оплата при получении'}
             </p>
           </div>
           <button className="delete-button" onClick={() => deleteOrderHandler(order._id)}>
