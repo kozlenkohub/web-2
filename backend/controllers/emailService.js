@@ -44,7 +44,7 @@ export async function sendDeliveryTimeEmail(order, deliveryTime) {
     const mailOptions = {
       from: process.env.EMAIL,
       to: user.email,
-      subject: 'GastroFaza Доставка',
+      subject: 'GastroFaza Delivery',
       html: `<div style="font-family: Arial, sans-serif; background-color: #f2f2f2; padding: 20px;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
     <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
