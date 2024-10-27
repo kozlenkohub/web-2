@@ -21,10 +21,11 @@ const App = () => {
     if (authTime) {
       const currentTime = Date.now();
       const timeElapsed = (currentTime - authTime) / 1000 / 60; // Время в минутах
-      if (timeElapsed < 30) {
+      if (timeElapsed < 4320) {
+        // 3 дня = 4320 минут
         setIsAuthenticated(true);
       } else {
-        localStorage.removeItem('authTime'); // Очистка, если прошло 30 минут
+        localStorage.removeItem('authTime'); // Очистка, если прошло 3 дня
         setIsAuthenticated(false);
       }
     }
