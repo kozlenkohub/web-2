@@ -1,34 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar/Navbar';
 import Sidebar from './components/Sidebar/Sidebar';
 import { Routes, Route } from 'react-router-dom';
 import Add from './pages/Add/Add';
 import List from './pages/List/List';
 import Orders from './pages/Orders/Orders';
-import Stats from './pages/Stats/Stats'; // Импортируем компонент Stats
+import Stats from './pages/Stats/Stats';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PaymentsFetcher from './pages/Stripe/PaymentsFetcher';
+import Login from './components/Login/Login';
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const url = 'https://web-2-backend-wbs4.onrender.com';
+
+  // Функция для проверки времени аутентификации
+  const checkAuthentication = () => {
+    const authTime = localStorage.getItem('authTime');
+    if (authTime) {
+      const currentTime = Date.now();
+      const timeElapsed = (currentTime - authTime) / 1000 / 60; // Время в минутах
+      if (timeElapsed < 30) {
+        setIsAuthenticated(true);
+      } else {
+        localStorage.removeItem('authTime'); // Очистка, если прошло 30 минут
+        setIsAuthenticated(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    checkAuthentication(); // Проверка при загрузке приложения
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem('authTime', Date.now()); // Сохранение времени аутентификации
+  };
 
   return (
     <div>
       <ToastContainer />
-      <Navbar />
-      <hr />
-      <div className="app-content">
-        <Sidebar />
-        <Routes>
-          <Route path="/add" element={<Add url={url} />} />
-          <Route path="/list" element={<List url={url} />} />
-          <Route path="/orders" element={<Orders url={url} />} />
-          <Route path="/stats" element={<Stats url={url} />} /> {/* Добавляем маршрут для Stats */}
-          <Route path="/stripe" element={<PaymentsFetcher url={url} />} />{' '}
-          {/* Добавляем маршрут для Stats */}
-        </Routes>
-      </div>
+      {isAuthenticated ? (
+        <>
+          <Navbar />
+          <hr />
+          <div className="app-content">
+            <Sidebar />
+            <Routes>
+              <Route path="/add" element={<Add url={url} />} />
+              <Route path="/list" element={<List url={url} />} />
+              <Route path="/orders" element={<Orders url={url} />} />
+              <Route path="/stats" element={<Stats url={url} />} />
+              <Route path="/stripe" element={<PaymentsFetcher url={url} />} />
+            </Routes>
+          </div>
+        </>
+      ) : (
+        <Login onLogin={handleLogin} />
+      )}
     </div>
   );
 };

@@ -32,3 +32,59 @@ hr {
   flex-direction: column;
   gap: 10px;
 }
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.password-prompt {
+  text-align: center;
+  padding: 20px;
+  width: 300px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+  background-color: #333; /* Slightly lighter than background */
+}
+
+.password-prompt h2 {
+  color: #ffa500; /* Orange text for the header */
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.password-prompt form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.password-prompt input[type='password'] {
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #444;
+  color: #fff;
+  font-size: 1em;
+}
+
+.password-prompt button {
+  padding: 10px;
+  background-color: #ffa500; /* Orange button */
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.password-prompt button:hover {
+  background-color: #e69500; /* Slightly darker on hover */
+}
+
+.password-prompt p {
+  color: #ff4d4d; /* Red for error messages */
+  font-size: 0.9em;
+}
