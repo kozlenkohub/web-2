@@ -139,14 +139,14 @@ const List = ({ url }) => {
                     value={editData.category}
                     onChange={handleChange}
                     className="select-category">
-                    <option value="Бургеры">Бургеры</option>
-                    <option value="Сэндвичи">Сэндвичи</option>
-                    <option value="Салаты">Салаты</option>
-                    <option value="Завтраки">Завтраки</option>
-                    <option value="Для детей">Для детей</option>
-                    <option value="Сеты">Сеты</option>
-                    <option value="Добавки">Добавки</option>
-                    <option value="Напитки">Напитки</option>
+                    <option value="Burgery">Burgery</option>
+                    <option value="Kanapki">Kanapki</option>
+                    <option value="Sałatki">Sałatki</option>
+                    <option value="Breakfast">Śniadania</option>
+                    <option value="Dla dzieci">Dla dzieci</option>
+                    <option value="Zestawy">Zestawy</option>
+                    <option value="Dodatki">Dodatki</option>
+                    <option value="Napoje">Napoje</option>
                   </select>
                 </div>
                 <div className="edit-field">
