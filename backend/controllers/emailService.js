@@ -45,41 +45,38 @@ export async function sendDeliveryTimeEmail(order, deliveryTime) {
       from: process.env.EMAIL,
       to: user.email,
       subject: 'GastroFaza Доставка',
-      html: `
-        <div style="font-family: Arial, sans-serif; background-color: #f2f2f2; padding: 20px;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
-              <h1 style="margin: 0;">Спасибо за ваш заказ!</h1>
-            </div>
-            <div style="padding: 20px; color: #333333;">
-              <p>Здравствуйте, <strong>${order.address.firstName}</strong>!</p>
-              <p>Ваш заказ будет доставлен приблизительно через <strong>${deliveryTime} минут</strong>.</p>
-              <h2 style="color: #4CAF50;">Детали заказа:</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                  <tr>
-                    <th style="padding: 8px; border: 1px solid #ddd;">Товар</th>
-                    <th style="padding: 8px; border: 1px solid #ddd;">Количество</th>
-                    <th style="padding: 8px; border: 1px solid #ddd;">Цена</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsList}
-                </tbody>
-              </table>
-              <p style="font-size: 18px; font-weight: bold; text-align: right;">Итоговая сумма: ${
-                order.amount
-              } zł</p>
-              <p>Если у вас есть вопросы, пожалуйста, свяжитесь с нами по телефону ${
-                process.env.CONTACT_PHONE
-              }.</p>
-            </div>
-            <div style="background-color: #f1f1f1; color: #777777; padding: 10px; text-align: center;">
-              <p style="margin: 0;">&copy; ${new Date().getFullYear()} GASTROFAZA</p>
-            </div>
-          </div>
-        </div>
-      `,
+      html: `<div style="font-family: Arial, sans-serif; background-color: #f2f2f2; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
+      <h1 style="margin: 0;">Thank you for your order!</h1>
+    </div>
+    <div style="padding: 20px; color: #333333;">
+      <p>Hello, <strong>${order.address.firstName}</strong>!</p>
+      <p>Your order will be delivered in approximately <strong>${deliveryTime} minutes</strong>.</p>
+      <h2 style="color: #4CAF50;">Order Details:</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding: 8px; border: 1px solid #ddd;">Product</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Quantity</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsList}
+        </tbody>
+      </table>
+      <p style="font-size: 18px; font-weight: bold; text-align: right;">Total Amount: ${
+        order.amount
+      } zł</p>
+      <p>If you have any questions, please contact us at ${process.env.CONTACT_PHONE}.</p>
+    </div>
+    <div style="background-color: #f1f1f1; color: #777777; padding: 10px; text-align: center;">
+      <p style="margin: 0;">&copy; ${new Date().getFullYear()} GASTROFAZA</p>
+    </div>
+  </div>
+</div>
+`,
     };
 
     await transporter.sendMail(mailOptions);
