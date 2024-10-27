@@ -1,9 +1,10 @@
 // bot.js
+
 import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
 import UserAccessModel from '../models/userAccessModel.js';
 import orderModel from '../models/orderModel.js';
-import { sendDeliveryTimeEmail } from './orderController.js'; // Import the function if needed
+import { sendDeliveryTimeEmail } from './orderController.js'; // Adjust the path as needed
 
 dotenv.config();
 
@@ -47,6 +48,35 @@ const initializeBot = (bot) => {
     }
   };
 
+  // Function to format and validate Polish phone numbers
+  const formatPhoneNumber = (phone) => {
+    // Remove spaces, dashes, and parentheses
+    let cleaned = phone.replace(/[\s\-()]/g, '');
+
+    // Remove leading '+' if present
+    if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1);
+    }
+
+    // If the number starts with '48', it includes the country code
+    if (cleaned.startsWith('48')) {
+      // Should be '48' + 9 digits = 11 digits
+      if (cleaned.length !== 11) {
+        return null; // Invalid phone number
+      }
+    } else {
+      // Should be 9 digits
+      if (cleaned.length !== 9) {
+        return null; // Invalid phone number
+      }
+      // Add country code
+      cleaned = '48' + cleaned;
+    }
+
+    // Return in format '+48XXXXXXXXX'
+    return '+' + cleaned;
+  };
+
   // Handler for callback queries
   bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
@@ -61,7 +91,6 @@ const initializeBot = (bot) => {
       return;
     }
 
-    // Handle inline buttons
     if (data.startsWith('set_delivery_time_')) {
       const orderId = data.replace('set_delivery_time_', '');
 
@@ -106,7 +135,36 @@ const initializeBot = (bot) => {
           bot.sendMessage(chatId, 'Произошла ошибка при установке времени доставки.');
         }
       });
+    } else if (data.startsWith('contact_client_')) {
+      const orderId = data.replace('contact_client_', '');
+
+      try {
+        const order = await orderModel.findById(orderId);
+        if (!order) {
+          bot.sendMessage(chatId, `Заказ с ID ${orderId} не найден.`);
+          return;
+        }
+
+        // Get the client's phone number
+        let phoneNumber = order.address.phone;
+
+        // Format and validate the phone number
+        const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+
+        if (!formattedPhoneNumber) {
+          bot.sendMessage(chatId, `Неверный формат номера телефона клиента: ${phoneNumber}`);
+          return;
+        }
+
+        // Send the formatted phone number to the administrator
+        bot.sendMessage(chatId, `Номер телефона клиента: ${formattedPhoneNumber}`);
+      } catch (error) {
+        console.error('Ошибка при получении номера телефона клиента:', error);
+        bot.sendMessage(chatId, 'Произошла ошибка при получении номера телефона клиента.');
+      }
     }
+
+    // Other callback_query handlers remain unchanged
   });
 
   // Handler for the /adduser command
@@ -154,7 +212,7 @@ const initializeBot = (bot) => {
     );
   });
 
-  // ... Add any other bot handlers here
+  // You can add other bot handlers here as needed
 };
 
 export default getBotInstance();

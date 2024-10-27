@@ -1,4 +1,5 @@
 // orderController.js
+
 import orderModel from '../models/orderModel.js';
 import userModel from '../models/userModel.js';
 import UserAccessModel from '../models/userAccessModel.js';
@@ -193,7 +194,10 @@ ${order.items.map((item) => `- ${item.name} x ${item.quantity}`).join('\n')}
   `;
 
   const inlineKeyboard = [
-    [{ text: 'Установить время доставки', callback_data: `set_delivery_time_${order._id}` }],
+    [
+      { text: 'Установить время доставки', callback_data: `set_delivery_time_${order._id}` },
+      { text: 'Связаться с клиентом', callback_data: `contact_client_${order._id}` },
+    ],
   ];
 
   try {
