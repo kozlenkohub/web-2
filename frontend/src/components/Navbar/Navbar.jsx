@@ -5,6 +5,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useContext } from 'react';
 import { useTranslation } from 'react-i18next'; // Импорт для перевода
 import { StoreContext } from '../../context/StoreContext';
+import { FiShoppingCart, FiUser, FiLogOut, FiHome, FiMenu, FiPhone } from 'react-icons/fi';
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState('home');
@@ -132,7 +133,7 @@ const Navbar = ({ setShowLogin }) => {
         </div>
         <div className={`navbar-search-icon ${isCartFixed ? 'fixed-cart' : ''}`}>
           <Link to="/cart">
-            <img className="basketlogo" src={assets.basket_icon} alt="Cart" />
+            <FiShoppingCart size={24} className="icon" />
           </Link>
           <div className={getTotalCartAmount() === 0 ? '' : 'dot'}></div>
         </div>
