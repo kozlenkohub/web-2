@@ -114,50 +114,58 @@ export async function sendAdminOrderEmail(order, sessionUrl) {
     to: process.env.NOTIFICATION_EMAIL,
     subject: '🎉 Новый заказ',
     html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
-            <h1 style="margin: 0;">Новый заказ от ${order.address.firstName}</h1>
-          </div>
-          <div style="padding: 20px; color: #333;">
-            <p><strong>ID заказа:</strong> ${order._id}</p>
-            <p><strong>Имя:</strong> ${order.address.firstName}</p>
-            <p><strong>Адрес:</strong> ${order.address.address}</p>
-            <p><strong>Номер квартиры:</strong> ${order.address.apartmentNumber}</p>
-            <p><strong>Телефон:</strong> ${order.address.phone}</p>
-            <h2 style="color: #4CAF50;">Товары:</h2>
-            <table style="width: 100%; border-collapse: collapse;">
-              <thead>
-                <tr>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Товар</th>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Количество</th>
-                  <th style="padding: 8px; border: 1px solid #ddd;">Цена</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsList}
-              </tbody>
-            </table>
-            <p style="font-size: 18px; font-weight: bold; text-align: right;">Итоговая сумма: ${
-              order.amount
-            } zł</p>
-            <p><strong>СПОСОБ ОПЛАТЫ:</strong> 
-              <span style="text-transform: uppercase; color: #FF5733; font-weight: bold;">${
-                order.paymentMethod
-              }</span>
-            </p>
-            ${
-              sessionUrl
-                ? `<p><a href="${sessionUrl}" style="color: #4CAF50; text-decoration: none;">Просмотреть детали оплаты</a></p>`
-                : ''
-            }
-          </div>
-          <div style="background-color: #f1f1f1; color: #777777; padding: 10px; text-align: center;">
-            <p style="margin: 0;">&copy; ${new Date().getFullYear()} GASTROFAZA</p>
-          </div>
-        </div>
+  <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <div style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
+        <h1 style="margin: 0;">Новый заказ от ${order.address.firstName}</h1>
       </div>
-    `,
+      <div style="padding: 20px; color: #333;">
+        <p><strong>ID заказа:</strong> ${order._id}</p>
+        <p><strong>Имя:</strong> ${order.address.firstName}</p>
+        <p><strong>Адрес:</strong> ${order.address.address}</p>
+        <p><strong>Номер квартиры:</strong> ${order.address.apartmentNumber}</p>
+        <p><strong>Телефон:</strong> ${order.address.phone}</p>
+        <h2 style="color: #4CAF50;">Товары:</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="padding: 8px; border: 1px solid #ddd;">Товар</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Количество</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Цена</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsList}
+          </tbody>
+        </table>
+        
+        <p style="font-size: 16px; font-weight: bold;">Стоимость упаковки: ${
+          order.packagingCharge
+        } zł</p>
+        <p style="font-size: 16px; font-weight: bold;">Стоимость доставки: ${
+          order.deliveryCharge
+        } zł</p>
+        <p style="font-size: 18px; font-weight: bold; text-align: right;">Итоговая сумма: ${
+          order.amount
+        } zł</p>
+        
+        <p><strong>СПОСОБ ОПЛАТЫ:</strong> 
+          <span style="text-transform: uppercase; color: #FF5733; font-weight: bold;">
+            ${order.paymentMethod}
+          </span>
+        </p>
+        ${
+          sessionUrl
+            ? `<p><a href="${sessionUrl}" style="color: #4CAF50; text-decoration: none;">Просмотреть детали оплаты</a></p>`
+            : ''
+        }
+      </div>
+      <div style="background-color: #f1f1f1; color: #777777; padding: 10px; text-align: center;">
+        <p style="margin: 0;">&copy; ${new Date().getFullYear()} GASTROFAZA</p>
+      </div>
+    </div>
+  </div>
+`,
   };
 
   try {
