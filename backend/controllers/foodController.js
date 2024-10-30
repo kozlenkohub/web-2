@@ -24,11 +24,13 @@ const addFood = async (req, res) => {
     const food = new foodModel({
       name: req.body.name,
       description: req.body.description,
+      description_en: req.body.description_en || '', // Default empty string
+      description_ru: req.body.description_ru || '', // Default empty string
       price: req.body.price,
       category: req.body.category,
       image: imageUrl,
       sizes: req.body.sizes ? req.body.sizes.split(',') : [],
-      isActive: req.body.isActive || true, // Продукт по умолчанию активен
+      isActive: req.body.isActive || true,
     });
 
     await food.save();
@@ -63,10 +65,12 @@ const updateFood = async (req, res) => {
 
     food.name = req.body.name;
     food.description = req.body.description;
+    food.description_en = req.body.description_en || food.description_en;
+    food.description_ru = req.body.description_ru || food.description_ru;
     food.price = req.body.price;
     food.category = req.body.category;
     food.sizes = req.body.sizes ? req.body.sizes.split(',') : [];
-    food.isActive = req.body.isActive; // Обновляем состояние активности
+    food.isActive = req.body.isActive;
 
     await food.save();
     res.json({ success: true, message: 'Food Updated' });
@@ -79,7 +83,7 @@ const updateFood = async (req, res) => {
 // All food list
 const listFood = async (req, res) => {
   try {
-    const foods = await foodModel.find({}); // Получаем все продукты
+    const foods = await foodModel.find({});
     const sortedFoods = foods.sort((a, b) => a.category.localeCompare(b.category));
 
     res.json({ success: true, data: sortedFoods });

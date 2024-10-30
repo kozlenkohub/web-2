@@ -8,7 +8,9 @@ const List = ({ url }) => {
   const [editMode, setEditMode] = useState(null);
   const [editData, setEditData] = useState({
     name: '',
-    description: '',
+    description: '', // польское описание
+    description_en: '',
+    description_ru: '',
     price: '',
     category: 'Бургеры',
     isActive: true,
@@ -46,7 +48,9 @@ const List = ({ url }) => {
     setEditMode(item._id);
     setEditData({
       name: item.name,
-      description: item.description,
+      description: item.description, // польское описание
+      description_en: item.description_en,
+      description_ru: item.description_ru,
       price: item.price,
       category: item.category,
       isActive: item.isActive,
@@ -58,6 +62,8 @@ const List = ({ url }) => {
     setEditData({
       name: '',
       description: '',
+      description_en: '',
+      description_ru: '',
       price: '',
       category: 'Бургеры',
       isActive: true,
@@ -69,7 +75,9 @@ const List = ({ url }) => {
     const formData = new FormData();
     formData.append('id', itemId);
     formData.append('name', editData.name);
-    formData.append('description', editData.description);
+    formData.append('description', editData.description); // польское описание
+    formData.append('description_en', editData.description_en); // английское описание
+    formData.append('description_ru', editData.description_ru); // русское описание
     formData.append('price', Number(editData.price));
     formData.append('category', editData.category);
     formData.append('isActive', editData.isActive);
@@ -88,6 +96,7 @@ const List = ({ url }) => {
       }
     } catch (error) {
       toast.error('Ошибка при обновлении продукта');
+      console.error(error);
     }
   };
 
@@ -124,10 +133,28 @@ const List = ({ url }) => {
                   <input type="text" name="name" value={editData.name} onChange={handleChange} />
                 </div>
                 <div className="edit-field">
-                  <label htmlFor="description">Описание</label>
+                  <label htmlFor="description">Описание (PL)</label>
                   <textarea
                     name="description"
                     value={editData.description}
+                    onChange={handleChange}
+                    rows="4"
+                  />
+                </div>
+                <div className="edit-field">
+                  <label htmlFor="description_en">Описание (EN)</label>
+                  <textarea
+                    name="description_en"
+                    value={editData.description_en}
+                    onChange={handleChange}
+                    rows="4"
+                  />
+                </div>
+                <div className="edit-field">
+                  <label htmlFor="description_ru">Описание (RU)</label>
+                  <textarea
+                    name="description_ru"
+                    value={editData.description_ru}
                     onChange={handleChange}
                     rows="4"
                   />
@@ -183,7 +210,7 @@ const List = ({ url }) => {
                 <img src={item.image} alt={item.name} />
                 <p>{item.name}</p>
                 <p>{item.category}</p>
-                <p>{item.price} руб.</p>
+                <p>{item.price} zl.</p>
                 <div className="action-buttons">
                   <button onClick={() => startEdit(item)}>Редактировать</button>
                   <button className="delete" onClick={() => removeFood(item._id)}>
