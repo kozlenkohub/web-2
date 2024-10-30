@@ -1,24 +1,11 @@
-/* Theme Variables */
 :root {
-  --background-color: #ffffff;
-  --text-color: #000000;
-  --secondary-text-color: #555555;
-  --border-color: #dddddd;
-  --primary-color: #007bff;
-  --danger-color: #ff4d4f;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: #121212;
-    --text-color: #ffffff;
-    --secondary-text-color: #bbbbbb;
-    --border-color: #444444;
-    --primary-color: #1a73e8;
-    --danger-color: #ff6b6b;
-    --shadow-color: rgba(255, 255, 255, 0.1);
-  }
+  --background-color: #121212;
+  --text-color: #ffffff;
+  --secondary-text-color: #bbbbbb;
+  --border-color: #444444;
+  --primary-color: #1a73e8;
+  --danger-color: #ff6b6b;
+  --shadow-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Container Styles */
