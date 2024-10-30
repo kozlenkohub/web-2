@@ -2,7 +2,8 @@ import React, { useContext, useState } from 'react';
 import './Cart.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // Импортируем хук для перевода
+import { useTranslation } from 'react-i18next';
+// Импортируем хук для перевода
 
 const Cart = () => {
   const { t } = useTranslation(); // Подключаем хук для перевода

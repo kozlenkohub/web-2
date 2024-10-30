@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 const PlaceOrder = () => {
   const { t } = useTranslation();
-  const api_google = 'YOUR_GOOGLE_API_KEY';
+  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc';
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
