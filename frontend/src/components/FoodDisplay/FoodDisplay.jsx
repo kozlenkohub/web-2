@@ -18,7 +18,7 @@ const FoodDisplay = ({ category }) => {
             let description;
             switch (i18n.language) {
               case 'ru':
-                description = item.description_ru;
+                description = item.description_ru.replace(/б/g, 'Б'); // Заменяем "б" на "Б" в русском описании
                 break;
               case 'en':
                 description = item.description_en;
