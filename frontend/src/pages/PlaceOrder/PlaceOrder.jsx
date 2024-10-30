@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 const PlaceOrder = () => {
   const { t } = useTranslation();
-  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc';
+  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Замените на ваш действительный ключ API
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -19,7 +19,7 @@ const PlaceOrder = () => {
     address: '',
     apartmentNumber: '',
     phone: '',
-    location: { lat: 51.154, lng: 16.9305 }, // Default location
+    location: { lat: 51.154, lng: 16.9305 }, // Локация по умолчанию
     isAddressManual: false,
   });
 
@@ -31,6 +31,8 @@ const PlaceOrder = () => {
   const [outOfDeliveryZone, setOutOfDeliveryZone] = useState(false);
   const [mapZoom, setMapZoom] = useState(14);
 
+  const [hasPastOrders, setHasPastOrders] = useState(null); // Добавлено новое состояние
+
   const MIN_ORDER_AMOUNT = 20;
 
   const { isLoaded } = useJsApiLoader({
@@ -38,33 +40,66 @@ const PlaceOrder = () => {
     libraries: ['places'],
   });
 
-  // Load last order's address data if available
+  // Проверяем наличие прошлых заказов при загрузке компонента или изменении токена
   useEffect(() => {
-    const fetchLastOrder = async () => {
+    const checkForPastOrders = async () => {
+      if (!token) {
+        setHasPastOrders(false);
+        return;
+      }
       try {
         const response = await axios.get(`${url}/api/order/last`, { headers: { token } });
         if (response.data.success && response.data.order) {
-          const lastOrder = response.data.order;
-          setData({
-            firstName: lastOrder.address.firstName,
-            address: lastOrder.address.address,
-            apartmentNumber: lastOrder.address.apartmentNumber,
-            phone: lastOrder.address.phone,
-            location: lastOrder.address.location,
-            isAddressManual: false,
-          });
-          setAddressValid(true);
-          setMapZoom(18); // Zoom closer to the address
+          setHasPastOrders(true);
+        } else {
+          setHasPastOrders(false);
         }
       } catch (error) {
-        console.error('Failed to fetch the last address:', error);
+        console.error('Ошибка при проверке наличия прошлых заказов:', error);
+        setHasPastOrders(false);
       }
     };
 
-    if (token) {
-      fetchLastOrder();
-    }
+    checkForPastOrders();
   }, [token, url]);
+
+  // Функция для фетчинга данных последнего заказа
+  const fetchLastOrder = async () => {
+    if (!token) {
+      alert('Пожалуйста, войдите в систему, чтобы загрузить данные последнего заказа.');
+      navigate('/login');
+      return;
+    }
+
+    console.log('fetchLastOrder called');
+    console.log('Token:', token);
+    console.log('API URL:', url);
+
+    try {
+      const response = await axios.get(`${url}/api/order/last`, { headers: { token } });
+      console.log('Server response:', response);
+
+      if (response.data.success && response.data.order) {
+        const lastOrder = response.data.order;
+        setData({
+          firstName: lastOrder.address.firstName,
+          address: lastOrder.address.address,
+          apartmentNumber: lastOrder.address.apartmentNumber,
+          phone: lastOrder.address.phone,
+          location: lastOrder.address.location,
+          isAddressManual: false,
+        });
+        setAddressValid(true);
+        setMapZoom(18); // Приближаем карту к адресу
+      } else {
+        console.error('Не удалось получить данные последнего заказа:', response.data.message);
+        alert('Не удалось получить данные последнего заказа.');
+      }
+    } catch (error) {
+      console.error('Ошибка при получении последнего заказа:', error);
+      alert('Произошла ошибка при получении данных последнего заказа.');
+    }
+  };
 
   const onChangeHandler = (event) => {
     const name = event.target.name || 'address';
@@ -142,7 +177,7 @@ const PlaceOrder = () => {
         setOutOfDeliveryZone(false);
         setMapZoom(18);
       } else {
-        console.error('Geocode was not successful for the following reason: ' + status);
+        console.error('Geocode не удалось по причине: ' + status);
         setAddressValid(false);
         setOutOfDeliveryZone(true);
       }
@@ -171,23 +206,23 @@ const PlaceOrder = () => {
     const totalAmount = getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge;
 
     if (!token) {
-      alert('Please log in to place an order.');
+      alert('Пожалуйста, войдите в систему, чтобы оформить заказ.');
       navigate('/login');
       return;
     }
 
     if (getTotalCartAmount() === 0) {
-      alert('Your cart is empty.');
+      alert('Ваша корзина пуста.');
       return;
     }
 
     if (totalAmount < MIN_ORDER_AMOUNT) {
-      alert(`The minimum order amount is ${MIN_ORDER_AMOUNT} PLN.`);
+      alert(`Минимальная сумма заказа ${MIN_ORDER_AMOUNT} PLN.`);
       return;
     }
 
     if (outOfDeliveryZone) {
-      alert('The delivery address is outside the delivery zone.');
+      alert('Адрес доставки находится за пределами зоны доставки.');
       return;
     }
 
@@ -214,17 +249,17 @@ const PlaceOrder = () => {
       let response = await axios.post(`${url}/api/order/place`, orderData, { headers: { token } });
       if (response.data.success) {
         if (paymentMethod === 'cash') {
-          alert('Your order has been successfully placed. Cash payment upon delivery.');
+          alert('Ваш заказ успешно оформлен. Оплата наличными при доставке.');
           navigate('/');
         } else {
           const { session_url } = response.data;
           window.location.replace(session_url);
         }
       } else {
-        alert('An error occurred while placing the order.');
+        alert('Произошла ошибка при оформлении заказа.');
       }
     } catch (error) {
-      alert('An error occurred. Please try again.');
+      alert('Произошла ошибка. Пожалуйста, попробуйте снова.');
       console.error(error);
     }
   };
@@ -253,16 +288,16 @@ const PlaceOrder = () => {
           });
           setMapZoom(18);
         } else {
-          console.error('No results found');
+          console.error('Результаты не найдены');
         }
       } else {
-        console.error('Geocoder failed due to: ' + status);
+        console.error('Geocoder не удалось из-за: ' + status);
       }
     });
   };
 
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return <div>Загрузка...</div>;
   }
 
   return (
@@ -321,6 +356,14 @@ const PlaceOrder = () => {
             onChange={onChangeHandler}
             inputProps={{ name: 'address' }}
           />
+          {/* Кнопка для получения данных последнего заказа */}
+          <button
+            type="button"
+            onClick={fetchLastOrder}
+            disabled={!hasPastOrders}
+            className={`fetch-last-order-button ${!hasPastOrders ? 'disabled' : ''}`}>
+            {t('placeOrder.fetchLastOrderButton')}
+          </button>
         </div>
         <input
           required
@@ -434,9 +477,9 @@ const PlaceOrder = () => {
   );
 };
 
-// Utility function to calculate distance between two points in km
+// Утилита для расчета расстояния между двумя точками в км
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371; // Радиус Земли в км
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
   const a =

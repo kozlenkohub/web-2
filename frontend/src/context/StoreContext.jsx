@@ -7,7 +7,10 @@ const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const url = 'https://web-2-backend-wbs4.onrender.com';
 
-  const [token, setToken] = useState('');
+  // Инициализируем token значением из localStorage
+  const savedToken = localStorage.getItem('token');
+  const [token, setToken] = useState(savedToken || '');
+
   const [food_list, setFoodList] = useState([]);
 
   const addToCart = async (itemId) => {
@@ -65,13 +68,11 @@ const StoreContextProvider = (props) => {
   useEffect(() => {
     (async () => {
       await fetchFoodList();
-      const savedToken = localStorage.getItem('token');
-      if (savedToken) {
-        setToken(savedToken);
-        await loadCartData(savedToken);
+      if (token) {
+        await loadCartData(token);
       }
     })();
-  }, []);
+  }, [token]); // Добавляем token в зависимости
 
   const contextValue = {
     food_list,
