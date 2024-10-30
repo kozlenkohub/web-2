@@ -139,14 +139,18 @@ const PlaceOrder = () => {
       return 0;
     }
 
-    let additionalPackagingCharge = 2;
+    let additionalPackagingCharge = 0;
 
-    if (totalCartAmountWithoutZestaw > 50) {
-      const baseCharge = 2;
-      const chargeIncrement = 1;
-      const step = 50;
-      additionalPackagingCharge =
-        baseCharge + chargeIncrement * Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
+    if (totalCartAmountWithoutZestaw > 0) {
+      additionalPackagingCharge = 2;
+
+      if (totalCartAmountWithoutZestaw > 50) {
+        const baseCharge = 2;
+        const chargeIncrement = 1;
+        const step = 50;
+        additionalPackagingCharge =
+          baseCharge + chargeIncrement * Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
+      }
     }
 
     return zestawCharge + additionalPackagingCharge;
