@@ -78,7 +78,8 @@
     "commentPlaceholder": "Would you like to add spice or remove any ingredients? Write your comment here.",
     "paymentMethodCard": "Credit Card/BLIK",
     "paymentMethodCash": "Cash on delivery",
-    "proceed": "PROCEED TO PAYMENT"
+    "proceed": "PROCEED TO PAYMENT",
+    "fetchLastOrderButton": "Contact details from the last order"
   },
   "myOrders": {
     "title": "My Orders",

@@ -78,7 +78,8 @@
     "freeDelivery": "Бесплатная доставка",
     "packagingFee": "Стоимость упаковки",
     "paymentMethodCash": "Наличные при доставке",
-    "proceed": "ПЕРЕЙТИ К ОПЛАТЕ"
+    "proceed": "ПЕРЕЙТИ К ОПЛАТЕ",
+    "fetchLastOrderButton": "Контактные данные с прошлого заказа"
   },
   "myOrders": {
     "title": "Мои Заказы",

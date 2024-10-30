@@ -74,6 +74,7 @@
     "deliveryFee": "Opłata za dostawę",
     "freeDelivery": "Bezpłatna dostawa",
     "packagingFee": "Opłata za opakowanie",
+    "fetchLastOrderButton": "Uzyskaj informacje o najnowszym zamówieniu",
     "commentPlaceholder": "Chcesz dodać ostrości lub usunąć jakiś składnik z potrawy? Napisz o tym w komentarzu do zamówienia."
   },
   "myOrders": {
