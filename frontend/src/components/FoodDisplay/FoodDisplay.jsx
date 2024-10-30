@@ -14,12 +14,29 @@ const FoodDisplay = ({ category }) => {
       <div className="food-display-list">
         {food_list.map((item, index) => {
           if (category === 'All' || category === item.category) {
+            // Выбираем описание в зависимости от текущего языка
+            let description;
+            switch (i18n.language) {
+              case 'ru':
+                description = item.description_ru;
+                break;
+              case 'en':
+                description = item.description_en;
+                break;
+              case 'pl':
+                description = item.description; // Описание на польском
+                break;
+              default:
+                description = item.description; // Описание по умолчанию
+                break;
+            }
+
             return (
               <FoodItem
                 key={index}
                 id={item._id}
                 name={item.name}
-                description={item.description}
+                description={description} // Используем динамическое описание
                 price={item.price}
                 image={item.image}
               />
