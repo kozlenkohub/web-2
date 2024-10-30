@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 const PlaceOrder = () => {
   const { t } = useTranslation();
-  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc';
+  const api_google = 'YOUR_GOOGLE_API_KEY';
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -29,8 +29,7 @@ const PlaceOrder = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [addressValid, setAddressValid] = useState(false);
   const [outOfDeliveryZone, setOutOfDeliveryZone] = useState(false);
-
-  const [mapZoom, setMapZoom] = useState(14); // Added state for map zoom level
+  const [mapZoom, setMapZoom] = useState(14);
 
   const MIN_ORDER_AMOUNT = 20;
 
@@ -39,9 +38,36 @@ const PlaceOrder = () => {
     libraries: ['places'],
   });
 
-  // Handler for input changes
+  // Load last order's address data if available
+  useEffect(() => {
+    const fetchLastOrder = async () => {
+      try {
+        const response = await axios.get(`${url}/api/order/last`, { headers: { token } });
+        if (response.data.success && response.data.order) {
+          const lastOrder = response.data.order;
+          setData({
+            firstName: lastOrder.address.firstName,
+            address: lastOrder.address.address,
+            apartmentNumber: lastOrder.address.apartmentNumber,
+            phone: lastOrder.address.phone,
+            location: lastOrder.address.location,
+            isAddressManual: false,
+          });
+          setAddressValid(true);
+          setMapZoom(18); // Zoom closer to the address
+        }
+      } catch (error) {
+        console.error('Failed to fetch the last address:', error);
+      }
+    };
+
+    if (token) {
+      fetchLastOrder();
+    }
+  }, [token, url]);
+
   const onChangeHandler = (event) => {
-    const name = event.target.name || 'address'; // Default to 'address' if name is undefined
+    const name = event.target.name || 'address';
     const value = event.target.value;
     setData((data) => ({ ...data, [name]: value, isAddressManual: name === 'address' }));
   };
@@ -96,7 +122,6 @@ const PlaceOrder = () => {
     setPackagingCharge(calculatedPackagingCharge);
   }, [cartItems, food_list]);
 
-  // New useEffect to watch for address changes
   useEffect(() => {
     if (data.address && data.isAddressManual) {
       geocodeAddress(data.address);
@@ -115,7 +140,7 @@ const PlaceOrder = () => {
         calculateDeliveryCharge(location.lat, location.lng);
         setAddressValid(true);
         setOutOfDeliveryZone(false);
-        setMapZoom(18); // Zoom in closer to the house level
+        setMapZoom(18);
       } else {
         console.error('Geocode was not successful for the following reason: ' + status);
         setAddressValid(false);
@@ -146,23 +171,23 @@ const PlaceOrder = () => {
     const totalAmount = getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge;
 
     if (!token) {
-      alert('Proszę się zalogować, aby złożyć zamówienie.');
+      alert('Please log in to place an order.');
       navigate('/login');
       return;
     }
 
     if (getTotalCartAmount() === 0) {
-      alert(`Twój koszyk jest pusty.`);
+      alert('Your cart is empty.');
       return;
     }
 
     if (totalAmount < MIN_ORDER_AMOUNT) {
-      alert(`Minimalna kwota zamówienia to ${MIN_ORDER_AMOUNT} zł.`);
+      alert(`The minimum order amount is ${MIN_ORDER_AMOUNT} PLN.`);
       return;
     }
 
     if (outOfDeliveryZone) {
-      alert('Adres dostawy znajduje się poza obszarem dostawy.');
+      alert('The delivery address is outside the delivery zone.');
       return;
     }
 
@@ -189,22 +214,21 @@ const PlaceOrder = () => {
       let response = await axios.post(`${url}/api/order/place`, orderData, { headers: { token } });
       if (response.data.success) {
         if (paymentMethod === 'cash') {
-          alert('Twoje zamówienie zostało pomyślnie złożone. Płatność gotówką przy odbiorze.');
+          alert('Your order has been successfully placed. Cash payment upon delivery.');
           navigate('/');
         } else {
           const { session_url } = response.data;
           window.location.replace(session_url);
         }
       } else {
-        alert('Wystąpił błąd podczas składania zamówienia.');
+        alert('An error occurred while placing the order.');
       }
     } catch (error) {
-      alert('Wystąpił błąd. Proszę spróbować ponownie.');
+      alert('An error occurred. Please try again.');
       console.error(error);
     }
   };
 
-  // Map click handler
   const onMapClick = useCallback((e) => {
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
@@ -212,9 +236,7 @@ const PlaceOrder = () => {
     calculateDeliveryCharge(lat, lng);
     setAddressValid(true);
     reverseGeocode(lat, lng);
-
-    // Update map zoom level when location is set manually
-    setMapZoom(18); // Zoom in closer to the house level
+    setMapZoom(18);
   }, []);
 
   const reverseGeocode = (lat, lng) => {
@@ -223,16 +245,13 @@ const PlaceOrder = () => {
       if (status === 'OK') {
         if (results[0]) {
           const address = results[0].formatted_address;
-          // Only update the address if the user is not manually typing
           setData((prev) => {
             if (!prev.isAddressManual) {
               return { ...prev, address };
             }
             return prev;
           });
-
-          // Update map zoom level when address is determined via reverse geocoding
-          setMapZoom(18); // Zoom in closer to the house level
+          setMapZoom(18);
         } else {
           console.error('No results found');
         }
@@ -294,13 +313,13 @@ const PlaceOrder = () => {
               }));
               calculateDeliveryCharge(location.lat, location.lng);
               setAddressValid(true);
-              setMapZoom(18); // Zoom in closer to the house level
+              setMapZoom(18);
             }}
             options={{ types: ['address'], componentRestrictions: { country: 'pl' } }}
             placeholder={t('placeOrder.addressPlaceholder')}
             value={data.address}
             onChange={onChangeHandler}
-            inputProps={{ name: 'address' }} // Added name attribute
+            inputProps={{ name: 'address' }}
           />
         </div>
         <input
@@ -320,11 +339,9 @@ const PlaceOrder = () => {
           type="tel"
           placeholder={t('placeOrder.phonePlaceholder')}
         />
-
-        {/* Map */}
         <GoogleMap
           center={data.location}
-          zoom={mapZoom} // Use the dynamic zoom level
+          zoom={mapZoom}
           mapContainerStyle={{ height: '400px', width: '100%' }}
           onClick={onMapClick}>
           <Marker position={data.location} draggable onDragEnd={onMapClick} />

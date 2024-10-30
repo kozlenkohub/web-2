@@ -125,3 +125,17 @@ export const deleteOrder = async (req, res) => {
     res.status(500).json({ success: false, message: 'Ошибка при удалении заказа' });
   }
 };
+
+export const getLastOrder = async (req, res) => {
+  try {
+    const lastOrder = await orderModel.findOne({ userId: req.userId }).sort({ date: -1 });
+    if (lastOrder) {
+      res.json({ success: true, order: lastOrder });
+    } else {
+      res.json({ success: false, message: 'Нет предыдущих заказов' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Ошибка при получении последнего заказа' });
+  }
+};
