@@ -360,14 +360,16 @@ const PlaceOrder = () => {
             onChange={onChangeHandler}
             inputProps={{ name: 'address' }}
           />
-          {/* Кнопка для получения данных последнего заказа */}
-          <button
+          {/*
+            <button
             type="button"
             onClick={fetchLastOrder}
-            disabled={!hasPastOrders}
+            disabled={false}
             className={`fetch-last-order-button ${!hasPastOrders ? 'disabled' : ''}`}>
             {t('placeOrder.fetchLastOrderButton')}
           </button>
+          
+          */}
         </div>
         <input
           required

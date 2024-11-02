@@ -18,17 +18,20 @@ const transporter = nodemailer.createTransport({
 // Функция для отправки письма клиенту с временем доставки
 export async function sendDeliveryTimeEmail(order, deliveryTime) {
   try {
+    // Проверка: если письмо уже отправлено, сразу возвращаем false
     if (order.deliveryTimeEmailSent) {
       console.log('Письмо с временем доставки уже было отправлено клиенту');
-      return false; // Письмо не было отправлено повторно
+      return false; // Письмо не отправляется повторно
     }
 
+    // Получаем пользователя по userId из заказа
     const user = await userModel.findById(order.userId);
     if (!user) {
       console.error(`Пользователь с ID ${order.userId} не найден`);
       return false;
     }
 
+    // Формируем список товаров
     const itemsList = order.items
       .map(
         (item) => `
@@ -41,6 +44,7 @@ export async function sendDeliveryTimeEmail(order, deliveryTime) {
       )
       .join('');
 
+    // Параметры письма
     const mailOptions = {
       from: process.env.EMAIL,
       to: user.email,
@@ -75,14 +79,14 @@ export async function sendDeliveryTimeEmail(order, deliveryTime) {
       <p style="margin: 0;">&copy; ${new Date().getFullYear()} GASTROFAZA</p>
     </div>
   </div>
-</div>
-`,
+</div>`,
     };
 
+    // Отправка письма
     await transporter.sendMail(mailOptions);
     console.log('Письмо с временем доставки отправлено клиенту');
 
-    // Отмечаем, что письмо было отправлено
+    // Устанавливаем флаг `deliveryTimeEmailSent` в true и сохраняем заказ
     order.deliveryTimeEmailSent = true;
     await order.save();
 
@@ -92,7 +96,6 @@ export async function sendDeliveryTimeEmail(order, deliveryTime) {
     return false;
   }
 }
-
 // Функция для отправки письма администратору о новом заказе
 export async function sendAdminOrderEmail(order, sessionUrl) {
   const itemsList = order.items
