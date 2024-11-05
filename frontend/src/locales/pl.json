@@ -17,6 +17,8 @@
     "contactUs": "SKONTAKTUJ SIĘ Z NAMI",
     "phone": "+48-511-781-179",
     "email": "gastrofaza2024@gmail.com",
+    "address": "Maślicka 160, 54-104 Wrocław",
+
     "rights": "Copyright 2024 © GastroFaza - Wszelkie prawa zastrzeżone."
   },
   "header": {
@@ -41,6 +43,8 @@
   "navbar": {
     "home": "STRONA GŁÓWNA",
     "menu": "MENU",
+    "googleMaps": "Google Maps",
+
     "delivery": "DOSTAWA",
     "contact": "KONTAKT",
     "orders": "ZAMÓWIENIA",

@@ -28,6 +28,7 @@ const Footer = () => {
           <ul>
             <li>{t('footer.phone')}</li>
             <li>{t('footer.email')}</li>
+            <li>{t('footer.address')}</li>
           </ul>
         </div>
       </div>

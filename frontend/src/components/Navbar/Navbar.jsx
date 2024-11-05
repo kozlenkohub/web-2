@@ -5,7 +5,15 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useContext } from 'react';
 import { useTranslation } from 'react-i18next'; // Импорт для перевода
 import { StoreContext } from '../../context/StoreContext';
-import { FiShoppingCart, FiUser, FiLogOut, FiHome, FiMenu, FiPhone } from 'react-icons/fi';
+import {
+  FiShoppingCart,
+  FiUser,
+  FiLogOut,
+  FiHome,
+  FiMenu,
+  FiPhone,
+  FiShoppingBag,
+} from 'react-icons/fi';
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState('home');
@@ -93,25 +101,34 @@ const Navbar = ({ setShowLogin }) => {
           to="/"
           onClick={() => setMenu('home')}
           className={menu === 'home' ? 'active t3' : 't3'}>
-          {t('navbar.home')} {/* Перевод для "ГЛАВНАЯ" */}
+          {t('navbar.home')}
         </Link>
         <a
           href="#explore-menu"
           onClick={() => setMenu('menu')}
           className={menu === 'menu' ? 'active t3' : 't3'}>
-          {t('navbar.menu')} {/* Перевод для "МЕНЮ" */}
+          {t('navbar.menu')}
         </a>
         <a
           href="#app-download"
           onClick={() => setMenu('mobile-app')}
           className={menu === 'mobile-app' ? 'active t3' : 't3'}>
-          {t('navbar.delivery')} {/* Перевод для "ДОСТАВКА" */}
+          {t('navbar.delivery')}
         </a>
         <a
           href="#footer"
           onClick={() => setMenu('contact-us')}
           className={menu === 'contact-us' ? 'active t3' : 't3'}>
-          {t('navbar.contact')} {/* Перевод для "КОНТАКТ" */}
+          {t('navbar.contact')}
+        </a>
+        {/* Новый раздел с Google картами */}
+        <a
+          href="https://www.google.com/maps?cid=10122389382842258008"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setMenu('google-maps')}
+          className={menu === 'google-maps' ? 'active t3' : 't3'}>
+          {t('navbar.googleMaps')} {/* Перевод для "Мы на Гугл картах" */}
         </a>
       </ul>
 
@@ -143,15 +160,16 @@ const Navbar = ({ setShowLogin }) => {
           </button>
         ) : (
           <div className="navbar-profile">
-            <img src={assets.profile_icon} className="white-filter" alt="Profile" />
+            <FiUser size={24} className="white-filter icon" alt="Profile" /> {/* Иконка профиля */}
             <ul className="nav-profile-dropdown">
               <li onClick={() => navigate('/myorders')}>
-                <img src={assets.bag_icon} alt="Orders" />
+                <FiShoppingBag size={20} className="icon" alt="Orders" />{' '}
+                {/* Иконка для "Заказов" */}
                 <p className="t4">{t('navbar.orders')}</p> {/* Перевод для "Orders" */}
               </li>
               <hr />
               <li onClick={logout}>
-                <img src={assets.logout_icon} alt="Logout" />
+                <FiLogOut size={20} className="icon" alt="Logout" /> {/* Иконка для "Выхода" */}
                 <p className="t4">{t('navbar.logout')}</p> {/* Перевод для "Logout" */}
               </li>
             </ul>
