@@ -40,6 +40,52 @@ const PlaceOrder = () => {
     libraries: ['places'],
   });
 
+  // Nowe stany i funkcje dla sprawdzania godzin pracy
+  const [isWorkingHours, setIsWorkingHours] = useState(true);
+
+  const workingHours = {
+    0: { open: '11:00', close: '20:30' }, // Niedziela
+    1: { open: '11:00', close: '20:30' }, // Poniedziałek
+    2: { open: '11:00', close: '20:30' }, // Wtorek
+    3: { open: '11:00', close: '20:30' }, // Środa
+    4: { open: '11:00', close: '20:30' }, // Czwartek
+    5: { open: '11:00', close: '21:30' }, // Piątek
+    6: { open: '11:00', close: '21:30' }, // Sobota
+  };
+
+  const timeStringToMinutes = (timeString) => {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  useEffect(() => {
+    const checkWorkingHours = () => {
+      const currentDay = new Date().getDay(); // 0-6 (0 = Niedziela)
+      const currentTime = new Date();
+      const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+
+      const todayWorkingHours = workingHours[currentDay];
+
+      if (!todayWorkingHours) {
+        // Jeśli nie ma zdefiniowanych godzin pracy dla dzisiejszego dnia
+        setIsWorkingHours(false);
+        return;
+      }
+
+      const openMinutes = timeStringToMinutes(todayWorkingHours.open);
+      const closeMinutes = timeStringToMinutes(todayWorkingHours.close);
+
+      const isOpen = currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+      setIsWorkingHours(isOpen);
+    };
+
+    checkWorkingHours();
+
+    const interval = setInterval(checkWorkingHours, 60000); // Sprawdzaj co minutę
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Check for past orders when the component loads or token changes
   useEffect(() => {
     const checkForPastOrders = async () => {
@@ -66,7 +112,7 @@ const PlaceOrder = () => {
   // Function to fetch last order data
   const fetchLastOrder = async () => {
     if (!token) {
-      alert('Please log in to load the last order data.');
+      alert('Proszę się zalogować, aby wczytać dane ostatniego zamówienia.');
       navigate('/login');
       return;
     }
@@ -93,11 +139,11 @@ const PlaceOrder = () => {
         setMapZoom(18); // Zoom into the address
       } else {
         console.error('Failed to retrieve last order data:', response.data.message);
-        alert('Failed to retrieve last order data.');
+        alert('Nie udało się pobrać danych ostatniego zamówienia.');
       }
     } catch (error) {
       console.error('Error retrieving last order:', error);
-      alert('An error occurred while retrieving the last order data.');
+      alert('Wystąpił błąd podczas pobierania danych ostatniego zamówienia.');
     }
   };
 
@@ -210,23 +256,29 @@ const PlaceOrder = () => {
     const totalAmount = getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge;
 
     if (!token) {
-      alert('Please log in to place an order.');
+      alert('Proszę się zalogować, aby złożyć zamówienie.');
       navigate('/login');
       return;
     }
 
     if (getTotalCartAmount() === 0) {
-      alert('Your cart is empty.');
+      alert('Twój koszyk jest pusty.');
       return;
     }
 
     if (totalAmount < MIN_ORDER_AMOUNT) {
-      alert(`The minimum order amount is ${MIN_ORDER_AMOUNT} PLN.`);
+      alert(`Minimalna kwota zamówienia to ${MIN_ORDER_AMOUNT} PLN.`);
       return;
     }
 
     if (outOfDeliveryZone) {
-      alert('The delivery address is outside the delivery zone.');
+      alert('Adres dostawy znajduje się poza strefą dostaw.');
+      return;
+    }
+
+    // Sprawdzenie, czy jest w godzinach pracy
+    if (!isWorkingHours) {
+      alert('Dostawa nie jest dostępna poza godzinami pracy.');
       return;
     }
 
@@ -253,17 +305,17 @@ const PlaceOrder = () => {
       let response = await axios.post(`${url}/api/order/place`, orderData, { headers: { token } });
       if (response.data.success) {
         if (paymentMethod === 'cash') {
-          alert('Your order has been placed successfully. Payment in cash upon delivery.');
+          alert('Twoje zamówienie zostało pomyślnie złożone. Płatność gotówką przy odbiorze.');
           navigate('/');
         } else {
           const { session_url } = response.data;
           window.location.replace(session_url);
         }
       } else {
-        alert('An error occurred while placing the order.');
+        alert('Wystąpił błąd podczas składania zamówienia.');
       }
     } catch (error) {
-      alert('An error occurred. Please try again.');
+      alert('Wystąpił błąd. Proszę spróbować ponownie.');
       console.error(error);
     }
   };
@@ -306,6 +358,13 @@ const PlaceOrder = () => {
 
   return (
     <form onSubmit={placeOrder} className="place-order">
+      {/* Powiadomienie o godzinach pracy */}
+      {!isWorkingHours && (
+        <div className="notification">
+          <p>Dostawa nie jest dostępna poza godzinami pracy.</p>
+        </div>
+      )}
+
       <div className="place-order-left">
         <p className="title white t3">{t('placeOrder.deliveryInfo')}</p>
         <input
@@ -360,16 +419,6 @@ const PlaceOrder = () => {
             onChange={onChangeHandler}
             inputProps={{ name: 'address' }}
           />
-          {/*
-            <button
-            type="button"
-            onClick={fetchLastOrder}
-            disabled={false}
-            className={`fetch-last-order-button ${!hasPastOrders ? 'disabled' : ''}`}>
-            {t('placeOrder.fetchLastOrderButton')}
-          </button>
-          
-          */}
         </div>
         <input
           required
@@ -474,7 +523,7 @@ const PlaceOrder = () => {
               {t('placeOrder.paymentMethodCash')}
             </label>
           </div>
-          <button className="t6" type="submit">
+          <button className="t6" type="submit" disabled={!isWorkingHours}>
             {t('placeOrder.proceed')}
           </button>
         </div>
