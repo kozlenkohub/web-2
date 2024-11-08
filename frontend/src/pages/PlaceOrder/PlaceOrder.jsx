@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 const PlaceOrder = () => {
   const { t } = useTranslation();
-  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Замените на ваш действительный ключ API
+  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Replace with your valid API key
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -19,7 +19,7 @@ const PlaceOrder = () => {
     address: '',
     apartmentNumber: '',
     phone: '',
-    location: { lat: 51.154, lng: 16.9305 }, // Локация по умолчанию
+    location: { lat: 51.154, lng: 16.9305 }, // Default location
     isAddressManual: false,
   });
 
@@ -31,7 +31,7 @@ const PlaceOrder = () => {
   const [outOfDeliveryZone, setOutOfDeliveryZone] = useState(false);
   const [mapZoom, setMapZoom] = useState(14);
 
-  const [hasPastOrders, setHasPastOrders] = useState(null); // Добавлено новое состояние
+  const [hasPastOrders, setHasPastOrders] = useState(null); // Added new state
 
   const MIN_ORDER_AMOUNT = 20;
 
@@ -40,7 +40,7 @@ const PlaceOrder = () => {
     libraries: ['places'],
   });
 
-  // Проверяем наличие прошлых заказов при загрузке компонента или изменении токена
+  // Check for past orders when the component loads or token changes
   useEffect(() => {
     const checkForPastOrders = async () => {
       if (!token) {
@@ -55,7 +55,7 @@ const PlaceOrder = () => {
           setHasPastOrders(false);
         }
       } catch (error) {
-        console.error('Ошибка при проверке наличия прошлых заказов:', error);
+        console.error('Error checking for past orders:', error);
         setHasPastOrders(false);
       }
     };
@@ -63,10 +63,10 @@ const PlaceOrder = () => {
     checkForPastOrders();
   }, [token, url]);
 
-  // Функция для фетчинга данных последнего заказа
+  // Function to fetch last order data
   const fetchLastOrder = async () => {
     if (!token) {
-      alert('Пожалуйста, войдите в систему, чтобы загрузить данные последнего заказа.');
+      alert('Please log in to load the last order data.');
       navigate('/login');
       return;
     }
@@ -90,14 +90,14 @@ const PlaceOrder = () => {
           isAddressManual: false,
         });
         setAddressValid(true);
-        setMapZoom(18); // Приближаем карту к адресу
+        setMapZoom(18); // Zoom into the address
       } else {
-        console.error('Не удалось получить данные последнего заказа:', response.data.message);
-        alert('Не удалось получить данные последнего заказа.');
+        console.error('Failed to retrieve last order data:', response.data.message);
+        alert('Failed to retrieve last order data.');
       }
     } catch (error) {
-      console.error('Ошибка при получении последнего заказа:', error);
-      alert('Произошла ошибка при получении данных последнего заказа.');
+      console.error('Error retrieving last order:', error);
+      alert('An error occurred while retrieving the last order data.');
     }
   };
 
@@ -181,7 +181,7 @@ const PlaceOrder = () => {
         setOutOfDeliveryZone(false);
         setMapZoom(18);
       } else {
-        console.error('Geocode не удалось по причине: ' + status);
+        console.error('Geocode failed due to: ' + status);
         setAddressValid(false);
         setOutOfDeliveryZone(true);
       }
@@ -210,23 +210,23 @@ const PlaceOrder = () => {
     const totalAmount = getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge;
 
     if (!token) {
-      alert('Пожалуйста, войдите в систему, чтобы оформить заказ.');
+      alert('Please log in to place an order.');
       navigate('/login');
       return;
     }
 
     if (getTotalCartAmount() === 0) {
-      alert('Ваша корзина пуста.');
+      alert('Your cart is empty.');
       return;
     }
 
     if (totalAmount < MIN_ORDER_AMOUNT) {
-      alert(`Минимальная сумма заказа ${MIN_ORDER_AMOUNT} PLN.`);
+      alert(`The minimum order amount is ${MIN_ORDER_AMOUNT} PLN.`);
       return;
     }
 
     if (outOfDeliveryZone) {
-      alert('Адрес доставки находится за пределами зоны доставки.');
+      alert('The delivery address is outside the delivery zone.');
       return;
     }
 
@@ -253,17 +253,17 @@ const PlaceOrder = () => {
       let response = await axios.post(`${url}/api/order/place`, orderData, { headers: { token } });
       if (response.data.success) {
         if (paymentMethod === 'cash') {
-          alert('Ваш заказ успешно оформлен. Оплата наличными при доставке.');
+          alert('Your order has been placed successfully. Payment in cash upon delivery.');
           navigate('/');
         } else {
           const { session_url } = response.data;
           window.location.replace(session_url);
         }
       } else {
-        alert('Произошла ошибка при оформлении заказа.');
+        alert('An error occurred while placing the order.');
       }
     } catch (error) {
-      alert('Произошла ошибка. Пожалуйста, попробуйте снова.');
+      alert('An error occurred. Please try again.');
       console.error(error);
     }
   };
@@ -292,16 +292,16 @@ const PlaceOrder = () => {
           });
           setMapZoom(18);
         } else {
-          console.error('Результаты не найдены');
+          console.error('No results found');
         }
       } else {
-        console.error('Geocoder не удалось из-за: ' + status);
+        console.error('Geocoder failed due to: ' + status);
       }
     });
   };
 
   if (!isLoaded) {
-    return <div>Загрузка...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
@@ -483,9 +483,9 @@ const PlaceOrder = () => {
   );
 };
 
-// Утилита для расчета расстояния между двумя точками в км
+// Utility function to calculate the distance between two points in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Радиус Земли в км
+  const R = 6371; // Earth's radius in km
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
   const a =
