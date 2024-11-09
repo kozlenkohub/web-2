@@ -1,4 +1,3 @@
-// routes/headerContent.js
 import express from 'express';
 import HeaderContent from '../models/HeaderContent.js';
 import axios from 'axios';
@@ -6,16 +5,16 @@ import axios from 'axios';
 const router = express.Router();
 
 // Эндпоинт для загрузки изображения на Imgur
-router.post('/upload-image', async (req, res) => {
+router.post('/upload-image', express.json({ limit: '10mb' }), async (req, res) => {
   try {
-    const { imageBase64 } = req.body; // Ожидаем, что изображение будет передано в формате base64
+    const { imageBase64 } = req.body;
 
     const response = await axios.post(
       'https://api.imgur.com/3/image',
       { image: imageBase64 },
       {
         headers: {
-          Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`, // Используем CLIENT_ID из .env файла
+          Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
         },
       },
     );
