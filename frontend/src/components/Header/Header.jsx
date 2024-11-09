@@ -1,3 +1,4 @@
+// Header.js
 import React, { useContext } from 'react';
 import './Header.css';
 import { StoreContext } from '../../context/StoreContext';
@@ -15,7 +16,7 @@ const Header = () => {
     <div
       className="header"
       style={{
-        backgroundImage: `url(${headerContent.image || 'https://i.imgur.com/kaSyxLZ.jpeg'})`,
+        backgroundImage: `url(${headerContent.backgroundUrl || ''})`,
       }}>
       <div className="header-contents">
         {/* Заголовок */}
