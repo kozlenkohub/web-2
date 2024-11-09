@@ -1,54 +1,71 @@
 import express from 'express';
 import HeaderContent from '../models/HeaderContent.js';
 import axios from 'axios';
+import FormData from 'form-data';
 
 const router = express.Router();
 
 // Эндпоинт для загрузки изображения на Imgur
-router.post('/upload-image', express.json({ limit: '10mb' }), async (req, res) => {
+router.post('/upload-image', async (req, res) => {
   try {
-    const { imageBase64 } = req.body;
+    const { imageBase64 } = req.body; // Получаем изображение в формате base64
 
-    const response = await axios.post(
-      'https://api.imgur.com/3/image',
-      { image: imageBase64 },
-      {
-        headers: {
-          Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
-        },
+    if (!imageBase64) {
+      return res.status(400).json({ success: false, message: 'No image data provided' });
+    }
+
+    // Создаем FormData и добавляем изображение в формате base64
+    const formData = new FormData();
+    formData.append('image', imageBase64);
+
+    // Отправляем изображение на Imgur
+    const imgurResponse = await axios.post('https://api.imgur.com/3/upload', formData, {
+      headers: {
+        Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`,
+        ...formData.getHeaders(),
       },
-    );
+    });
 
-    const imageUrl = response.data.data.link; // URL загруженного изображения
-    res.status(200).json({ imageUrl });
+    const imageUrl = imgurResponse.data.data.link;
+
+    // Находим или создаем запись HeaderContent с новым URL фона
+    let headerContent = await HeaderContent.findOne();
+    if (!headerContent) {
+      headerContent = new HeaderContent({ backgroundUrl: imageUrl });
+    } else {
+      headerContent.backgroundUrl = imageUrl;
+    }
+    await headerContent.save();
+
+    res.json({ success: true, imageUrl });
   } catch (error) {
-    console.error('Error uploading image to Imgur:', error);
-    res.status(500).json({ message: 'Failed to upload image to Imgur' });
+    console.error('Error uploading image:', error);
+    res.status(500).json({ success: false, message: 'Error uploading image' });
   }
 });
 
-// Эндпоинт для получения всех данных заголовка (включая URL фона)
+// Эндпоинт для получения данных заголовка
 router.get('/', async (req, res) => {
   try {
     const headerContent = await HeaderContent.findOne();
     if (!headerContent) {
-      return res.status(404).json({ message: 'Header content not found' });
+      return res.status(404).json({ success: false, message: 'Header content not found' });
     }
-    res.status(200).json(headerContent); // Отправляем все данные заголовка
+    res.json({ success: true, data: headerContent });
   } catch (error) {
     console.error('Error fetching header content:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Error fetching header content' });
   }
 });
 
-// Эндпоинт для обновления данных заголовка, включая URL фона
+// Эндпоинт для обновления текста заголовка
 router.post('/update', async (req, res) => {
   const { new: newHeader, description, button, backgroundUrl } = req.body;
 
   try {
     let headerContent = await HeaderContent.findOne();
     if (!headerContent) {
-      // Если записи нет, создаем новую запись с переданными данными
+      // Создаем новую запись, если её нет
       headerContent = new HeaderContent({
         new: newHeader,
         description,
@@ -56,53 +73,18 @@ router.post('/update', async (req, res) => {
         backgroundUrl,
       });
     } else {
-      // Если запись существует, обновляем её данные
+      // Обновляем существующую запись
       headerContent.new = newHeader;
       headerContent.description = description;
       headerContent.button = button;
       headerContent.backgroundUrl = backgroundUrl;
     }
-
     await headerContent.save();
-    res.status(200).json(headerContent);
+
+    res.json({ success: true, message: 'Header content updated successfully' });
   } catch (error) {
     console.error('Error updating header content:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Эндпоинт для получения только URL фона
-router.get('/background', async (req, res) => {
-  try {
-    const headerContent = await HeaderContent.findOne();
-    if (!headerContent) {
-      return res.status(404).json({ message: 'Header content not found' });
-    }
-    res.status(200).json({ backgroundUrl: headerContent.backgroundUrl });
-  } catch (error) {
-    console.error('Error fetching header background:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Эндпоинт для обновления только URL фона
-router.post('/background', async (req, res) => {
-  const { backgroundUrl } = req.body;
-
-  try {
-    let headerContent = await HeaderContent.findOne();
-    if (!headerContent) {
-      // Если записи нет, создаем её с новым URL фона
-      headerContent = new HeaderContent({ backgroundUrl });
-    } else {
-      // Если запись есть, обновляем URL фона
-      headerContent.backgroundUrl = backgroundUrl;
-    }
-    await headerContent.save();
-    res.status(200).json({ backgroundUrl: headerContent.backgroundUrl });
-  } catch (error) {
-    console.error('Error updating header background:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Error updating header content' });
   }
 });
 

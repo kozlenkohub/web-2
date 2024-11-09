@@ -15,7 +15,7 @@ const AdminHeaderContent = ({ url }) => {
   useEffect(() => {
     fetch(`${url}/api/header`)
       .then((res) => res.json())
-      .then((data) => setHeaderContent(data))
+      .then((data) => setHeaderContent(data.data))
       .catch((error) => toast.error(error.message));
   }, [url]);
 
