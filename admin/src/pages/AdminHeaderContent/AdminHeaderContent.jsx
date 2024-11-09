@@ -8,6 +8,7 @@ const AdminHeaderContent = ({ url }) => {
     description: { en: '', ru: '', pl: '' },
     button: { en: '', ru: '', pl: '' },
   });
+  const [selectedLanguage, setSelectedLanguage] = useState('en'); // По умолчанию английский язык
 
   useEffect(() => {
     fetch(`${url}/api/header`)
@@ -16,13 +17,13 @@ const AdminHeaderContent = ({ url }) => {
       .catch((error) => toast.error(error.message));
   }, [url]);
 
-  const handleInputChange = (e, field, lang) => {
+  const handleInputChange = (e, field) => {
     const value = e.target.value;
     setHeaderContent((prevContent) => ({
       ...prevContent,
       [field]: {
         ...prevContent[field],
-        [lang]: value,
+        [selectedLanguage]: value,
       },
     }));
   };
@@ -47,20 +48,46 @@ const AdminHeaderContent = ({ url }) => {
     <div className="admin-header-content">
       <h2>Edit Header Content</h2>
 
-      {['new', 'description', 'button'].map((field) => (
-        <div key={field} className="field-group">
-          <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-          {['en', 'ru', 'pl'].map((lang) => (
-            <input
-              key={lang}
-              type="text"
-              value={headerContent[field][lang]}
-              onChange={(e) => handleInputChange(e, field, lang)}
-              placeholder={`${field.charAt(0).toUpperCase() + field.slice(1)} (${lang})`}
-            />
-          ))}
-        </div>
-      ))}
+      {/* Переключатель языка */}
+      <div className="language-switcher">
+        {['en', 'ru', 'pl'].map((lang) => (
+          <button
+            key={lang}
+            className={`language-button ${selectedLanguage === lang ? 'active' : ''}`}
+            onClick={() => setSelectedLanguage(lang)}>
+            {lang.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      {/* Поля ввода для редактирования только выбранного языка */}
+      <div className="field-group">
+        <label>Header Title</label>
+        <input
+          type="text"
+          value={headerContent.new[selectedLanguage]}
+          onChange={(e) => handleInputChange(e, 'new')}
+          placeholder="Enter Header Title"
+        />
+      </div>
+      <div className="field-group">
+        <label>Description</label>
+        <input
+          type="text"
+          value={headerContent.description[selectedLanguage]}
+          onChange={(e) => handleInputChange(e, 'description')}
+          placeholder="Enter Description"
+        />
+      </div>
+      <div className="field-group">
+        <label>Button Text</label>
+        <input
+          type="text"
+          value={headerContent.button[selectedLanguage]}
+          onChange={(e) => handleInputChange(e, 'button')}
+          placeholder="Enter Button Text"
+        />
+      </div>
 
       <button className="save-button" onClick={handleSave}>
         Save
