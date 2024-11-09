@@ -63,14 +63,28 @@ export const verifyOrder = async (req, res) => {
   const { orderId, success, sessionUrl } = req.body;
   try {
     const order = await orderModel.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Заказ не найден' });
+    }
+
     if (success === 'true') {
-      await orderModel.findByIdAndUpdate(
-        orderId,
-        { payment: true, paymentTime: new Date() },
-        { new: true },
-      );
-      await sendAdminOrderEmail(order, sessionUrl);
-      await sendTelegramOrderMessage(order);
+      // Проверяем, был ли уже отправлен уведомление
+      if (!order.notificationSent) {
+        await orderModel.findByIdAndUpdate(
+          orderId,
+          {
+            payment: true,
+            paymentTime: new Date(),
+            notificationSent: true, // Устанавливаем флаг, чтобы предотвратить повторную отправку
+          },
+          { new: true },
+        );
+
+        await sendAdminOrderEmail(order, sessionUrl);
+        await sendTelegramOrderMessage(order);
+      }
+
       res.json({ success: true, message: 'Платеж подтвержден' });
     } else {
       await orderModel.findByIdAndDelete(orderId);
