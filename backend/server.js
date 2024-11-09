@@ -3,6 +3,8 @@ import cors from 'cors';
 import { connectDB } from './config/db.js';
 import foodRouter from './routes/foodRoute.js';
 import userRouter from './routes/userRoute.js';
+import settingsRoute from './routes/settingsRoute.js';
+
 import 'dotenv/config';
 import headerContentRouter from './routes/headerContent.js';
 import userModel from './models/userModel.js'; // Импорт модели пользователя
@@ -34,6 +36,8 @@ connectDB();
 app.use('/api/food', foodRouter);
 app.use('/images', express.static('uploads'));
 app.use('/api/user', userRouter);
+app.use('/api/settings', settingsRoute);
+
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 app.get('/', (req, res) => {

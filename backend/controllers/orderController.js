@@ -6,12 +6,19 @@ import { getDistanceFromLatLonInKm } from './utils.js';
 import { sendAdminOrderEmail } from './emailService.js';
 import { createStripeSession } from './paymentService.js';
 import { sendTelegramOrderMessage } from './notificationService.js';
+import settingsModel from '../models/settingsModel.js';
 
 const frontend_url = 'https://www.burgergastrofaza.pl'; // Замените на ваш URL
 
 // Функция для оформления заказа
 export const placeOrder = async (req, res) => {
   try {
+    // Проверяем, включена ли возможность создания заказа
+    const settings = await settingsModel.findOne();
+    if (settings && !settings.orderEnabled) {
+      return res.status(403).json({ success: false, message: 'Прием заказов временно недоступен' });
+    }
+
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
     const userLocation = req.body.address.location;
     const distance = getDistanceFromLatLonInKm(
@@ -26,6 +33,10 @@ export const placeOrder = async (req, res) => {
       deliveryCharge = 0;
     } else if (distance > 1.77 && distance <= 5) {
       deliveryCharge = 8;
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Адрес доставки вне зоны обслуживания' });
     }
 
     const newOrder = new orderModel({
