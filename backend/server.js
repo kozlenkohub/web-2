@@ -1,35 +1,42 @@
+// server.js
+
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
 import foodRouter from './routes/foodRoute.js';
 import userRouter from './routes/userRoute.js';
-import 'dotenv/config';
-import userModel from './models/userModel.js'; // Импорт модели пользователя
-
 import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
+import headerContentRouter from './routes/headerContent.js';
 import { getPaymentDetails, getSuccessfulPaymentsByMonth } from './controllers/stripeController.js';
+import userModel from './models/userModel.js'; // Импорт модели пользователя
+import 'dotenv/config';
 
-// app configa
+// app config
 const app = express();
 const port = process.env.PORT || 4000;
 
 // middleware
 app.use(express.json());
 app.use(cors());
+app.use('/images', express.static('uploads'));
 
 // db connection
 connectDB();
 
 // api endpoints
 app.use('/api/food', foodRouter);
-app.use('/images', express.static('uploads'));
 app.use('/api/user', userRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
+app.use('/api/header', headerContentRouter); // Подключение маршрута для headerContent
+
+// Маршрут для проверки работы API
 app.get('/', (req, res) => {
   res.send('API Working');
 });
+
+// Маршрут для статистики пользователей
 app.get('/stats', async (req, res) => {
   try {
     const stats = await userModel.aggregate([
@@ -80,11 +87,11 @@ app.get('/stats', async (req, res) => {
   }
 });
 
+// Маршруты для платежей
 app.get('/api/payments', getSuccessfulPaymentsByMonth);
 app.get('/api/payment/:id', getPaymentDetails);
 
+// Запуск сервера
 app.listen(port, () => {
-  console.log(`Server Started on https://web-2-backend-wbs4.onrender.com:${port}`);
+  console.log(`Server Started on port ${port}`);
 });
-
-// YOU CAN SAVE UR DATABASE IN THIS COMMENT IF U WANT -->
