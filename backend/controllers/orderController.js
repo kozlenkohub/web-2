@@ -8,15 +8,17 @@ import { createStripeSession } from './paymentService.js';
 import { sendTelegramOrderMessage } from './notificationService.js';
 import settingsModel from '../models/settingsModel.js';
 
-const frontend_url = 'https://www.burgergastrofaza.pl'; // Замените на ваш URL
+const frontend_url = 'https://www.burgergastrofaza.pl'; // Replace with your URL
 
-// Функция для оформления заказа
+// Function to place an order
 export const placeOrder = async (req, res) => {
   try {
-    // Проверяем, включена ли возможность создания заказа
+    // Check if order creation is enabled
     const settings = await settingsModel.findOne();
     if (settings && !settings.orderEnabled) {
-      return res.status(403).json({ success: false, message: 'Прием заказов временно недоступен' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Order placement is temporarily unavailable' });
     }
 
     const deliveryCenter = { lat: 51.154, lng: 16.9305 };
@@ -36,7 +38,7 @@ export const placeOrder = async (req, res) => {
     } else {
       return res
         .status(400)
-        .json({ success: false, message: 'Адрес доставки вне зоны обслуживания' });
+        .json({ success: false, message: 'Delivery address is outside the service area' });
     }
 
     const newOrder = new orderModel({
@@ -54,40 +56,40 @@ export const placeOrder = async (req, res) => {
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
     if (req.body.paymentMethod === 'cash') {
-      // Для оплаты наличными отправляем уведомления сразу
+      // For cash payment, send notifications immediately
       await sendAdminOrderEmail(newOrder, null);
       await sendTelegramOrderMessage(newOrder);
-      res.json({ success: true, message: 'Заказ оформлен с оплатой наличными' });
+      res.json({ success: true, message: 'Order placed with cash payment' });
     } else {
-      // Создаем платежную сессию Stripe
+      // Create Stripe payment session
       const sessionUrl = await createStripeSession(newOrder, frontend_url);
       res.json({ success: true, session_url: sessionUrl });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Ошибка при оформлении заказа' });
+    res.status(500).json({ success: false, message: 'Error placing the order' });
   }
 };
 
-// Функция для подтверждения заказа
+// Function to verify an order
 export const verifyOrder = async (req, res) => {
   const { orderId, success, sessionUrl } = req.body;
   try {
     const order = await orderModel.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({ success: false, message: 'Заказ не найден' });
+      return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
     if (success === 'true') {
-      // Проверяем, был ли уже отправлен уведомление
+      // Check if notification has already been sent
       if (!order.notificationSent) {
         await orderModel.findByIdAndUpdate(
           orderId,
           {
             payment: true,
             paymentTime: new Date(),
-            notificationSent: true, // Устанавливаем флаг, чтобы предотвратить повторную отправку
+            notificationSent: true, // Set flag to prevent duplicate notifications
           },
           { new: true },
         );
@@ -96,58 +98,58 @@ export const verifyOrder = async (req, res) => {
         await sendTelegramOrderMessage(order);
       }
 
-      res.json({ success: true, message: 'Платеж подтвержден' });
+      res.json({ success: true, message: 'Payment confirmed' });
     } else {
       await orderModel.findByIdAndDelete(orderId);
-      res.json({ success: false, message: 'Платеж не прошел, заказ отменен' });
+      res.json({ success: false, message: 'Payment failed, order canceled' });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Ошибка при подтверждении заказа' });
+    res.status(500).json({ success: false, message: 'Error confirming the order' });
   }
 };
 
-// Функция для получения заказов пользователя
+// Function to retrieve user orders
 export const userOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ userId: req.body.userId, payment: true });
     res.json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Ошибка при получении заказов пользователя' });
+    res.status(500).json({ success: false, message: 'Error retrieving user orders' });
   }
 };
 
-// Функция для получения всех заказов
+// Function to retrieve all orders
 export const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ payment: true });
     res.json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Ошибка при получении всех заказов' });
+    res.status(500).json({ success: false, message: 'Error retrieving all orders' });
   }
 };
 
-// Функция для обновления статуса заказа
+// Function to update order status
 export const updateStatus = async (req, res) => {
   try {
     await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
-    res.json({ success: true, message: 'Статус обновлен' });
+    res.json({ success: true, message: 'Status updated' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Ошибка при обновлении статуса' });
+    res.status(500).json({ success: false, message: 'Error updating status' });
   }
 };
 
-// Функция для удаления заказа
+// Function to delete an order
 export const deleteOrder = async (req, res) => {
   try {
     await orderModel.findByIdAndDelete(req.body.orderId);
-    res.json({ success: true, message: 'Заказ удален' });
+    res.json({ success: true, message: 'Order deleted' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Ошибка при удалении заказа' });
+    res.status(500).json({ success: false, message: 'Error deleting order' });
   }
 };
 
@@ -157,10 +159,10 @@ export const getLastOrder = async (req, res) => {
     if (lastOrder) {
       res.json({ success: true, order: lastOrder });
     } else {
-      res.json({ success: false, message: 'Нет предыдущих заказов' });
+      res.json({ success: false, message: 'No previous orders' });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: 'Ошибка при получении последнего заказа' });
+    res.status(500).json({ success: false, message: 'Error retrieving last order' });
   }
 };
