@@ -27,7 +27,6 @@ app.use('/api/food', foodRouter);
 app.use('/images', express.static('uploads'));
 app.use('/api/user', userRouter);
 app.use('/api/cart', cartRouter);
-app.use('/api/header', headerContentRouter);
 app.use('/api/order', orderRouter);
 app.get('/', (req, res) => {
   res.send('API Working');
@@ -84,6 +83,7 @@ app.get('/stats', async (req, res) => {
 
 app.get('/api/payments', getSuccessfulPaymentsByMonth);
 app.get('/api/payment/:id', getPaymentDetails);
+app.use('/api/header', headerContentRouter);
 
 app.listen(port, () => {
   console.log(`Server Started on https://web-2-backend-wbs4.onrender.com:${port}`);
