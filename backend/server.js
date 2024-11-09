@@ -16,8 +16,16 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 // middleware
-app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:5174', // Разрешаем запросы с этого домена
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Разрешенные HTTP-методы
+    credentials: true, // Включаем отправку cookie, если нужно
+  }),
+);
+
+app.use(express.json({ limit: '10mb' })); // Устанавливаем лимит на JSON данные
+app.use(express.urlencoded({ limit: '10mb', extended: true })); // Лимит на urlencoded данные
 
 // db connection
 connectDB();

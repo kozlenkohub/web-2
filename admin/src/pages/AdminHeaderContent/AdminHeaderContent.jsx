@@ -15,7 +15,11 @@ const AdminHeaderContent = ({ url }) => {
   useEffect(() => {
     fetch(`${url}/api/header`)
       .then((res) => res.json())
-      .then((data) => setHeaderContent(data))
+      .then((data) => {
+        if (data && data.data) {
+          setHeaderContent(data.data); // Убедитесь, что data.data существует
+        }
+      })
       .catch((error) => toast.error(error.message));
   }, [url]);
 
@@ -80,6 +84,12 @@ const AdminHeaderContent = ({ url }) => {
     }
   };
 
+  // Проверки, чтобы данные существовали перед их использованием
+  const getLanguageContent = (field) =>
+    headerContent[field] && headerContent[field][selectedLanguage]
+      ? headerContent[field][selectedLanguage]
+      : '';
+
   return (
     <div className="admin-header-content">
       <h2>Edit Header Content</h2>
@@ -99,7 +109,7 @@ const AdminHeaderContent = ({ url }) => {
         <label>Header Title</label>
         <input
           type="text"
-          value={headerContent.new[selectedLanguage]}
+          value={getLanguageContent('new')}
           onChange={(e) => handleInputChange(e, 'new')}
           placeholder="Enter Header Title"
         />
@@ -109,7 +119,7 @@ const AdminHeaderContent = ({ url }) => {
         <label>Description</label>
         <input
           type="text"
-          value={headerContent.description[selectedLanguage]}
+          value={getLanguageContent('description')}
           onChange={(e) => handleInputChange(e, 'description')}
           placeholder="Enter Description"
         />
@@ -119,7 +129,7 @@ const AdminHeaderContent = ({ url }) => {
         <label>Button Text</label>
         <input
           type="text"
-          value={headerContent.button[selectedLanguage]}
+          value={getLanguageContent('button')}
           onChange={(e) => handleInputChange(e, 'button')}
           placeholder="Enter Button Text"
         />
