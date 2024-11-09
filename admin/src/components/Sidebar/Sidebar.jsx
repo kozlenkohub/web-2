@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Sidebar.css';
 import { NavLink } from 'react-router-dom';
-import { FaPlus, FaList, FaShoppingCart, FaChartBar, FaUsers } from 'react-icons/fa'; // Importing icons
+import { FaPlus, FaList, FaShoppingCart, FaChartBar, FaUsers, FaAccusoft } from 'react-icons/fa'; // Importing icons
 
 const Sidebar = () => {
   const [userCount, setUserCount] = useState(0);
@@ -42,6 +42,10 @@ const Sidebar = () => {
         <NavLink to="/stats" className="sidebar-option">
           <FaChartBar className="sidebar-icon" />
           <p>Statistics</p>
+        </NavLink>
+        <NavLink to="/adminheader" className="sidebar-option">
+          <FaAccusoft className="sidebar-icon" />
+          <p>Баннер</p>
         </NavLink>
       </div>
 

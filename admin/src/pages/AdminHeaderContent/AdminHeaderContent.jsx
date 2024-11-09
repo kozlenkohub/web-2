@@ -7,8 +7,10 @@ const AdminHeaderContent = ({ url }) => {
     new: { en: '', ru: '', pl: '' },
     description: { en: '', ru: '', pl: '' },
     button: { en: '', ru: '', pl: '' },
+    backgroundUrl: '', // URL фона
   });
-  const [selectedLanguage, setSelectedLanguage] = useState('en'); // По умолчанию английский язык
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     fetch(`${url}/api/header`)
@@ -26,6 +28,40 @@ const AdminHeaderContent = ({ url }) => {
         [selectedLanguage]: value,
       },
     }));
+  };
+
+  const handleBackgroundChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageFile) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result.split(',')[1];
+
+      try {
+        const response = await fetch(`${url}/api/header/upload-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64String }),
+        });
+
+        if (!response.ok) throw new Error('Failed to upload image');
+
+        const data = await response.json();
+        setHeaderContent((prevContent) => ({
+          ...prevContent,
+          backgroundUrl: data.imageUrl,
+        }));
+
+        toast.success('Image uploaded successfully');
+      } catch (error) {
+        toast.error(error.message);
+      }
+    };
+    reader.readAsDataURL(imageFile);
   };
 
   const handleSave = async () => {
@@ -48,7 +84,6 @@ const AdminHeaderContent = ({ url }) => {
     <div className="admin-header-content">
       <h2>Edit Header Content</h2>
 
-      {/* Переключатель языка */}
       <div className="language-switcher">
         {['en', 'ru', 'pl'].map((lang) => (
           <button
@@ -60,7 +95,6 @@ const AdminHeaderContent = ({ url }) => {
         ))}
       </div>
 
-      {/* Поля ввода для редактирования только выбранного языка */}
       <div className="field-group">
         <label>Header Title</label>
         <input
@@ -70,6 +104,7 @@ const AdminHeaderContent = ({ url }) => {
           placeholder="Enter Header Title"
         />
       </div>
+
       <div className="field-group">
         <label>Description</label>
         <input
@@ -79,6 +114,7 @@ const AdminHeaderContent = ({ url }) => {
           placeholder="Enter Description"
         />
       </div>
+
       <div className="field-group">
         <label>Button Text</label>
         <input
@@ -87,6 +123,19 @@ const AdminHeaderContent = ({ url }) => {
           onChange={(e) => handleInputChange(e, 'button')}
           placeholder="Enter Button Text"
         />
+      </div>
+
+      <div className="field-group">
+        <label>Background Image</label>
+        <input type="file" accept="image/*" onChange={handleBackgroundChange} />
+        <button onClick={handleImageUpload}>Upload Image</button>
+        {headerContent.backgroundUrl && (
+          <img
+            src={headerContent.backgroundUrl}
+            alt="Background preview"
+            style={{ width: '100px', marginTop: '10px' }}
+          />
+        )}
       </div>
 
       <button className="save-button" onClick={handleSave}>
