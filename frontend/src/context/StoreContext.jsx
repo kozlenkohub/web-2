@@ -29,7 +29,8 @@ const StoreContextProvider = (props) => {
     setIsLoading(true); // Устанавливаем состояние загрузки
     try {
       const response = await axios.get(`${url}/api/header`);
-      setHeaderContent(response.data);
+
+      setHeaderContent(response.data.data);
     } catch (error) {
       console.error('Error fetching header content:', error);
     } finally {
