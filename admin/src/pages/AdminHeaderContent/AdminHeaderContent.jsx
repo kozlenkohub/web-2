@@ -7,7 +7,7 @@ const AdminHeaderContent = ({ url }) => {
     new: { en: '', ru: '', pl: '' },
     description: { en: '', ru: '', pl: '' },
     button: { en: '', ru: '', pl: '' },
-    backgroundUrl: '', // URL фона
+    backgroundUrl: '',
   });
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [imageFile, setImageFile] = useState(null);
@@ -17,7 +17,7 @@ const AdminHeaderContent = ({ url }) => {
       .then((res) => res.json())
       .then((data) => {
         if (data && data.data) {
-          setHeaderContent(data.data); // Убедитесь, что data.data существует
+          setHeaderContent(data.data);
         }
       })
       .catch((error) => toast.error(error.message));
@@ -84,7 +84,6 @@ const AdminHeaderContent = ({ url }) => {
     }
   };
 
-  // Проверки, чтобы данные существовали перед их использованием
   const getLanguageContent = (field) =>
     headerContent[field] && headerContent[field][selectedLanguage]
       ? headerContent[field][selectedLanguage]
@@ -117,11 +116,11 @@ const AdminHeaderContent = ({ url }) => {
 
       <div className="field-group">
         <label>Description</label>
-        <input
-          type="text"
+        <textarea
           value={getLanguageContent('description')}
           onChange={(e) => handleInputChange(e, 'description')}
           placeholder="Enter Description"
+          rows="4"
         />
       </div>
 
