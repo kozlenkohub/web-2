@@ -44,3 +44,24 @@
 .sidebar-icon {
   color: white;
 }
+.toggle-button {
+  background: none;
+  border: none;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+
+.toggle-icon {
+  font-size: 36px;
+  margin-right: 10px;
+}
+
+.toggle-button span {
+  font-size: 18px;
+}
