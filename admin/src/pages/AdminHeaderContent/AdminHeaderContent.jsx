@@ -3,21 +3,33 @@ import { toast } from 'react-toastify';
 import './AdminHeaderContent.css';
 
 const AdminHeaderContent = ({ url }) => {
-  const [headerContent, setHeaderContent] = useState({ new: '', description: '', button: '' });
+  const [headerContent, setHeaderContent] = useState({
+    new: { en: '', ru: '', pl: '' },
+    description: { en: '', ru: '', pl: '' },
+    button: { en: '', ru: '', pl: '' },
+  });
 
   useEffect(() => {
-    fetch(`${url}/api/headerContent`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Error fetching header content');
-        return res.json();
-      })
+    fetch(`${url}/api/header`)
+      .then((res) => res.json())
       .then((data) => setHeaderContent(data))
       .catch((error) => toast.error(error.message));
   }, [url]);
 
-  const handleUpdate = async () => {
+  const handleInputChange = (e, field, lang) => {
+    const value = e.target.value;
+    setHeaderContent((prevContent) => ({
+      ...prevContent,
+      [field]: {
+        ...prevContent[field],
+        [lang]: value,
+      },
+    }));
+  };
+
+  const handleSave = async () => {
     try {
-      const response = await fetch(`${url}/api/headerContent/update`, {
+      const response = await fetch(`${url}/api/header/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(headerContent),
@@ -35,37 +47,22 @@ const AdminHeaderContent = ({ url }) => {
     <div className="admin-header-content">
       <h2>Edit Header Content</h2>
 
-      <div className="form-group">
-        <label>Header Title</label>
-        <input
-          type="text"
-          value={headerContent.new}
-          onChange={(e) => setHeaderContent({ ...headerContent, new: e.target.value })}
-          placeholder="Header Title"
-        />
-      </div>
+      {['new', 'description', 'button'].map((field) => (
+        <div key={field} className="field-group">
+          <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+          {['en', 'ru', 'pl'].map((lang) => (
+            <input
+              key={lang}
+              type="text"
+              value={headerContent[field][lang]}
+              onChange={(e) => handleInputChange(e, field, lang)}
+              placeholder={`${field.charAt(0).toUpperCase() + field.slice(1)} (${lang})`}
+            />
+          ))}
+        </div>
+      ))}
 
-      <div className="form-group">
-        <label>Description</label>
-        <input
-          type="text"
-          value={headerContent.description}
-          onChange={(e) => setHeaderContent({ ...headerContent, description: e.target.value })}
-          placeholder="Description"
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Button Text</label>
-        <input
-          type="text"
-          value={headerContent.button}
-          onChange={(e) => setHeaderContent({ ...headerContent, button: e.target.value })}
-          placeholder="Button Text"
-        />
-      </div>
-
-      <button className="save-button" onClick={handleUpdate}>
+      <button className="save-button" onClick={handleSave}>
         Save
       </button>
     </div>

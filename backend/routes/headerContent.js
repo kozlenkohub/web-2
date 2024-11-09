@@ -2,19 +2,30 @@
 const express = require('express');
 const router = express.Router();
 
-// Пример данных
 let headerContent = {
-  new: 'Заголовок',
-  description: 'Описание',
-  button: 'Кнопка',
+  new: {
+    en: 'Title',
+    ru: 'Заголовок',
+    pl: 'Tytuł',
+  },
+  description: {
+    en: 'Description',
+    ru: 'Описание',
+    pl: 'Opis',
+  },
+  button: {
+    en: 'Button',
+    ru: 'Кнопка',
+    pl: 'Przycisk',
+  },
 };
 
-// Получить текущие значения
+// Получить текущие значения для всех языков
 router.get('/', (req, res) => {
   res.status(200).json(headerContent);
 });
 
-// Обновить значения
+// Обновить значения для всех языков
 router.post('/update', (req, res) => {
   const { new: newHeader, description, button } = req.body;
   headerContent = { new: newHeader, description, button };
