@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './Header.css';
-import { useTranslation } from 'react-i18next'; // Импорт для перевода
 
 const Header = () => {
-  const { t } = useTranslation(); // Подключаем хук для перевода
+  const [headerContent, setHeaderContent] = useState({ new: '', description: '', button: '' });
+
+  useEffect(() => {
+    fetch('/api/headerContent')
+      .then((res) => res.json())
+      .then((data) => setHeaderContent(data));
+  }, []);
 
   return (
     <div className="header">
       <div className="header-contents">
-        <h2 className="t1">{t('header.new')}</h2> {/* Перевод для заголовка */}
-        <p className="t3">
-          {t('header.description')}
-          {/* Перевод для описания */}
-        </p>
+        <h2 className="t1">{headerContent.new}</h2>
+        <p className="t3">{headerContent.description}</p>
         <a href="#explore-menu">
-          <button className="buttonwl t3">{t('header.button')}</button> {/* Перевод для кнопки */}
+          <button className="buttonwl t3">{headerContent.button}</button>
         </a>
       </div>
     </div>
