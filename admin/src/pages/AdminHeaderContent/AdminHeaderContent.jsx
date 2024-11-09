@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import './AdminHeaderContent.css';
 
 const AdminHeaderContent = ({ url }) => {
   const [headerContent, setHeaderContent] = useState({ new: '', description: '', button: '' });
@@ -31,27 +32,42 @@ const AdminHeaderContent = ({ url }) => {
   };
 
   return (
-    <div>
+    <div className="admin-header-content">
       <h2>Edit Header Content</h2>
-      <input
-        type="text"
-        value={headerContent.new}
-        onChange={(e) => setHeaderContent({ ...headerContent, new: e.target.value })}
-        placeholder="Header Title"
-      />
-      <input
-        type="text"
-        value={headerContent.description}
-        onChange={(e) => setHeaderContent({ ...headerContent, description: e.target.value })}
-        placeholder="Description"
-      />
-      <input
-        type="text"
-        value={headerContent.button}
-        onChange={(e) => setHeaderContent({ ...headerContent, button: e.target.value })}
-        placeholder="Button Text"
-      />
-      <button onClick={handleUpdate}>Save</button>
+
+      <div className="form-group">
+        <label>Header Title</label>
+        <input
+          type="text"
+          value={headerContent.new}
+          onChange={(e) => setHeaderContent({ ...headerContent, new: e.target.value })}
+          placeholder="Header Title"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Description</label>
+        <input
+          type="text"
+          value={headerContent.description}
+          onChange={(e) => setHeaderContent({ ...headerContent, description: e.target.value })}
+          placeholder="Description"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Button Text</label>
+        <input
+          type="text"
+          value={headerContent.button}
+          onChange={(e) => setHeaderContent({ ...headerContent, button: e.target.value })}
+          placeholder="Button Text"
+        />
+      </div>
+
+      <button className="save-button" onClick={handleUpdate}>
+        Save
+      </button>
     </div>
   );
 };
