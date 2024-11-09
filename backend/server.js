@@ -18,7 +18,7 @@ const port = process.env.PORT || 4000;
 // middleware
 app.use(
   cors({
-    origin: 'http://localhost:5174', // Разрешаем запросы с этого домена
+    origin: '*', // Разрешаем запросы с этого домена
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Разрешенные HTTP-методы
     credentials: true, // Включаем отправку cookie, если нужно
   }),
