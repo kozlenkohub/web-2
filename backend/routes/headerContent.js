@@ -4,34 +4,39 @@ import HeaderContent from '../models/HeaderContent.js';
 
 const router = express.Router();
 
-// Получить текущие значения из базы данных
-router.get('/', async (req, res) => {
-  try {
-    const headerContent = await HeaderContent.findOne(); // Получаем единственный документ
-    if (!headerContent) {
-      return res.status(404).json({ message: 'Content not found' });
-    }
-    res.status(200).json(headerContent);
-  } catch (error) {
-    console.error('Error fetching header content:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 // Обновить значения в базе данных
 router.post('/update', async (req, res) => {
   const { new: newHeader, description, button } = req.body;
 
+  // Заполняем пустые значения по умолчанию
+  const headerData = {
+    new: {
+      en: newHeader.en || '',
+      ru: newHeader.ru || '',
+      pl: newHeader.pl || '',
+    },
+    description: {
+      en: description.en || '',
+      ru: description.ru || '',
+      pl: description.pl || '',
+    },
+    button: {
+      en: button.en || '',
+      ru: button.ru || '',
+      pl: button.pl || '',
+    },
+  };
+
   try {
     let headerContent = await HeaderContent.findOne();
     if (headerContent) {
-      // Если запись существует, обновляем ее
-      headerContent.new = newHeader;
-      headerContent.description = description;
-      headerContent.button = button;
+      // Обновляем существующую запись
+      headerContent.new = headerData.new;
+      headerContent.description = headerData.description;
+      headerContent.button = headerData.button;
     } else {
-      // Если записи нет, создаем новую
-      headerContent = new HeaderContent({ new: newHeader, description, button });
+      // Создаем новую запись, если нет существующей
+      headerContent = new HeaderContent(headerData);
     }
     await headerContent.save();
     res.status(200).json(headerContent);
