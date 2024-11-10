@@ -209,3 +209,9 @@
 .tac {
   text-align: center;
 }
+
+@media screen and (max-width: 768px) {
+  .place-order {
+    margin-top: 0px;
+  }
+}
