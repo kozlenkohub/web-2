@@ -19,11 +19,24 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 // middleware
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://web-2-admin.onrender.com',
+];
+
 app.use(
   cors({
-    origin: '*', // Разрешаем запросы с этого домена
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Разрешенные HTTP-методы
-    credentials: true, // Включаем отправку cookie, если нужно
+    origin: function (origin, callback) {
+      // Разрешаем запрос, если домен находится в списке разрешённых
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
   }),
 );
 

@@ -15,7 +15,7 @@ import MenuAdmin from './pages/MenuAdmin/MenuAdmin';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const url = 'https://web-2-admin.onrender.com'; // URL для запросов
+  const url = 'http://localhost:4000'; // URL для запросов
 
   // Функция для проверки времени аутентификации
   const checkAuthentication = () => {
