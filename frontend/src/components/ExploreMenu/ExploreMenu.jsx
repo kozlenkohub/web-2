@@ -7,7 +7,7 @@ const ExploreMenu = ({ category, setCategory }) => {
   const [menuList, setMenuList] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/menu') // URL вашего API
+    fetch('https://web-2-backend-wbs4.onrender.com/api/menu') // URL вашего API
       .then((response) => response.json())
       .then((data) => setMenuList(data))
       .catch((error) => console.error('Error fetching menu:', error));
