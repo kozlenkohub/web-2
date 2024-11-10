@@ -8,7 +8,6 @@ import Orders from './pages/Orders/Orders';
 import Stats from './pages/Stats/Stats';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-x;
 import PaymentsFetcher from './pages/Stripe/PaymentsFetcher';
 import Login from './components/Login/Login';
 import AdminHeaderContent from './pages/AdminHeaderContent/AdminHeaderContent';
