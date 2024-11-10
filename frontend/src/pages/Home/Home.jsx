@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Home.css';
 import Header from '../../components/Header/Header';
 import ExploreMenu from '../../components/ExploreMenu/ExploreMenu';
@@ -7,6 +7,10 @@ import AppDownload from '../../components/AppDownload/AppDownload';
 
 const Home = () => {
   const [category, setCategory] = useState('All');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []); // Пустой массив зависимостей означает, что эффект выполнится только при первом рендере
 
   return (
     <div>

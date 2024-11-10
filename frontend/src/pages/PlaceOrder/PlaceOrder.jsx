@@ -9,6 +9,9 @@ import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import { useTranslation } from 'react-i18next';
 
 const PlaceOrder = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const { t } = useTranslation();
   const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Replace with your valid API key
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);

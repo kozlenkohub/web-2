@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import './Cart.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,10 @@ import { useTranslation } from 'react-i18next';
 // Импортируем хук для перевода
 
 const Cart = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { t } = useTranslation(); // Подключаем хук для перевода
   const { cartItems, food_list, removeFromCart, getTotalCartAmount, url, token } =
     useContext(StoreContext);
