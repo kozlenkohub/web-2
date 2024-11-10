@@ -1,67 +1,115 @@
+/* Основной стиль Sidebar */
 .sidebar {
-  width: 18%;
+  width: 250px;
   min-height: 100vh;
-  border: 1.5px solid #a9a9a9;
-  border-top: 0;
-  font-size: max(1vw, 10px);
+  background-color: #333;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: -250px;
+  transition: left 0.3s ease;
+  z-index: 100;
 }
+
+/* Стиль для открытого Sidebar */
+.sidebar.open {
+  left: 0;
+}
+
+/* Кнопка для открытия и закрытия Sidebar */
+.sidebar-toggle-button {
+  position: fixed;
+  top: 30px; /* Немного ниже, чтобы не перекрывала элементы меню */
+  left: 20px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 101;
+}
+
+/* Стили для элементов Sidebar */
 .sidebar-options {
-  padding-top: 50px;
-  padding-left: 20%;
+  padding-top: 60px;
   display: flex;
   flex-direction: column;
-  z-index: 33;
   gap: 20px;
 }
+
 .sidebar-option {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid #a9a9a9;
-  border-right: 0;
-  padding: 8px 10px;
-  border-radius: 3px 0px 0px 3px;
-  cursor: pointer;
+  padding: 10px;
+  text-decoration: none;
+  color: white;
 }
 
-.sidebar-option.active {
-  background-color: var(--sidebar);
-  border-color: tomato;
-}
-
-@media (max-width: 900px) {
-  .sidebar-option p {
-    display: none;
-  }
-}
-
-.sidebar-users {
+.sidebar-users,
+.sidebar-toggle {
   margin-top: 20px;
+  padding: 10px;
   text-align: center;
-  color: white;
 }
 
-.sidebar-icon {
-  color: white;
-}
+/* Стиль для переключателя приёма заказов */
 .toggle-button {
-  background: none;
-  border: none;
+  background-color: #333;
+  border: 1px solid #555;
+  border-radius: 20px;
   color: white;
   font: inherit;
   cursor: pointer;
-  outline: inherit;
+  outline: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 15px;
+  padding: 10px 20px;
+  margin-top: 10px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.toggle-button.active {
+  background-color: #28a745; /* Зеленый цвет для "включено" */
+  color: white;
+}
+
+.toggle-button.inactive {
+  background-color: #dc3545; /* Красный цвет для "выключено" */
+  color: white;
 }
 
 .toggle-icon {
-  font-size: 36px;
-  margin-right: 10px;
+  font-size: 24px;
+  margin-right: 8px;
 }
 
 .toggle-button span {
-  font-size: 18px;
+  font-size: 16px;
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    left: -100%;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-options {
+    padding-top: 20px;
+  }
+
+  .sidebar-option p {
+    display: inline;
+  }
+
+  .sidebar-users,
+  .sidebar-toggle {
+    display: block;
+  }
 }
