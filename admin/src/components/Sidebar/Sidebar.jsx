@@ -89,6 +89,7 @@ const Sidebar = () => {
           <FaList className="sidebar-icon" />
           <p>Список блюд</p>
         </NavLink>
+
         <NavLink to="/orders" className="sidebar-option">
           <FaShoppingCart className="sidebar-icon" />
           <p>Заказы</p>
@@ -100,6 +101,11 @@ const Sidebar = () => {
         <NavLink to="/adminheader" className="sidebar-option">
           <FaAccusoft className="sidebar-icon" />
           <p>Баннер</p>
+        </NavLink>
+
+        <NavLink to="/menu-admin" className="sidebar-option">
+          <FaAccusoft className="sidebar-icon" />
+          <p>Категории</p>
         </NavLink>
       </div>
 

@@ -1,0 +1,35 @@
+.menu-admin {
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+}
+
+.menu-admin h1 {
+  text-align: center;
+}
+
+.menu-admin ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.menu-admin li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.menu-admin img {
+  max-width: 80px;
+  border-radius: 5px;
+}
+
+.menu-admin input[type='text'] {
+  margin-right: 10px;
+}
+
+.menu-admin input[type='file'] {
+  margin-right: 10px;
+}

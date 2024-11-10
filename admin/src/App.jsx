@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import PaymentsFetcher from './pages/Stripe/PaymentsFetcher';
 import Login from './components/Login/Login';
 import AdminHeaderContent from './pages/AdminHeaderContent/AdminHeaderContent';
+import MenuAdmin from './pages/MenuAdmin/MenuAdmin';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,6 +58,7 @@ const App = () => {
               <Route path="/stats" element={<Stats url={url} />} />
               <Route path="/stripe" element={<PaymentsFetcher url={url} />} />
               <Route path="/adminheader" element={<AdminHeaderContent url={url} />} />
+              <Route path="/menu-admin" element={<MenuAdmin url={url} />} /> {/* Новый маршрут */}
             </Routes>
           </div>
         </>

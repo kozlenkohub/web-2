@@ -10,6 +10,7 @@ import headerContentRouter from './routes/headerContent.js';
 import userModel from './models/userModel.js'; // Импорт модели пользователя
 
 import cartRouter from './routes/cartRoute.js';
+import menuRoutes from './routes/menuRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import { getPaymentDetails, getSuccessfulPaymentsByMonth } from './controllers/stripeController.js';
 
@@ -28,6 +29,7 @@ app.use(
 
 app.use(express.json({ limit: '10mb' })); // Устанавливаем лимит на JSON данные
 app.use(express.urlencoded({ limit: '10mb', extended: true })); // Лимит на urlencoded данные
+app.use('/api/menu', menuRoutes);
 
 // db connection
 connectDB();
