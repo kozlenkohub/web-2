@@ -2,6 +2,19 @@ import axios from 'axios';
 import Menu from '../models/Menu.js';
 import FormData from 'form-data';
 
+export const deleteMenu = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedMenu = await Menu.findByIdAndDelete(id);
+    if (!deletedMenu) {
+      return res.status(404).json({ message: 'Menu item not found' });
+    }
+    res.status(200).json({ message: 'Menu item deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Получить все элементы меню
 export const getMenus = async (req, res) => {
   try {

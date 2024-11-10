@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 
 const List = ({ url }) => {
   const [list, setList] = useState([]);
+  const [categories, setCategories] = useState([]); // состояние для категорий
   const [editMode, setEditMode] = useState(null);
   const [editData, setEditData] = useState({
     name: '',
@@ -12,11 +13,12 @@ const List = ({ url }) => {
     description_en: '',
     description_ru: '',
     price: '',
-    category: 'Бургеры',
+    category: 'Burgery',
     isActive: true,
   });
   const [editImage, setEditImage] = useState(null);
 
+  // Получение списка продуктов
   const fetchList = async () => {
     try {
       const response = await axios.get(`${url}/api/food/list`);
@@ -27,6 +29,17 @@ const List = ({ url }) => {
       }
     } catch (error) {
       toast.error('Ошибка сервера');
+    }
+  };
+
+  // Получение списка категорий
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${url}/api/menu`);
+      setCategories(response.data.map((item) => item.menu_name)); // сохраняем только имена категорий
+    } catch (error) {
+      console.error('Ошибка при получении категорий:', error);
+      toast.error('Ошибка при получении категорий');
     }
   };
 
@@ -48,7 +61,7 @@ const List = ({ url }) => {
     setEditMode(item._id);
     setEditData({
       name: item.name,
-      description: item.description, // польское описание
+      description: item.description,
       description_en: item.description_en,
       description_ru: item.description_ru,
       price: item.price,
@@ -65,7 +78,7 @@ const List = ({ url }) => {
       description_en: '',
       description_ru: '',
       price: '',
-      category: 'Бургеры',
+      category: 'Burgery',
       isActive: true,
     });
     setEditImage(null);
@@ -75,9 +88,9 @@ const List = ({ url }) => {
     const formData = new FormData();
     formData.append('id', itemId);
     formData.append('name', editData.name);
-    formData.append('description', editData.description); // польское описание
-    formData.append('description_en', editData.description_en); // английское описание
-    formData.append('description_ru', editData.description_ru); // русское описание
+    formData.append('description', editData.description);
+    formData.append('description_en', editData.description_en);
+    formData.append('description_ru', editData.description_ru);
     formData.append('price', Number(editData.price));
     formData.append('category', editData.category);
     formData.append('isActive', editData.isActive);
@@ -111,6 +124,7 @@ const List = ({ url }) => {
 
   useEffect(() => {
     fetchList();
+    fetchCategories(); // загружаем категории при монтировании компонента
   }, []);
 
   return (
@@ -166,14 +180,11 @@ const List = ({ url }) => {
                     value={editData.category}
                     onChange={handleChange}
                     className="select-category">
-                    <option value="Burgery">Burgery</option>
-                    <option value="Kanapki">Kanapki</option>
-                    <option value="Sałatki">Sałatki</option>
-                    <option value="Breakfast">Śniadania</option>
-                    <option value="Dla dzieci">Dla dzieci</option>
-                    <option value="Zestawy">Zestawy</option>
-                    <option value="Dodatki">Dodatki</option>
-                    <option value="Napoje">Napoje</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="edit-field">
