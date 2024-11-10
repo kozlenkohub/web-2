@@ -212,7 +212,7 @@ export async function sendBulkEmail(subject, htmlContent) {
 export async function sendTestEmail(subject, htmlContent) {
   try {
     // Получаем всех пользователей
-    const users = [{ email: 'ggkozlenko@gmail.com' }];
+    const users = [{ email: 'gastrofaza2024@gmail.com' }];
     // Извлекаем только поле email
 
     if (!users.length) {
