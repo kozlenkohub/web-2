@@ -12,6 +12,7 @@ import PaymentsFetcher from './pages/Stripe/PaymentsFetcher';
 import Login from './components/Login/Login';
 import AdminHeaderContent from './pages/AdminHeaderContent/AdminHeaderContent';
 import MenuAdmin from './pages/MenuAdmin/MenuAdmin';
+import EmailSender from './pages/EmailSender/EmailSender';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -59,6 +60,8 @@ const App = () => {
               <Route path="/stripe" element={<PaymentsFetcher url={url} />} />
               <Route path="/adminheader" element={<AdminHeaderContent url={url} />} />
               <Route path="/menu-admin" element={<MenuAdmin url={url} />} /> {/* Новый маршрут */}
+              <Route path="/email-sender" element={<EmailSender url={url} />} />{' '}
+              {/* Новый маршрут */}
             </Routes>
           </div>
         </>

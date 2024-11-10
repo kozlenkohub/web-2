@@ -104,3 +104,19 @@
     padding: 2vw 4vw;
   }
 }
+
+@media (max-width: 750px) {
+  .header-contents {
+    max-width: 100%; /* Увеличиваем ширину на всю доступную область */
+    align-items: center; /* Центрирование элементов по горизонтали */
+    text-align: center; /* Центрирование текста внутри элементов */
+    padding: 0 2vw; /* Отступы по краям для улучшения отображения */
+    justify-content: center; /* Центрирование по вертикали, если требуется */
+  }
+
+  .header-contents h2,
+  .header-contents p,
+  .header-contents button {
+    text-align: center; /* Центрирование текста */
+  }
+}

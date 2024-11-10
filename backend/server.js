@@ -12,6 +12,7 @@ import userModel from './models/userModel.js'; // Импорт модели по
 import cartRouter from './routes/cartRoute.js';
 import menuRoutes from './routes/menuRoute.js';
 import orderRouter from './routes/orderRoute.js';
+import emailRoutes from './routes/emailRoutes.js';
 import { getPaymentDetails, getSuccessfulPaymentsByMonth } from './controllers/stripeController.js';
 
 // app configa
@@ -49,6 +50,7 @@ app.use('/api/menu', menuRoutes);
 connectDB();
 
 // api endpoints
+app.use('/api/email', emailRoutes);
 app.use('/api/food', foodRouter);
 app.use('/images', express.static('uploads'));
 app.use('/api/user', userRouter);

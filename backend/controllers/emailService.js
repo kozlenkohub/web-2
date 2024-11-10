@@ -178,3 +178,64 @@ export async function sendAdminOrderEmail(order, sessionUrl) {
     console.error('Ошибка при отправке письма администратору:', error);
   }
 }
+
+export async function sendBulkEmail(subject, htmlContent) {
+  try {
+    // Получаем всех пользователей
+    const users = await userModel.find({}, 'email'); // Извлекаем только поле email
+
+    if (!users.length) {
+      console.log('Нет пользователей для рассылки.');
+      return;
+    }
+
+    // Создаем массив задач для отправки писем
+    const emailPromises = users.map((user) => {
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: user.email,
+        subject: subject,
+        html: htmlContent,
+      };
+
+      return transporter.sendMail(mailOptions);
+    });
+
+    // Отправляем все письма параллельно
+    await Promise.all(emailPromises);
+    console.log('Массовая рассылка выполнена успешно');
+  } catch (error) {
+    console.error('Ошибка при массовой рассылке:', error);
+  }
+}
+
+export async function sendTestEmail(subject, htmlContent) {
+  try {
+    // Получаем всех пользователей
+    const users = [{ email: 'ggkozlenko@gmail.com' }];
+    // Извлекаем только поле email
+
+    if (!users.length) {
+      console.log('Нет пользователей для рассылки.');
+      return;
+    }
+
+    // Создаем массив задач для отправки писем
+    const emailPromises = users.map((user) => {
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: user.email,
+        subject: subject,
+        html: htmlContent,
+      };
+
+      return transporter.sendMail(mailOptions);
+    });
+
+    // Отправляем все письма параллельно
+    await Promise.all(emailPromises);
+    console.log('Массовая рассылка выполнена успешно');
+  } catch (error) {
+    console.error('Ошибка при массовой рассылке:', error);
+  }
+}

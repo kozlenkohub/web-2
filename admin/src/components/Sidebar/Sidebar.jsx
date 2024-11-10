@@ -107,6 +107,11 @@ const Sidebar = () => {
           <FaAccusoft className="sidebar-icon" />
           <p>Категории</p>
         </NavLink>
+
+        <NavLink to="/email-sender" className="sidebar-option">
+          <FaPlus className="sidebar-icon" />
+          <p>Рассылка</p>
+        </NavLink>
       </div>
 
       {/* Отображение количества пользователей */}
