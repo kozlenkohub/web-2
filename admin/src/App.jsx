@@ -8,6 +8,7 @@ import Orders from './pages/Orders/Orders';
 import Stats from './pages/Stats/Stats';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+x;
 import PaymentsFetcher from './pages/Stripe/PaymentsFetcher';
 import Login from './components/Login/Login';
 import AdminHeaderContent from './pages/AdminHeaderContent/AdminHeaderContent';
@@ -15,7 +16,7 @@ import MenuAdmin from './pages/MenuAdmin/MenuAdmin';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const url = 'http://localhost:4000'; // URL для запросов
+  const url = 'https://web-2-backend-wbs4.onrender.com'; // URL для запросов
 
   // Функция для проверки времени аутентификации
   const checkAuthentication = () => {
