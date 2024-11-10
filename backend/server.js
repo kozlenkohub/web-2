@@ -23,6 +23,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'https://web-2-admin.onrender.com',
+  'https://www.burgergastrofaza.pl',
 ];
 
 app.use(
