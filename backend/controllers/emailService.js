@@ -189,8 +189,7 @@ export async function sendBulkEmail(subject, htmlContent) {
       return;
     }
 
-    // Создаем массив задач для отправки писем
-    const emailPromises = users.map((user) => {
+    for (const user of users) {
       const mailOptions = {
         from: process.env.EMAIL,
         to: user.email,
@@ -198,11 +197,17 @@ export async function sendBulkEmail(subject, htmlContent) {
         html: htmlContent,
       };
 
-      return transporter.sendMail(mailOptions);
-    });
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Письмо отправлено на ${user.email}`);
+      } catch (error) {
+        console.error(`Ошибка при отправке письма на ${user.email}:`, error);
+      }
 
-    // Отправляем все письма параллельно
-    await Promise.all(emailPromises);
+      // Задержка в 1 секунду между отправками
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
     console.log('Массовая рассылка выполнена успешно');
   } catch (error) {
     console.error('Ошибка при массовой рассылке:', error);
