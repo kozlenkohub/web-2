@@ -6,6 +6,11 @@ const settingsSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  deliveryRadius: { type: Number, default: 5 }, // Радиус доставки в километрах
+  deliveryCenter: {
+    lat: Number,
+    lng: Number,
+  },
 });
 
 const Settings = mongoose.model('Settings', settingsSchema);

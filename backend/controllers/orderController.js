@@ -1,28 +1,34 @@
-// orderController.js
-
 import orderModel from '../models/orderModel.js';
 import userModel from '../models/userModel.js';
+import settingsModel from '../models/settingsModel.js';
 import { getDistanceFromLatLonInKm } from './utils.js';
 import { sendAdminOrderEmail } from './emailService.js';
 import { createStripeSession } from './paymentService.js';
 import { sendTelegramOrderMessage } from './notificationService.js';
-import settingsModel from '../models/settingsModel.js';
 
-const frontend_url = 'https://www.burgergastrofaza.pl'; // Replace with your URL
+const frontend_url = 'https://www.burgergastrofaza.pl'; // Replace with your frontend URL
 
 // Function to place an order
 export const placeOrder = async (req, res) => {
   try {
-    // Check if order creation is enabled
+    // Fetch settings to get delivery radius and center
     const settings = await settingsModel.findOne();
+    if (!settings) {
+      return res.status(500).json({ success: false, message: 'Settings not found' });
+    }
+
+    // Check if order placement is enabled
     if (settings && !settings.orderEnabled) {
       return res
         .status(403)
         .json({ success: false, message: 'Order placement is temporarily unavailable' });
     }
 
-    const deliveryCenter = { lat: 51.154, lng: 16.9305 };
+    const deliveryCenter = settings.deliveryCenter; // Center of delivery
+    const deliveryRadius = settings.deliveryRadius; // Maximum delivery radius in km
     const userLocation = req.body.address.location;
+
+    // Calculate distance between user location and delivery center
     const distance = getDistanceFromLatLonInKm(
       deliveryCenter.lat,
       deliveryCenter.lng,
@@ -30,17 +36,14 @@ export const placeOrder = async (req, res) => {
       userLocation.lng,
     );
 
-    let deliveryCharge = 0;
-    if (distance <= 1.77) {
-      deliveryCharge = 0;
-    } else if (distance > 1.77 && distance <= 5) {
-      deliveryCharge = 8;
-    } else {
+    // Check if the address is within the delivery radius
+    if (distance > deliveryRadius) {
       return res
         .status(400)
         .json({ success: false, message: 'Delivery address is outside the service area' });
     }
 
+    // Create a new order
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
@@ -49,24 +52,25 @@ export const placeOrder = async (req, res) => {
       paymentMethod: req.body.paymentMethod,
       payment: req.body.paymentMethod === 'cash' ? true : false,
       packagingCharge: req.body.packagingCharge,
-      deliveryCharge: deliveryCharge,
+      deliveryCharge: 0, // Free delivery within radius
     });
 
     await newOrder.save();
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
+    // Handle notifications and payment
     if (req.body.paymentMethod === 'cash') {
-      // For cash payment, send notifications immediately
+      // Send notifications for cash payment
       await sendAdminOrderEmail(newOrder, null);
       await sendTelegramOrderMessage(newOrder);
       res.json({ success: true, message: 'Order placed with cash payment' });
     } else {
-      // Create Stripe payment session
+      // Create a Stripe payment session
       const sessionUrl = await createStripeSession(newOrder, frontend_url);
       res.json({ success: true, session_url: sessionUrl });
     }
   } catch (error) {
-    console.log(error);
+    console.error('Error placing the order:', error);
     res.status(500).json({ success: false, message: 'Error placing the order' });
   }
 };
@@ -82,14 +86,14 @@ export const verifyOrder = async (req, res) => {
     }
 
     if (success === 'true') {
-      // Check if notification has already been sent
+      // Prevent duplicate notifications
       if (!order.notificationSent) {
         await orderModel.findByIdAndUpdate(
           orderId,
           {
             payment: true,
             paymentTime: new Date(),
-            notificationSent: true, // Set flag to prevent duplicate notifications
+            notificationSent: true,
           },
           { new: true },
         );
@@ -104,7 +108,7 @@ export const verifyOrder = async (req, res) => {
       res.json({ success: false, message: 'Payment failed, order canceled' });
     }
   } catch (error) {
-    console.log(error);
+    console.error('Error confirming the order:', error);
     res.status(500).json({ success: false, message: 'Error confirming the order' });
   }
 };
@@ -115,7 +119,7 @@ export const userOrders = async (req, res) => {
     const orders = await orderModel.find({ userId: req.body.userId, payment: true });
     res.json({ success: true, data: orders });
   } catch (error) {
-    console.log(error);
+    console.error('Error retrieving user orders:', error);
     res.status(500).json({ success: false, message: 'Error retrieving user orders' });
   }
 };
@@ -126,7 +130,7 @@ export const listOrders = async (req, res) => {
     const orders = await orderModel.find({ payment: true });
     res.json({ success: true, data: orders });
   } catch (error) {
-    console.log(error);
+    console.error('Error retrieving all orders:', error);
     res.status(500).json({ success: false, message: 'Error retrieving all orders' });
   }
 };
@@ -137,7 +141,7 @@ export const updateStatus = async (req, res) => {
     await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
     res.json({ success: true, message: 'Status updated' });
   } catch (error) {
-    console.log(error);
+    console.error('Error updating status:', error);
     res.status(500).json({ success: false, message: 'Error updating status' });
   }
 };
@@ -148,11 +152,12 @@ export const deleteOrder = async (req, res) => {
     await orderModel.findByIdAndDelete(req.body.orderId);
     res.json({ success: true, message: 'Order deleted' });
   } catch (error) {
-    console.log(error);
+    console.error('Error deleting order:', error);
     res.status(500).json({ success: false, message: 'Error deleting order' });
   }
 };
 
+// Function to retrieve the last order for a user
 export const getLastOrder = async (req, res) => {
   try {
     const lastOrder = await orderModel.findOne({ userId: req.userId }).sort({ date: -1 });
@@ -162,7 +167,7 @@ export const getLastOrder = async (req, res) => {
       res.json({ success: false, message: 'No previous orders' });
     }
   } catch (error) {
-    console.log(error);
+    console.error('Error retrieving last order:', error);
     res.status(500).json({ success: false, message: 'Error retrieving last order' });
   }
 };
