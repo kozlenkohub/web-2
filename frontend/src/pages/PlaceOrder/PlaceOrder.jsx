@@ -16,24 +16,20 @@ const PlaceOrder = () => {
     window.scrollTo(0, 0);
   }, []);
   const { t } = useTranslation();
-  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Замените на ваш API ключ
+  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Zamień na swój klucz API
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
-  // Новые состояния для центра доставки и радиуса доставки
   const [deliveryCenter, setDeliveryCenter] = useState(null);
   const [deliveryRadius, setDeliveryRadius] = useState(null);
-
-  // Состояние для отслеживания загрузки данных с бэкенда
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // Другие состояния
   const [data, setData] = useState({
     firstName: '',
     address: '',
     apartmentNumber: '',
     phone: '',
-    location: null, // Обновим после получения deliveryCenter
+    location: null,
     isAddressManual: false,
   });
 
@@ -55,25 +51,23 @@ const PlaceOrder = () => {
   const [isWorkingHours, setIsWorkingHours] = useState(true);
 
   const workingHours = {
-    0: { open: '11:00', close: '20:30' }, // Воскресенье
-    1: { open: '11:00', close: '20:30' }, // Понедельник
-    2: { open: '11:00', close: '20:30' }, // Вторник
-    3: { open: '11:00', close: '20:30' }, // Среда
-    4: { open: '11:00', close: '20:30' }, // Четверг
-    5: { open: '11:00', close: '21:30' }, // Пятница
-    6: { open: '11:00', close: '21:30' }, // Суббота
+    0: { open: '11:00', close: '20:30' },
+    1: { open: '11:00', close: '20:30' },
+    2: { open: '11:00', close: '20:30' },
+    3: { open: '11:00', close: '20:30' },
+    4: { open: '11:00', close: '20:30' },
+    5: { open: '11:00', close: '21:30' },
+    6: { open: '11:00', close: '21:30' },
   };
 
-  // Функция для перевода времени в минуты
   const timeStringToMinutes = (timeString) => {
     const [hours, minutes] = timeString.split(':').map(Number);
     return hours * 60 + minutes;
   };
 
-  // Проверка рабочих часов
   useEffect(() => {
     const checkWorkingHours = () => {
-      const currentDay = new Date().getDay(); // 0-6 (0 = Воскресенье)
+      const currentDay = new Date().getDay();
       const currentTime = new Date();
       const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
 
@@ -98,7 +92,6 @@ const PlaceOrder = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Функция для получения центра и радиуса доставки
   useEffect(() => {
     const fetchDeliverySettings = async () => {
       try {
@@ -111,7 +104,6 @@ const PlaceOrder = () => {
           setDeliveryCenter(centerResponse.data.deliveryCenter);
           setDeliveryRadius(radiusResponse.data.deliveryRadius);
 
-          // Устанавливаем начальную локацию на центр доставки
           setData((prevData) => ({
             ...prevData,
             location: centerResponse.data.deliveryCenter,
@@ -119,17 +111,16 @@ const PlaceOrder = () => {
 
           setIsDataLoaded(true);
         } else {
-          console.error('Ошибка при получении настроек доставки');
+          console.error('Błąd podczas pobierania ustawień dostawy');
         }
       } catch (error) {
-        console.error('Ошибка при запросе настроек доставки:', error);
+        console.error('Błąd podczas zapytania o ustawienia dostawy:', error);
       }
     };
 
     fetchDeliverySettings();
   }, [url]);
 
-  // Обработчики изменений
   const onChangeHandler = (event) => {
     const name = event.target.name || 'address';
     const value = event.target.value;
@@ -147,7 +138,6 @@ const PlaceOrder = () => {
     setPaymentMethod(event.target.value);
   };
 
-  // Расчет стоимости упаковки
   const calculatePackagingCharge = () => {
     let zestawCharge = 0;
     let totalCartAmountWithoutZestaw = 0;
@@ -189,13 +179,10 @@ const PlaceOrder = () => {
   useEffect(() => {
     const calculatedPackagingCharge = calculatePackagingCharge();
     setPackagingCharge(calculatedPackagingCharge);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems]);
 
-  // Обновляем функцию calculateDeliveryCharge
   const calculateDeliveryCharge = (lat, lng) => {
     if (!deliveryCenter || deliveryRadius === null) {
-      // Если данные еще не загружены, не выполняем расчет
       return;
     }
 
@@ -213,35 +200,34 @@ const PlaceOrder = () => {
     }
   };
 
-  // Обработчик отправки заказа
   const placeOrder = async (event) => {
     event.preventDefault();
 
     const totalAmount = getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge;
 
     if (!token) {
-      alert('Пожалуйста, войдите в систему, чтобы оформить заказ.');
+      alert('Zaloguj się, aby złożyć zamówienie.');
       navigate('/login');
       return;
     }
 
     if (getTotalCartAmount() === 0) {
-      alert('Ваша корзина пуста.');
+      alert('Twój koszyk jest pusty.');
       return;
     }
 
     if (totalAmount < MIN_ORDER_AMOUNT) {
-      alert(`Минимальная сумма заказа ${MIN_ORDER_AMOUNT} PLN.`);
+      alert(`Minimalna kwota zamówienia to ${MIN_ORDER_AMOUNT} PLN.`);
       return;
     }
 
     if (outOfDeliveryZone) {
-      alert('Адрес доставки находится вне зоны доставки.');
+      alert('Adres znajduje się poza strefą dostawy.');
       return;
     }
 
     if (!isWorkingHours) {
-      alert('Доставка недоступна вне рабочих часов.');
+      alert('Dostawa jest niedostępna poza godzinami pracy.');
       return;
     }
 
@@ -268,22 +254,21 @@ const PlaceOrder = () => {
       let response = await axios.post(`${url}/api/order/place`, orderData, { headers: { token } });
       if (response.data.success) {
         if (paymentMethod === 'cash') {
-          alert('Ваш заказ успешно оформлен. Оплата наличными при доставке.');
+          alert('Twoje zamówienie zostało pomyślnie złożone. Płatność gotówką przy dostawie.');
           navigate('/');
         } else {
           const { session_url } = response.data;
           window.location.replace(session_url);
         }
       } else {
-        alert('Произошла ошибка при оформлении заказа.');
+        alert('Wystąpił błąd podczas składania zamówienia.');
       }
     } catch (error) {
-      alert('Произошла ошибка. Пожалуйста, попробуйте снова.');
+      alert('Wystąpił błąd. Spróbuj ponownie.');
       console.error(error);
     }
   };
 
-  // Обработчик клика по карте
   const onMapClick = useCallback(
     (e) => {
       const lat = e.latLng.lat();
@@ -294,11 +279,9 @@ const PlaceOrder = () => {
       reverseGeocode(lat, lng);
       setMapZoom(18);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [deliveryCenter, deliveryRadius],
   );
 
-  // Обратное геокодирование
   const reverseGeocode = (lat, lng) => {
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ location: { lat, lng } }, (results, status) => {
@@ -313,21 +296,21 @@ const PlaceOrder = () => {
           });
           setMapZoom(18);
         } else {
-          console.error('No results found');
+          console.error('Nie znaleziono wyników');
         }
       } else {
-        console.error('Geocoder failed due to: ' + status);
+        console.error('Błąd geokodera: ' + status);
       }
     });
   };
 
   if (!isLoaded || !isDataLoaded) {
-    return <div>Loading...</div>;
+    return <div>Ładowanie...</div>;
   }
 
   return (
     <form onSubmit={placeOrder} className="place-order">
-      {!isWorkingHours && <Notification message="Доставка недоступна вне рабочих часов." />}
+      {!isWorkingHours && <Notification message="Dostawa jest niedostępna poza godzinami pracy." />}
 
       <div className="place-order-left">
         <AddressForm
