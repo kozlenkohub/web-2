@@ -11,6 +11,8 @@ import CartSummary from './CartSummary';
 import Notification from './Notification';
 import { getDistanceFromLatLonInKm, deg2rad, timeStringToMinutes } from './utils';
 
+import LoadingAnimation from '../../components/LoadingAnimation/LoadingAnimation';
+
 const PlaceOrder = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -305,7 +307,7 @@ const PlaceOrder = () => {
   };
 
   if (!isLoaded || !isDataLoaded) {
-    return <div>Ładowanie...</div>;
+    return <LoadingAnimation />;
   }
 
   return (
