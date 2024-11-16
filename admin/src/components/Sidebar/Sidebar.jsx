@@ -18,9 +18,11 @@ import {
 const Sidebar = () => {
   const [userCount, setUserCount] = useState(0);
   const [orderEnabled, setOrderEnabled] = useState(true);
+  const [deliveryRadius, setDeliveryRadius] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
+    // Получение количества пользователей
     const fetchUserCount = async () => {
       try {
         const response = await fetch('https://web-2-backend-wbs4.onrender.com/api/user/count');
@@ -35,6 +37,7 @@ const Sidebar = () => {
       }
     };
 
+    // Получение статуса приема заказов
     const fetchOrderEnabled = async () => {
       try {
         const response = await fetch(
@@ -51,10 +54,30 @@ const Sidebar = () => {
       }
     };
 
+    // Получение радиуса доставки
+    const fetchDeliveryRadius = async () => {
+      try {
+        const response = await fetch(
+          'https://web-2-backend-wbs4.onrender.com/api/settings/get-delivery-radius',
+        );
+        const data = await response.json();
+        if (data.success) {
+          setDeliveryRadius(Number(data.deliveryRadius)); // Убедимся, что значение числовое
+        } else {
+          console.error('Не удалось получить радиус доставки');
+        }
+      } catch (error) {
+        console.error('Ошибка при получении радиуса доставки:', error);
+      }
+    };
+
+    // Вызываем все функции при монтировании компонента
     fetchUserCount();
     fetchOrderEnabled();
+    fetchDeliveryRadius();
   }, []);
 
+  // Функция для переключения статуса приема заказов
   const toggleOrderEnabled = async () => {
     try {
       const response = await fetch(
@@ -78,6 +101,31 @@ const Sidebar = () => {
     }
   };
 
+  // Функция для обновления радиуса доставки
+  const updateDeliveryRadius = async () => {
+    try {
+      const response = await fetch(
+        'https://web-2-backend-wbs4.onrender.com/api/settings/update-delivery-radius',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ deliveryRadius }),
+        },
+      );
+      const data = await response.json();
+      if (data.success) {
+        alert('Радиус доставки обновлен');
+      } else {
+        console.error('Не удалось обновить радиус доставки');
+      }
+    } catch (error) {
+      console.error('Ошибка при обновлении радиуса доставки:', error);
+    }
+  };
+
+  // Переключение открытия/закрытия Sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -144,6 +192,19 @@ const Sidebar = () => {
                 <span>Прием заказов выключен</span>
               </>
             )}
+          </button>
+        </div>
+
+        <div className="sidebar-delivery-radius">
+          <h3>Радиус доставки</h3>
+          <input
+            type="number"
+            value={deliveryRadius}
+            onChange={(e) => setDeliveryRadius(Number(e.target.value))}
+            className="radius-input"
+          />
+          <button onClick={updateDeliveryRadius} className="radius-update-button">
+            Обновить
           </button>
         </div>
       </div>

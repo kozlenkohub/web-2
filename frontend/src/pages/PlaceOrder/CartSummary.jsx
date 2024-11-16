@@ -1,44 +1,66 @@
+// CartSummary.js
+
 import React from 'react';
+import CartItemsWithComments from './CartItemsWithComments';
+import PaymentMethodSelector from './PaymentMethodSelector';
 
 const CartSummary = ({
-  totalAmount,
+  t,
+  getTotalCartAmount,
   deliveryCharge,
   packagingCharge,
+  cartItems,
+  food_list,
+  comments,
+  onCommentChangeHandler,
   paymentMethod,
-  setPaymentMethod,
-  outOfDeliveryZone,
-}) => (
-  <div className="cart-summary">
-    <h3>Order Summary</h3>
-    <p>Subtotal: {totalAmount} zł</p>
-    <p>Delivery Fee: {deliveryCharge === null ? 'Unavailable' : `${deliveryCharge} zł`}</p>
-    <p>Packaging Fee: {packagingCharge} zł</p>
-    {outOfDeliveryZone && <p style={{ color: 'red' }}>Out of delivery zone</p>}
-    <h4>Total: {totalAmount + (deliveryCharge || 0) + packagingCharge} zł</h4>
-    <div>
-      <label>
-        <input
-          type="radio"
-          value="card"
-          checked={paymentMethod === 'card'}
-          onChange={(e) => setPaymentMethod(e.target.value)}
+  handlePaymentMethodChange,
+}) => {
+  return (
+    <div className="cart-total">
+      <h2 className="t3">{t('cart.title')}</h2>
+      <div>
+        <div className="cart-total-details">
+          <p className="t5">{t('cart.subtotal')}</p>
+          <p className="t3">{getTotalCartAmount()} zł</p>
+        </div>
+        <hr />
+        {deliveryCharge !== null && (
+          <>
+            <div className="cart-total-details">
+              <p className="t5">{t('placeOrder.deliveryFee')}</p>
+              <p className="t3">
+                {deliveryCharge === 0 ? t('placeOrder.freeDelivery') : `${deliveryCharge} zł`}
+              </p>
+            </div>
+            <hr />
+          </>
+        )}
+        <div className="cart-total-details">
+          <p className="t5">{t('placeOrder.packagingFee')}</p>
+          <p className="t3">{packagingCharge} zł</p>
+        </div>
+        <hr />
+        <div className="cart-total-details">
+          <b className="t5">{t('cart.total')}</b>
+          <b className="t3">{getTotalCartAmount() + (deliveryCharge || 0) + packagingCharge} zł</b>
+        </div>
+        <hr />
+        <CartItemsWithComments
+          t={t}
+          cartItems={cartItems}
+          food_list={food_list}
+          comments={comments}
+          onCommentChangeHandler={onCommentChangeHandler}
         />
-        Pay with Card
-      </label>
-      <label>
-        <input
-          type="radio"
-          value="cash"
-          checked={paymentMethod === 'cash'}
-          onChange={(e) => setPaymentMethod(e.target.value)}
-        />
-        Pay with Cash
-      </label>
+      </div>
+      <PaymentMethodSelector
+        t={t}
+        paymentMethod={paymentMethod}
+        handlePaymentMethodChange={handlePaymentMethodChange}
+      />
     </div>
-    <button type="submit" disabled={outOfDeliveryZone}>
-      Place Order
-    </button>
-  </div>
-);
+  );
+};
 
 export default CartSummary;

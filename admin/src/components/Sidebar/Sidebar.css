@@ -113,3 +113,63 @@
     display: block;
   }
 }
+
+/* Секция управления радиусом доставки */
+.sidebar-delivery-radius {
+  margin-top: 20px;
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #555;
+}
+
+.sidebar-delivery-radius h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #ddd;
+}
+
+/* Ввод для радиуса доставки */
+.radius-input {
+  width: calc(100% - 20px);
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  background-color: #444;
+  color: white;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* Кнопка для обновления радиуса доставки */
+.radius-update-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff; /* Синий цвет кнопки */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.radius-update-button:hover {
+  background-color: #0056b3; /* Более темный синий цвет при наведении */
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .sidebar-delivery-radius {
+    padding: 10px;
+  }
+
+  .radius-input {
+    width: calc(100% - 20px);
+    font-size: 14px;
+  }
+
+  .radius-update-button {
+    font-size: 14px;
+  }
+}
