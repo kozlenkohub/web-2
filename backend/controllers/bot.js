@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 import UserAccessModel from '../models/userAccessModel.js';
 import orderModel from '../models/orderModel.js';
 import { sendDeliveryTimeEmail } from './emailService.js';
-import { formatPhoneNumber } from './utils.js';
 
 dotenv.config();
 
@@ -49,6 +48,9 @@ const initializeBot = (bot) => {
     }
   };
 
+  // Состояния чатов для управления процессами
+  const chatStates = {};
+
   // Обработчик callback_query
   bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
@@ -59,6 +61,7 @@ const initializeBot = (bot) => {
     if (!hasAccess) {
       bot.answerCallbackQuery(query.id, {
         text: 'У вас нет прав для выполнения этого действия.',
+        show_alert: true,
       });
       return;
     }
@@ -75,74 +78,105 @@ const initializeBot = (bot) => {
       if (order.deliveryTimeEmailSent) {
         bot.sendMessage(
           chatId,
-          `Вы уже отправили электронное письмо с временем доставки для заказа ${orderId}. Вы не можете изменить время доставки.`,
+          `Электронное письмо с временем доставки для заказа ${orderId} уже было отправлено. Изменение времени доставки невозможно.`,
         );
         return;
       }
 
+      // Если у пользователя уже есть активный процесс установки времени доставки, отменяем его
+      if (chatStates[chatId]) {
+        clearTimeout(chatStates[chatId].timeout);
+        bot.sendMessage(chatId, 'Предыдущий процесс установки времени доставки был отменен.');
+      }
+
+      // Устанавливаем состояние ожидания ввода времени доставки
+      chatStates[chatId] = {
+        pendingDeliveryTime: true,
+        orderId: orderId,
+        // Устанавливаем таймер на 10 минут для сброса состояния
+        timeout: setTimeout(() => {
+          delete chatStates[chatId];
+          bot.sendMessage(
+            chatId,
+            'Процесс установки времени доставки был отменен из-за бездействия.',
+          );
+        }, 10 * 60 * 1000), // 10 минут в миллисекундах
+      };
+
       bot.sendMessage(chatId, 'Пожалуйста, введите время доставки в минутах:');
-      bot.once('message', async (msg) => {
-        const deliveryTime = parseInt(msg.text, 10);
-        if (isNaN(deliveryTime)) {
-          bot.sendMessage(chatId, 'Пожалуйста, введите корректное число.');
-          return;
-        }
+    }
+  });
 
-        try {
-          // Обновляем время доставки
-          order.deliveryTime = deliveryTime;
-          await order.save();
+  // Обработчик входящих сообщений
+  bot.on('message', async (msg) => {
+    const chatId = msg.chat.id;
 
-          // Пытаемся отправить письмо
-          const emailSent = await sendDeliveryTimeEmail(order, deliveryTime);
+    // Пропускаем обработку, если это команда
+    if (msg.text.startsWith('/')) return;
 
-          if (emailSent) {
-            bot.sendMessage(
-              chatId,
-              `Время доставки для заказа ${orderId} установлено на ${deliveryTime} минут. Электронное письмо отправлено пользователю.`,
-            );
-          } else {
-            bot.sendMessage(
-              chatId,
-              `Время доставки для заказа ${orderId} обновлено на ${deliveryTime} минут. Электронное письмо НЕ было отправлено, так как оно уже было отправлено ранее.`,
-            );
-          }
-        } catch (error) {
-          console.error('Ошибка при установке времени доставки:', error);
-          bot.sendMessage(chatId, 'Произошла ошибка при установке времени доставки.');
-        }
-      });
-    } else if (data.startsWith('contact_client_')) {
-      const orderId = data.replace('contact_client_', '');
+    // Проверка, находится ли пользователь в процессе установки времени доставки
+    if (chatStates[chatId]?.pendingDeliveryTime) {
+      const state = chatStates[chatId];
+      const deliveryTimeInput = msg.text;
+      const deliveryTime = parseInt(deliveryTimeInput, 10);
+
+      if (isNaN(deliveryTime) || deliveryTime <= 0) {
+        bot.sendMessage(chatId, 'Пожалуйста, введите корректное число больше нуля.');
+        return;
+      }
+
+      const orderId = state.orderId;
 
       try {
         const order = await orderModel.findById(orderId);
         if (!order) {
           bot.sendMessage(chatId, `Заказ с ID ${orderId} не найден.`);
+          clearTimeout(state.timeout);
+          delete chatStates[chatId];
           return;
         }
 
-        // Получаем номер телефона клиента
-        let phoneNumber = order.address.phone;
-        let firstName = order.address.firstName || 'Клиент';
-
-        // Форматируем номер телефона
-        const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
-
-        if (!formattedPhoneNumber) {
-          bot.sendMessage(chatId, `Неверный формат номера телефона клиента: ${phoneNumber}`);
+        if (order.deliveryTimeEmailSent) {
+          bot.sendMessage(
+            chatId,
+            `Электронное письмо с временем доставки для заказа ${orderId} уже было отправлено. Изменение времени доставки невозможно.`,
+          );
+          clearTimeout(state.timeout);
+          delete chatStates[chatId];
           return;
         }
 
-        // Отправляем контакт
-        bot.sendContact(chatId, formattedPhoneNumber, firstName);
+        // Обновляем время доставки
+        order.deliveryTime = deliveryTime;
+        await order.save();
+
+        // Отправляем письмо
+        const emailSent = await sendDeliveryTimeEmail(order, deliveryTime);
+
+        if (emailSent) {
+          // Помечаем, что письмо было отправлено
+          order.deliveryTimeEmailSent = true;
+          await order.save();
+
+          bot.sendMessage(
+            chatId,
+            `Время доставки для заказа ${orderId} установлено на ${deliveryTime} минут. Электронное письмо отправлено пользователю.`,
+          );
+        } else {
+          bot.sendMessage(
+            chatId,
+            `Время доставки для заказа ${orderId} обновлено на ${deliveryTime} минут. Электронное письмо не было отправлено.`,
+          );
+        }
       } catch (error) {
-        console.error('Ошибка при отправке контакта клиента:', error);
-        bot.sendMessage(chatId, 'Произошла ошибка при отправке контакта клиента.');
+        console.error('Ошибка при установке времени доставки:', error);
+        bot.sendMessage(chatId, 'Произошла ошибка при установке времени доставки.');
       }
-    }
 
-    // Другие обработчики остаются без изменений
+      // Сбрасываем состояние и таймер
+      clearTimeout(state.timeout);
+      delete chatStates[chatId];
+    }
   });
 
   // Обработчик команды /adduser
@@ -190,7 +224,7 @@ const initializeBot = (bot) => {
     );
   });
 
-  // Вы можете добавить другие обработчики по необходимости
+  // Дополнительные обработчики можно добавить здесь
 };
 
 export default getBotInstance();

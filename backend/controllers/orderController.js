@@ -37,7 +37,10 @@ export const placeOrder = async (req, res) => {
     );
 
     // Check if the address is within the delivery radius
-    if (distance > deliveryRadius) {
+    let deliveryCharge = 0; // Default is 0 for free delivery
+    if (distance > 1.77 && distance <= deliveryRadius) {
+      deliveryCharge = 8; // Example delivery charge for distances within the chargeable radius
+    } else if (distance > deliveryRadius) {
       return res
         .status(400)
         .json({ success: false, message: 'Delivery address is outside the service area' });
@@ -52,7 +55,7 @@ export const placeOrder = async (req, res) => {
       paymentMethod: req.body.paymentMethod,
       payment: req.body.paymentMethod === 'cash' ? true : false,
       packagingCharge: req.body.packagingCharge,
-      deliveryCharge: 0, // Free delivery within radius
+      deliveryCharge: deliveryCharge, // Set the calculated delivery charge
     });
 
     await newOrder.save();

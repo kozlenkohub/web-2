@@ -259,6 +259,8 @@ const PlaceOrder = () => {
           alert('Twoje zamówienie zostało pomyślnie złożone. Płatność gotówką przy dostawie.');
           navigate('/');
         } else {
+          console.log(response.data);
+
           const { session_url } = response.data;
           window.location.replace(session_url);
         }
