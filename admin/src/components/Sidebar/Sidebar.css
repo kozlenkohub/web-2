@@ -2,13 +2,31 @@
 .sidebar {
   width: 250px;
   min-height: 100vh;
+  max-height: 100vh; /* Ограничиваем высоту для скроллинга */
   background-color: #333;
   color: white;
   position: fixed;
   top: 0;
   left: -250px;
+  overflow-y: auto; /* Добавляем скролл */
   transition: left 0.3s ease;
   z-index: 100;
+  scrollbar-width: thin; /* Узкий скролл для Firefox */
+  scrollbar-color: #555 #333; /* Цвет скролла для Firefox */
+}
+
+/* Стили скроллбара для Webkit (Chrome, Safari) */
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #333;
 }
 
 /* Стиль для открытого Sidebar */
@@ -18,17 +36,22 @@
 
 /* Кнопка для открытия и закрытия Sidebar */
 .sidebar-toggle-button {
-  position: fixed;
-  top: 30px; /* Немного ниже, чтобы не перекрывала элементы меню */
-  left: 20px;
+  position: absolute; /* Размещаем кнопку вне sidebar */
+  top: 20px; /* Уменьшаем отступ сверху */
+  left: 260px; /* Перемещаем кнопку за пределы открытого sidebar */
   font-size: 24px;
   background: none;
   border: none;
   color: white;
   cursor: pointer;
   z-index: 101;
+  transition: left 0.3s ease; /* Анимация при открытии sidebar */
 }
 
+/* Когда sidebar открыт */
+.sidebar.open + .sidebar-toggle-button {
+  left: 20px; /* Возвращаем кнопку на начальное место */
+}
 /* Стили для элементов Sidebar */
 .sidebar-options {
   padding-top: 60px;
@@ -89,31 +112,6 @@
   font-size: 16px;
 }
 
-/* Стили для мобильных устройств */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    left: -100%;
-  }
-
-  .sidebar.open {
-    left: 0;
-  }
-
-  .sidebar-options {
-    padding-top: 20px;
-  }
-
-  .sidebar-option p {
-    display: inline;
-  }
-
-  .sidebar-users,
-  .sidebar-toggle {
-    display: block;
-  }
-}
-
 /* Секция управления радиусом доставки */
 .sidebar-delivery-radius {
   margin-top: 20px;
@@ -160,12 +158,29 @@
 
 /* Адаптивные стили для мобильных устройств */
 @media (max-width: 768px) {
-  .sidebar-delivery-radius {
-    padding: 10px;
+  .sidebar {
+    width: 100%;
+    left: -100%;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-options {
+    padding-top: 20px;
+  }
+
+  .sidebar-option p {
+    display: inline;
+  }
+
+  .sidebar-users,
+  .sidebar-toggle {
+    display: block;
   }
 
   .radius-input {
-    width: calc(100% - 20px);
     font-size: 14px;
   }
 
