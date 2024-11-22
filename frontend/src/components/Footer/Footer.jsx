@@ -15,10 +15,11 @@ const Footer = () => {
           <div className="footer-social-icons">
             <a
               target="_blank"
-              href="https://www.facebook.com/people/GastroFaza2024/61558257013251/">
+              href="https://www.facebook.com/people/GastroFaza2024/61558257013251/"
+              rel="noreferrer">
               <img src={assets.facebook_icon} alt="Facebook" />
             </a>
-            <a target="_blank" href="https://www.instagram.com/gastrofaza2024/">
+            <a target="_blank" href="https://www.instagram.com/gastrofaza2024/" rel="noreferrer">
               <img src={assets.inst_icon} alt="Instagram" />
             </a>
           </div>
@@ -31,6 +32,22 @@ const Footer = () => {
             <li>{t('footer.address')}</li>
           </ul>
         </div>
+      </div>
+      <div className="footer-alergeny">
+        <h2>{t('footer.allergensTitle')}</h2> {/* Заголовок раздела об аллергенах */}
+        <a
+          href="https://amrestcdn.azureedge.net/ph-web-ordering/Pizza_Hut_PL/promotion/W6_2024/PHPL%20Allergens%20PH%20ALL%20W6%20Stuffed%20Crust_i%20prosciutto.xls"
+          target="_blank"
+          rel="noreferrer">
+          {t('footer.allergensLink')}
+        </a>
+        <h2>{t('footer.nutritionTitle')}</h2> {/* Заголовок раздела о питательных веществах */}
+        <a
+          href="https://amrestcdn.azureedge.net/ph-web-ordering/Pizza_Hut_PL/promotion/W6_2024/PHPL%20Nutrition%20W6%20Stuffed%20Crust%20i%20prosciutto%20crudo.pdf"
+          target="_blank"
+          rel="noreferrer">
+          {t('footer.nutritionLink')}
+        </a>
       </div>
       <hr />
       <p className="footer-copyright">{t('footer.rights')}</p> {/* Перевод для "Авторские права" */}
