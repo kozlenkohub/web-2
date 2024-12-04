@@ -134,7 +134,7 @@ export async function sendAdminOrderEmail(order, sessionUrl) {
             <tr>
               <th style="padding: 8px; border: 1px solid #ddd;">Товар</th>
               <th style="padding: 8px; border: 1px solid #ddd;">Количество</th>
-              <th style="padding: 8px; border: 1px solid #ddd;">Цена</th>
+              <th style="padding: 8px; border: 1px солид #ddd;">Цена</th>
             </tr>
           </thead>
           <tbody>
@@ -181,9 +181,7 @@ export async function sendAdminOrderEmail(order, sessionUrl) {
 
 export async function sendBulkEmail(subject, htmlContent) {
   try {
-    // Получаем всех пользователей
-    const users = await userModel.find({}, 'email'); // Извлекаем только поле email
-
+    const users = await userModel.find({}, 'email');
     if (!users.length) {
       console.log('Нет пользователей для рассылки.');
       return;
@@ -193,7 +191,7 @@ export async function sendBulkEmail(subject, htmlContent) {
       const mailOptions = {
         from: process.env.EMAIL,
         to: user.email,
-        subject: subject,
+        subject,
         html: htmlContent,
       };
 
@@ -204,7 +202,6 @@ export async function sendBulkEmail(subject, htmlContent) {
         console.error(`Ошибка при отправке письма на ${user.email}:`, error);
       }
 
-      // Задержка в 1 секунду между отправками
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 

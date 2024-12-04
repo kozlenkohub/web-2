@@ -11,24 +11,19 @@ const frontend_url = 'https://www.burgergastrofaza.pl'; // Replace with your fro
 // Function to place an order
 export const placeOrder = async (req, res) => {
   try {
-    // Fetch settings to get delivery radius and center
     const settings = await settingsModel.findOne();
     if (!settings) {
       return res.status(500).json({ success: false, message: 'Settings not found' });
     }
 
-    // Check if order placement is enabled
-    if (settings && !settings.orderEnabled) {
+    if (!settings.orderEnabled) {
       return res
         .status(403)
         .json({ success: false, message: 'Order placement is temporarily unavailable' });
     }
 
-    const deliveryCenter = settings.deliveryCenter; // Center of delivery
-    const deliveryRadius = settings.deliveryRadius; // Maximum delivery radius in km
-    const userLocation = req.body.address.location;
-
-    // Calculate distance between user location and delivery center
+    const { deliveryCenter, deliveryRadius } = settings;
+    const { location: userLocation } = req.body.address;
     const distance = getDistanceFromLatLonInKm(
       deliveryCenter.lat,
       deliveryCenter.lng,
@@ -36,39 +31,29 @@ export const placeOrder = async (req, res) => {
       userLocation.lng,
     );
 
-    // Check if the address is within the delivery radius
-    let deliveryCharge = 0; // Default is 0 for free delivery
+    let deliveryCharge = 0;
     if (distance > 1.77 && distance <= deliveryRadius) {
-      deliveryCharge = 8; // Example delivery charge for distances within the chargeable radius
+      deliveryCharge = 8;
     } else if (distance > deliveryRadius) {
       return res
         .status(400)
         .json({ success: false, message: 'Delivery address is outside the service area' });
     }
 
-    // Create a new order
     const newOrder = new orderModel({
-      userId: req.body.userId,
-      items: req.body.items,
-      amount: req.body.amount,
-      address: req.body.address,
-      paymentMethod: req.body.paymentMethod,
-      payment: req.body.paymentMethod === 'cash' ? true : false,
-      packagingCharge: req.body.packagingCharge,
-      deliveryCharge: deliveryCharge, // Set the calculated delivery charge
+      ...req.body,
+      payment: req.body.paymentMethod === 'cash',
+      deliveryCharge,
     });
 
     await newOrder.save();
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
-    // Handle notifications and payment
     if (req.body.paymentMethod === 'cash') {
-      // Send notifications for cash payment
       await sendAdminOrderEmail(newOrder, null);
       await sendTelegramOrderMessage(newOrder);
       res.json({ success: true, message: 'Order placed with cash payment' });
     } else {
-      // Create a Stripe payment session
       const sessionUrl = await createStripeSession(newOrder, frontend_url);
       res.json({ success: true, session_url: sessionUrl });
     }

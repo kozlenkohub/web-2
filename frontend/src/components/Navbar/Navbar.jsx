@@ -18,6 +18,7 @@ import {
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState('home');
   const [isCartFixed, setIsCartFixed] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State for menu toggle
   const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
   const { t, i18n } = useTranslation(); // Подключаем i18n для смены языка
   const location = useLocation(); // Получаем текущий маршрут
@@ -44,37 +45,6 @@ const Navbar = ({ setShowLogin }) => {
   };
 
   useEffect(() => {
-    const toggle = document.getElementById('visual-toggle');
-
-    // Function to apply the stored mode preference
-    function applyModePreference() {
-      const mode = localStorage.getItem('mode');
-      if (mode === 'light') {
-        toggle.checked = true;
-        document.body.classList.add('lightcolors');
-        document.getElementById('visual-toggle-button').classList.add('lightmode');
-      } else {
-        toggle.checked = false;
-        document.body.classList.remove('lightcolors');
-        document.getElementById('visual-toggle-button').classList.remove('lightmode');
-      }
-    }
-
-    // Call the function to apply the mode preference on page load
-    applyModePreference();
-
-    toggle.addEventListener('change', function () {
-      if (toggle.checked) {
-        localStorage.setItem('mode', 'light');
-        document.body.classList.add('lightcolors');
-        document.getElementById('visual-toggle-button').classList.add('lightmode');
-      } else {
-        localStorage.setItem('mode', 'dark');
-        document.body.classList.remove('lightcolors');
-        document.getElementById('visual-toggle-button').classList.remove('lightmode');
-      }
-    });
-
     // Handle scroll to fix the cart at the bottom right corner only on the home page
     const handleScroll = () => {
       if (window.scrollY > 100 && location.pathname === '/') {
@@ -91,33 +61,51 @@ const Navbar = ({ setShowLogin }) => {
     };
   }, [location.pathname]); // Следим за изменением маршрута
 
+  const handleMenuClick = (menuName) => {
+    setMenu(menuName);
+    setIsMenuOpen(false); // Close the menu when an item is selected
+  };
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      document.body.style.overflow = 'auto'; // Enable scrolling when menu is closed
+    } else {
+      document.body.style.overflow = 'hidden'; // Disable scrolling when menu is open
+    }
+  }, [isMenuOpen]);
+
   return (
     <div className="navbar">
       <Link to="/">
         <img src={assets.logo} alt="Logo" className="logo" />
       </Link>
-      <ul className="navbar-menu">
+      <button
+        className={`menu-toggle ${isMenuOpen ? 'open' : ''}`}
+        onClick={() => setIsMenuOpen(!isMenuOpen)}>
+        <FiMenu size={24} />
+      </button>
+      <ul className={`navbar-menu ${isMenuOpen ? 'open' : ''}`}>
         <Link
           to="/"
-          onClick={() => setMenu('home')}
+          onClick={() => handleMenuClick('home')}
           className={menu === 'home' ? 'active t3' : 't3'}>
           {t('navbar.home')}
         </Link>
         <a
           href="#explore-menu"
-          onClick={() => setMenu('menu')}
+          onClick={() => handleMenuClick('menu')}
           className={menu === 'menu' ? 'active t3' : 't3'}>
           {t('navbar.menu')}
         </a>
         <a
           href="#app-download"
-          onClick={() => setMenu('mobile-app')}
+          onClick={() => handleMenuClick('mobile-app')}
           className={menu === 'mobile-app' ? 'active t3' : 't3'}>
           {t('navbar.delivery')}
         </a>
         <a
           href="#footer"
-          onClick={() => setMenu('contact-us')}
+          onClick={() => handleMenuClick('contact-us')}
           className={menu === 'contact-us' ? 'active t3' : 't3'}>
           {t('navbar.contact')}
         </a>
@@ -126,7 +114,7 @@ const Navbar = ({ setShowLogin }) => {
           href="https://www.google.com/maps?cid=10122389382842258008"
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => setMenu('google-maps')}
+          onClick={() => handleMenuClick('google-maps')}
           className={menu === 'google-maps' ? 'active t3' : 't3'}>
           {t('navbar.googleMaps')} {/* Перевод для "Мы на Гугл картах" */}
         </a>

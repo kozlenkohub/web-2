@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './ExploreMenu.css';
 import { useTranslation } from 'react-i18next';
+import { gsap } from 'gsap';
 
 const ExploreMenu = ({ category, setCategory }) => {
   const { t } = useTranslation();
   const [menuList, setMenuList] = useState([]);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     fetch('https://web-2-backend-wbs4.onrender.com/api/menu') // URL вашего API
@@ -12,6 +14,28 @@ const ExploreMenu = ({ category, setCategory }) => {
       .then((data) => setMenuList(data))
       .catch((error) => console.error('Error fetching menu:', error));
   }, []);
+
+  useEffect(() => {
+    // Анимация появления меню
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        menuRef.current.children,
+        {
+          opacity: 0,
+          y: 50,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.2, // Анимация элементов поочередно
+          ease: 'power3.out',
+        },
+      );
+    }, menuRef);
+
+    return () => ctx.revert(); // Очистка анимаций при размонтировании
+  }, [menuList]);
 
   return (
     <div className="explore-menu" id="explore-menu">
@@ -23,7 +47,7 @@ const ExploreMenu = ({ category, setCategory }) => {
       <div className="block-text">
         <p className="explore-menu-text t6 substext">{t('exploreMenu.streetFood')}</p>
       </div>
-      <div className="explore-menu-list">
+      <div className="explore-menu-list" ref={menuRef}>
         {menuList.map((item, index) => (
           <div
             onClick={() =>

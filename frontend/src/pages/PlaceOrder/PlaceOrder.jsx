@@ -9,7 +9,7 @@ import AddressForm from './AddressForm';
 import MapComponent from './MapComponent';
 import CartSummary from './CartSummary';
 import Notification from './Notification';
-import { getDistanceFromLatLonInKm, deg2rad, timeStringToMinutes } from './utils';
+import { getDistanceFromLatLonInKm, timeStringToMinutes } from './utils';
 
 import LoadingAnimation from '../../components/LoadingAnimation/LoadingAnimation';
 
@@ -18,7 +18,7 @@ const PlaceOrder = () => {
     window.scrollTo(0, 0);
   }, []);
   const { t } = useTranslation();
-  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Zamień na swój klucz API
+  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc';
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -60,11 +60,6 @@ const PlaceOrder = () => {
     4: { open: '11:00', close: '20:30' },
     5: { open: '11:00', close: '21:30' },
     6: { open: '11:00', close: '21:30' },
-  };
-
-  const timeStringToMinutes = (timeString) => {
-    const [hours, minutes] = timeString.split(':').map(Number);
-    return hours * 60 + minutes;
   };
 
   useEffect(() => {

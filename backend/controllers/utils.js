@@ -19,29 +19,14 @@ export function deg2rad(deg) {
 
 // Функция для форматирования и проверки номера телефона
 export function formatPhoneNumber(phone) {
-  // Удаляем пробелы, дефисы и скобки
-  let cleaned = phone.replace(/[\s\-()]/g, '');
+  let cleaned = phone.replace(/[\s\-()]/g, '').replace(/^\+/, '');
 
-  // Удаляем ведущий '+' при наличии
-  if (cleaned.startsWith('+')) {
-    cleaned = cleaned.substring(1);
-  }
-
-  // Если номер начинается с '48', то он содержит код страны
   if (cleaned.startsWith('48')) {
-    // Должно быть '48' + 9 цифр = 11 цифр
-    if (cleaned.length !== 11) {
-      return null; // Неверный номер телефона
-    }
+    if (cleaned.length !== 11) return null;
   } else {
-    // Должно быть 9 цифр
-    if (cleaned.length !== 9) {
-      return null; // Неверный номер телефона
-    }
-    // Добавляем код страны
+    if (cleaned.length !== 9) return null;
     cleaned = '48' + cleaned;
   }
 
-  // Возвращаем в формате '+48XXXXXXXXX'
   return '+' + cleaned;
 }
