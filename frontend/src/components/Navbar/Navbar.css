@@ -512,8 +512,9 @@ button.menu-toggle svg {
 }
 
 @media (max-width: 533px) {
-  .menu-toggle {
-    right: -2%;
+  button.menu-toggle {
+    right: 2%;
+    padding: 10px 10px;
   }
   .navbar-right {
     gap: 5px;
