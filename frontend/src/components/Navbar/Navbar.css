@@ -515,10 +515,13 @@ button.menu-toggle svg {
   .menu-toggle {
     right: -2%;
   }
+  .navbar-right {
+    gap: 5px;
+  }
   .navbar-right button {
     font-size: 11px;
   }
   .language-select {
-    width: 30px;
+    margin-right: 0;
   }
 }
