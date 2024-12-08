@@ -36,7 +36,7 @@ const Footer = () => {
             </li>
             <li>
               <a
-                href="https://maps.google.com/?q={t('footer.address')}"
+                href="https://maps.google.com/?q=(Maślicka-160,54-104-Wrocław)"
                 target="_blank"
                 rel="noreferrer">
                 {t('footer.address')}
