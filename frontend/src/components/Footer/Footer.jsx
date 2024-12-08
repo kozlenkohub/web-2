@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Footer.css';
 import { assets } from '../../assets/assets';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import Allergens from '../Allergens/Allergens';
 
 const Footer = () => {
   const { t } = useTranslation();
+  const [isAllergensOpen, setIsAllergensOpen] = useState(false);
+
+  const openAllergensModal = () => setIsAllergensOpen(true);
+  const closeAllergensModal = () => setIsAllergensOpen(false);
 
   return (
     <footer className="footer" id="footer">
@@ -15,19 +21,9 @@ const Footer = () => {
         </div>
         <div className="footer-content-center">
           <h2>{t('footer.allergensTitle')}</h2>
-          <a
-            href="https://amrestcdn.azureedge.net/ph-web-ordering/Pizza_Hut_PL/promotion/W6_2024/PHPL%20Allergens%20PH%20ALL%20W6%20Stuffed%20Crust_i%20prosciutto.xls"
-            target="_blank"
-            rel="noreferrer">
+          <button className="custom-button" onClick={openAllergensModal}>
             {t('footer.allergensLink')}
-          </a>
-          <h2>{t('footer.nutritionTitle')}</h2>
-          <a
-            href="https://amrestcdn.azureedge.net/ph-web-ordering/Pizza_Hut_PL/promotion/W6_2024/PHPL%20Nutrition%20W6%20Stuffed%20Crust%20i%20prosciutto%20crudo.pdf"
-            target="_blank"
-            rel="noreferrer">
-            {t('footer.nutritionLink')}
-          </a>
+          </button>
         </div>
         <div className="footer-content-right">
           <h2>{t('footer.contactUs')}</h2>
@@ -51,6 +47,16 @@ const Footer = () => {
       </div>
       <hr />
       <p className="footer-copyright">{t('footer.rights')}</p>
+      {isAllergensOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close" onClick={closeAllergensModal}>
+              &times;
+            </span>
+            <Allergens />
+          </div>
+        </div>
+      )}
     </footer>
   );
 };

@@ -94,5 +94,10 @@
       "completed": "Zakończone",
       "canceled": "Anulowane"
     }
+  },
+  "allergens": {
+    "title": "Informacje o alergenach",
+    "product": "Produkt",
+    "allergens": "Alergeny"
   }
 }

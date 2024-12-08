@@ -52,6 +52,44 @@
   transform: translateX(5px);
 }
 
+.footer-content-center button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 10px 0;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.footer-content-center button:hover {
+  background-color: #0056b3;
+}
+
+.custom-button {
+  background-color: #555; /* Matte grey background */
+  color: white; /* White text */
+  border: none; /* No border */
+  padding: 10px 20px; /* Padding */
+  text-align: center; /* Center text */
+  text-decoration: none; /* No underline */
+  display: inline-block; /* Inline-block display */
+  font-size: 16px; /* Font size */
+  margin: 4px 2px; /* Margin */
+  cursor: pointer; /* Pointer cursor on hover */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.custom-button:hover {
+  background-color: #444; /* Darker grey on hover */
+}
+
 .footer-content-right h2 {
   font-size: 1.2rem;
   color: #ffffff;
