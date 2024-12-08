@@ -28,9 +28,20 @@ const Footer = () => {
         <div className="footer-content-right">
           <h2>{t('footer.contactUs')}</h2>
           <ul>
-            <li>{t('footer.phone')}</li>
-            <li>{t('footer.email')}</li>
-            <li>{t('footer.address')}</li>
+            <li>
+              <a href="tel:{t('footer.phone')}">{t('footer.phone')}</a>
+            </li>
+            <li>
+              <a href="mailto:{t('footer.email')}">{t('footer.email')}</a>
+            </li>
+            <li>
+              <a
+                href="https://maps.google.com/?q={t('footer.address')}"
+                target="_blank"
+                rel="noreferrer">
+                {t('footer.address')}
+              </a>
+            </li>
           </ul>
         </div>
       </div>
