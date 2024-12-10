@@ -54,7 +54,17 @@ const Header = () => {
       className="header"
       style={{
         backgroundImage: `url(${headerContent.backgroundUrl || ''})`,
-      }}>
+      }}
+      aria-label="Header Background">
+      <picture>
+        <source media="(max-width: 750px)" srcSet={headerContent.backgroundUrlSmall || ''} />
+        <source media="(max-width: 1050px)" srcSet={headerContent.backgroundUrlMedium || ''} />
+        <img
+          src={headerContent.backgroundUrl || ''}
+          alt="Header Background"
+          className="header-img"
+        />
+      </picture>
       <div className="header-contents">
         {/* Заголовок */}
         <h2 ref={titleRef} className="t1">
