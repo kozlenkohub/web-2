@@ -13,6 +13,7 @@ import {
   FaClone,
   FaBars,
   FaTimes,
+  FaRegMehRollingEyes,
 } from 'react-icons/fa';
 
 const Sidebar = () => {
@@ -169,6 +170,10 @@ const Sidebar = () => {
           <NavLink to="/email-sender" className="sidebar-option" onClick={handleMenuClick}>
             <FaPlus className="sidebar-icon" />
             <p>Рассылка</p>
+          </NavLink>
+          <NavLink to="/stripe" className="sidebar-option" onClick={handleMenuClick}>
+            <FaRegMehRollingEyes className="sidebar-icon" />
+            <p>Stripe</p>
           </NavLink>
         </div>
 
