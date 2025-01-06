@@ -13,7 +13,8 @@ import cartRouter from './routes/cartRoute.js';
 import menuRoutes from './routes/menuRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import emailRoutes from './routes/emailRoutes.js';
-import { getPaymentDetails, getSuccessfulPaymentsByMonth } from './controllers/stripeController.js';
+
+import stripeRouter from './routes/stripeRoute.js';
 
 // app configa
 const app = express();
@@ -48,6 +49,10 @@ app.use('/api/menu', menuRoutes);
 
 // db connection
 connectDB();
+
+// STRIPE INVOICE
+
+app.use('/api/stripe', stripeRouter);
 
 // api endpoints
 app.use('/api/email', emailRoutes);
@@ -111,12 +116,8 @@ app.get('/stats', async (req, res) => {
   }
 });
 
-app.get('/api/payments', getSuccessfulPaymentsByMonth);
-app.get('/api/payment/:id', getPaymentDetails);
 app.use('/api/header', headerContentRouter);
 
 app.listen(port, () => {
   console.log(`Server Started on https://web-2-backend-wbs4.onrender.com:${port}`);
 });
-
-// YOU CAN SAVE UR DATABASE IN THIS COMMENT IF U WANT -->

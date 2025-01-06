@@ -1,43 +1,51 @@
 import Stripe from 'stripe';
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const getSuccessfulPaymentsByMonth = async (req, res) => {
+export const generateReport = async (req, res) => {
   try {
-    const { month, year } = req.query;
-
-    // Получаем временные метки для начала и конца месяца
-    const startOfMonth = new Date(year, month - 1, 1).getTime() / 1000;
-    const endOfMonth = new Date(year, month, 0, 23, 59, 59).getTime() / 1000;
-
-    // Запрашиваем успешные платежи через Stripe Charges API
-    const charges = await stripe.charges.list({
-      created: {
-        gte: startOfMonth,
-        lte: endOfMonth,
+    // Создаем отчет
+    const reportRun = await stripe.reporting.reportRuns.create({
+      report_type: 'balance_change_from_activity.summary.1', // Тип отчета
+      parameters: {
+        interval_start: Math.floor(new Date('2024-12-01').getTime() / 1000), // Начало периода
+        interval_end: Math.floor(new Date('2024-12-31').getTime() / 1000), // Конец периода
       },
-      limit: 100, // Максимум 100 за один запрос (пагинация может понадобиться для больших данных)
-      status: 'succeeded', // Только успешные платежи
     });
 
-    // Возвращаем список успешных платежей
-    res.json({ success: true, data: charges.data });
+    // Проверяем статус отчета
+    const checkReportStatus = async () => {
+      const report = await stripe.reporting.reportRuns.retrieve(reportRun.id);
+      if (report.status === 'succeeded') {
+        return report.result.url; // Возвращаем ссылку на PDF
+      } else if (report.status === 'failed') {
+        throw new Error('Отчет не удалось создать.');
+      }
+      return null; // Отчет еще обрабатывается
+    };
+
+    // Ожидание генерации отчета
+    let reportUrl = null;
+    const timeout = 30000; // 30 секунд
+    const interval = 3000; // Интервал проверки (3 секунды)
+    const startTime = Date.now();
+
+    while (!reportUrl && Date.now() - startTime < timeout) {
+      reportUrl = await checkReportStatus();
+      if (!reportUrl) {
+        await new Promise((resolve) => setTimeout(resolve, interval));
+      }
+    }
+
+    if (reportUrl) {
+      res.status(200).json({ message: 'Отчет готов', url: reportUrl });
+    } else {
+      res
+        .status(202)
+        .json({ message: 'Отчет обрабатывается. Попробуйте позже.', reportId: reportRun.id });
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: 'Ошибка при получении платежей' });
+    res.status(500).json({ message: 'Ошибка сервера', error: error.message });
   }
 };
-const getPaymentDetails = async (req, res) => {
-  try {
-    const { id } = req.params; // Идентификатор транзакции передается через URL
-
-    // Получение полной информации по транзакции
-    const payment = await stripe.charges.retrieve(id);
-
-    res.json({ success: true, data: payment });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Ошибка при получении деталей транзакции' });
-  }
-};
-
-export { getSuccessfulPaymentsByMonth, getPaymentDetails };
