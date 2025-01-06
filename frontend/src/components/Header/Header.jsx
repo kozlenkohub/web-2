@@ -71,7 +71,7 @@ const Header = () => {
           {isLoading ? (
             <Skeleton width={300} height={50} style={{ marginBottom: '10px' }} />
           ) : (
-            headerContent.new?.[currentLang] || 'Default Title'
+            headerContent.new?.[currentLang] || 'GastroFaza'
           )}
         </h2>
 
@@ -80,7 +80,8 @@ const Header = () => {
           {isLoading ? (
             <Skeleton count={3} width={600} height={15} style={{ marginBottom: '10px' }} />
           ) : (
-            headerContent.description?.[currentLang] || 'Default Description'
+            headerContent.description?.[currentLang] ||
+            'Welcome to GastroFaza, where flavor meets quality! We’re passionate about crafting the perfect burger, made with fresh, locally-sourced ingredients and served with a side of good vibes.'
           )}
         </p>
 
