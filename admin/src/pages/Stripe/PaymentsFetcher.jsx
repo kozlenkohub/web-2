@@ -7,9 +7,9 @@ const PaymentsFetcher = ({ url }) => {
   const [error, setError] = useState(null);
   const [amountValue, setAmountValue] = useState(null);
   const [upcomingPayouts, setUpcomingPayouts] = useState([]);
-  const [month, setMonth] = useState('12');
-  const [year, setYear] = useState('2024');
-  const [reportUrl, setReportUrl] = useState(null);
+  // const [month, setMonth] = useState('12');
+  // const [year, setYear] = useState('2024');
+  // const [reportUrl, setReportUrl] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,23 +35,23 @@ const PaymentsFetcher = ({ url }) => {
     return date.toLocaleDateString();
   };
 
-  const handleClick = async () => {
-    setLoading(true);
-    setError(null);
-    setReportUrl(null);
+  // const handleClick = async () => {
+  //   setLoading(true);
+  //   setError(null);
+  //   setReportUrl(null);
 
-    try {
-      const response = await axios.post(`${url}/api/stripe/report-runs`, {
-        month: parseInt(month, 10),
-        year: parseInt(year, 10),
-      });
-      setReportUrl(response.data.url);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Произошла ошибка при генерации отчета');
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   try {
+  //     const response = await axios.post(`${url}/api/stripe/report-runs`, {
+  //       month: parseInt(month, 10),
+  //       year: parseInt(year, 10),
+  //     });
+  //     setReportUrl(response.data.url);
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || 'Произошла ошибка при генерации отчета');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="PaymentsFetcher">
@@ -76,7 +76,7 @@ const PaymentsFetcher = ({ url }) => {
         )}
       </div>
 
-      <div className="report-runner">
+      {/* <div className="report-runner">
         <label>
           Месяц:
           <input
@@ -108,7 +108,7 @@ const PaymentsFetcher = ({ url }) => {
             </a>
           </p>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };
