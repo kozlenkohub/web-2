@@ -8,7 +8,7 @@ const orderSchema = new mongoose.Schema({
       name: String,
       price: Number,
       quantity: Number,
-      comment: String, // Поле для комментария
+      comment: String,
     },
   ],
   amount: { type: Number, required: true },
@@ -29,7 +29,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: { type: String, required: true },
   packagingCharge: { type: Number, required: true },
   deliveryCharge: { type: Number, required: true },
-  emailSent: { type: Boolean, default: false }, // Поле для отслеживания отправки письма
+  emailSent: { type: Boolean, default: false },
   deliveryTime: { type: Number },
   deliveryTimeEmailSent: { type: Boolean, default: false },
   notificationSent: { type: Boolean, default: false },

@@ -16,7 +16,9 @@ import EmailSender from './pages/EmailSender/EmailSender';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const url = 'http://localhost:4000'; // URL для запросов
+  //https://web-2-backend-wbs4.onrender.com
+
+  const url = 'https://web-2-backend-wbs4.onrender.com'; // URL для запросов
 
   // Функция для проверки времени аутентификации
   const checkAuthentication = () => {

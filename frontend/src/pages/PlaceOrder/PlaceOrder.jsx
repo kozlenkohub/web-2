@@ -14,18 +14,25 @@ import { getDistanceFromLatLonInKm, timeStringToMinutes } from './utils';
 import LoadingAnimation from '../../components/LoadingAnimation/LoadingAnimation';
 
 const PlaceOrder = () => {
+  // Инициализация хуков
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
   const { t } = useTranslation();
-  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc';
+  const api_google = 'AIzaSyCi57cU6u5P8pTxiqSsP-HVFcSVuEsKVqc'; // Замените на ваш ключ API
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const navigate = useNavigate();
 
+  // Состояния для настроек доставки
   const [deliveryCenter, setDeliveryCenter] = useState(null);
   const [deliveryRadius, setDeliveryRadius] = useState(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+  // Флаги загрузки данных
+  const [deliverySettingsLoaded, setDeliverySettingsLoaded] = useState(false);
+  const [lastOrderLoaded, setLastOrderLoaded] = useState(false);
+
+  // Состояние данных формы
   const [data, setData] = useState({
     firstName: '',
     address: '',
@@ -35,6 +42,7 @@ const PlaceOrder = () => {
     isAddressManual: false,
   });
 
+  // Остальные состояния
   const [comments, setComments] = useState({});
   const [deliveryCharge, setDeliveryCharge] = useState(0);
   const [packagingCharge, setPackagingCharge] = useState(0);
@@ -45,11 +53,13 @@ const PlaceOrder = () => {
 
   const MIN_ORDER_AMOUNT = 20;
 
+  // Загрузка Google Maps API
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: api_google,
     libraries: ['places'],
   });
 
+  // Состояние для проверки рабочих часов
   const [isWorkingHours, setIsWorkingHours] = useState(true);
 
   const workingHours = {
@@ -62,6 +72,7 @@ const PlaceOrder = () => {
     6: { open: '11:00', close: '21:30' },
   };
 
+  // Хук для проверки рабочих часов
   useEffect(() => {
     const checkWorkingHours = () => {
       const currentDay = new Date().getDay();
@@ -89,6 +100,7 @@ const PlaceOrder = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Хук для загрузки настроек доставки
   useEffect(() => {
     const fetchDeliverySettings = async () => {
       try {
@@ -106,24 +118,59 @@ const PlaceOrder = () => {
             location: centerResponse.data.deliveryCenter,
           }));
 
-          setIsDataLoaded(true);
+          setDeliverySettingsLoaded(true);
         } else {
-          console.error('Błąd podczas pobierania ustawień dostawy');
+          console.error('Ошибка при получении настроек доставки');
         }
       } catch (error) {
-        console.error('Błąd podczas zapytania o ustawienia dostawy:', error);
+        console.error('Ошибка при запросе настроек доставки:', error);
       }
     };
 
     fetchDeliverySettings();
   }, [url]);
 
+  // Хук для загрузки последнего заказа
+  useEffect(() => {
+    const fetchLastOrder = async () => {
+      try {
+        const response = await axios.get(`${url}/api/order/last`, { headers: { token } });
+        if (response.data.success && response.data.data) {
+          const lastOrder = response.data.data;
+          const { address } = lastOrder;
+
+          setData({
+            firstName: address.firstName || '',
+            email: address.email || '',
+            address: address.street || '',
+            apartmentNumber: address.apartmentNumber || '',
+            phone: address.phone || '',
+            location: address.location || null,
+            isAddressManual: false,
+          });
+        }
+      } catch (error) {
+        console.error('Ошибка при получении последнего заказа:', error);
+      } finally {
+        setLastOrderLoaded(true);
+      }
+    };
+
+    if (token) {
+      fetchLastOrder();
+    } else {
+      setLastOrderLoaded(true); // Если пользователь не залогинен, считаем, что загрузка завершена
+    }
+  }, [url, token]);
+
+  // Обработка изменений в форме адреса
   const onChangeHandler = (event) => {
     const name = event.target.name || 'address';
     const value = event.target.value;
     setData((data) => ({ ...data, [name]: value, isAddressManual: name === 'address' }));
   };
 
+  // Обработка изменений комментариев к товарам
   const onCommentChangeHandler = (itemId, comment) => {
     setComments((prevComments) => ({
       ...prevComments,
@@ -131,10 +178,12 @@ const PlaceOrder = () => {
     }));
   };
 
+  // Обработка изменения метода оплаты
   const handlePaymentMethodChange = (event) => {
     setPaymentMethod(event.target.value);
   };
 
+  // Функция расчета упаковочного сбора
   const calculatePackagingCharge = () => {
     let zestawCharge = 0;
     let totalCartAmountWithoutZestaw = 0;
@@ -173,11 +222,13 @@ const PlaceOrder = () => {
     return zestawCharge + additionalPackagingCharge;
   };
 
+  // Хук для расчета упаковочного сбора при изменении корзины
   useEffect(() => {
     const calculatedPackagingCharge = calculatePackagingCharge();
     setPackagingCharge(calculatedPackagingCharge);
-  }, [cartItems]);
+  }, [cartItems, food_list]);
 
+  // Функция расчета доставки на основе расстояния
   const calculateDeliveryCharge = (lat, lng) => {
     if (!deliveryCenter || deliveryRadius === null) {
       return;
@@ -197,6 +248,7 @@ const PlaceOrder = () => {
     }
   };
 
+  // Функция размещения заказа
   const placeOrder = async (event) => {
     event.preventDefault();
 
@@ -268,6 +320,7 @@ const PlaceOrder = () => {
     }
   };
 
+  // Обработка клика по карте
   const onMapClick = useCallback(
     (e) => {
       const lat = e.latLng.lat();
@@ -281,6 +334,7 @@ const PlaceOrder = () => {
     [deliveryCenter, deliveryRadius],
   );
 
+  // Функция обратного геокодирования
   const reverseGeocode = (lat, lng) => {
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ location: { lat, lng } }, (results, status) => {
@@ -303,6 +357,10 @@ const PlaceOrder = () => {
     });
   };
 
+  // Определение, загружены ли все необходимые данные
+  const isDataLoaded = deliverySettingsLoaded && lastOrderLoaded;
+
+  // Отображение загрузки, пока данные не загружены
   if (!isLoaded || !isDataLoaded) {
     return <LoadingAnimation />;
   }

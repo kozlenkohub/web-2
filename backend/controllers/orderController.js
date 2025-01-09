@@ -145,15 +145,10 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
-// Function to retrieve the last order for a user
 export const getLastOrder = async (req, res) => {
   try {
-    const lastOrder = await orderModel.findOne({ userId: req.userId }).sort({ date: -1 });
-    if (lastOrder) {
-      res.json({ success: true, order: lastOrder });
-    } else {
-      res.json({ success: false, message: 'No previous orders' });
-    }
+    const order = await orderModel.findOne({ userId: req.body.userId }).sort({ createdAt: -1 });
+    res.json({ success: true, data: order });
   } catch (error) {
     console.error('Error retrieving last order:', error);
     res.status(500).json({ success: false, message: 'Error retrieving last order' });

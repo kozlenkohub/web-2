@@ -7,7 +7,7 @@ import {
   listOrders,
   updateStatus,
   deleteOrder,
-  getLastOrder, // Импортируем новую функцию
+  getLastOrder,
 } from '../controllers/orderController.js';
 
 const orderRouter = express.Router();
@@ -17,7 +17,7 @@ orderRouter.post('/verify', verifyOrder);
 orderRouter.post('/userorders', authMiddleware, userOrders);
 orderRouter.get('/list', listOrders);
 orderRouter.post('/status', updateStatus);
-orderRouter.post('/delete', deleteOrder); // Маршрут для удаления заказа
-orderRouter.get('/last', authMiddleware, getLastOrder); // Новый маршрут для получения последнего заказа
+orderRouter.post('/delete', deleteOrder);
+orderRouter.get('/last', authMiddleware, getLastOrder);
 
 export default orderRouter;

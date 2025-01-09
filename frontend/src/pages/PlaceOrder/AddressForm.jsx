@@ -18,9 +18,8 @@ const AddressForm = ({
   deliveryRadius,
 }) => {
   useEffect(() => {
-    if (data.address && data.isAddressManual) {
-      geocodeAddress(data.address);
-    }
+    geocodeAddress(data.address);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.address]);
 

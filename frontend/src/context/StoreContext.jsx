@@ -7,7 +7,8 @@ export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
   const { i18n } = useTranslation();
-  const url = 'https://web-2-backend-wbs4.onrender.com';
+  //https://web-2-backend-wbs4.onrender.com
+  const url = 'https://web-2-backend-wbs4.onrender.com'; // URL для запросов
 
   // Состояния
   const [cartItems, setCartItems] = useState({});

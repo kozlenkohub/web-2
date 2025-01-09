@@ -1,6 +1,5 @@
 import userModel from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
-import Order from '../models/orderModel.js';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
 
@@ -80,14 +79,4 @@ const getUserCount = async (req, res) => {
   }
 };
 
-const lastOrder = async (req, res) => {
-  try {
-    const order = await Order.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(1); // Находим последний заказ пользователя
-    res.json({ success: true, order });
-  } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: 'Error fetching last order' });
-  }
-};
-
-export { loginUser, registerUser, getUserCount, lastOrder };
+export { loginUser, registerUser, getUserCount };
