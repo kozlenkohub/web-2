@@ -18,7 +18,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   //https://web-2-backend-wbs4.onrender.com
 
-  const url = 'https://web-2-backend-wbs4.onrender.com'; // URL для запросов
+  const url = 'http://localhost:4000'; // URL для запросов
 
   // Функция для проверки времени аутентификации
   const checkAuthentication = () => {
@@ -63,7 +63,6 @@ const App = () => {
               <Route path="/adminheader" element={<AdminHeaderContent url={url} />} />
               <Route path="/menu-admin" element={<MenuAdmin url={url} />} /> {/* Новый маршрут */}
               <Route path="/email-sender" element={<EmailSender url={url} />} />{' '}
-              {/* Новый маршрут */}
             </Routes>
           </div>
         </>

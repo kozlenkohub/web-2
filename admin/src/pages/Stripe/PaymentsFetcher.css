@@ -1,8 +1,8 @@
-/* PaymentsFetcher.css */
-
 /* Root Variables for Easy Customization */
 :root {
   --primary-color: #4a90e2;
+  --primary-color-hover: #4281c8; /* 10% темнее */
+  --primary-color-hover-link: #3b6fb5; /* 15% темнее */
   --secondary-color: #ffffff;
   --error-color: #e74c3c;
   --success-color: #2ecc71;
@@ -40,7 +40,7 @@
   border: 1px solid #cccccc;
   border-radius: 4px;
   font-size: 16px;
-  transition: border-color var(--transition-speed);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
 }
 
 .PaymentsFetcher input:focus {
@@ -68,7 +68,7 @@
 }
 
 .PaymentsFetcher button:hover:not(:disabled) {
-  background-color: darken(var(--primary-color), 10%);
+  background-color: var(--primary-color-hover);
   transform: translateY(-2px);
 }
 
@@ -86,7 +86,7 @@
 }
 
 .PaymentsFetcher a:hover {
-  color: darken(var(--primary-color), 15%);
+  color: var(--primary-color-hover-link);
 }
 
 .PaymentsFetcher .error {
@@ -95,6 +95,24 @@
 
 .PaymentsFetcher .success {
   color: var(--success-color);
+}
+
+/* Upcoming Payouts Styling */
+.PaymentsFetcher .upcoming-payouts {
+  margin-top: 20px;
+}
+
+.PaymentsFetcher .upcoming-payouts h3 {
+  margin-bottom: 10px;
+  color: #333333;
+}
+
+.PaymentsFetcher .upcoming-payouts .payout {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-left: 4px solid var(--primary-color);
+  margin-bottom: 10px;
+  border-radius: 4px;
 }
 
 /* Responsive Design */
@@ -111,6 +129,14 @@
   }
 
   .PaymentsFetcher p {
+    font-size: 14px;
+  }
+
+  .PaymentsFetcher .upcoming-payouts h3 {
+    font-size: 18px;
+  }
+
+  .PaymentsFetcher .upcoming-payouts .payout {
     font-size: 14px;
   }
 }
