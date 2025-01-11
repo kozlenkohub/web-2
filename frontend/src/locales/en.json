@@ -92,9 +92,7 @@
     "items": "Items",
     "trackOrder": "Track Order",
     "status": {
-      "pending": "Pending",
-      "completed": "Completed",
-      "canceled": "Canceled"
+      "delivered": "Has been delivered!"
     }
   },
   "allergens": {

@@ -93,9 +93,7 @@
     "items": "Предметы",
     "trackOrder": "Отследить Заказ",
     "status": {
-      "pending": "В ожидании",
-      "completed": "Завершено",
-      "canceled": "Отменено"
+      "delivered": "Доставлено!"
     }
   },
   "allergens": {

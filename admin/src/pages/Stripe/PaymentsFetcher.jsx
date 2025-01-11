@@ -7,9 +7,6 @@ const PaymentsFetcher = ({ url }) => {
   const [error, setError] = useState(null);
   const [amountValue, setAmountValue] = useState(null);
   const [upcomingPayouts, setUpcomingPayouts] = useState([]);
-  // const [month, setMonth] = useState('12');
-  // const [year, setYear] = useState('2024');
-  // const [reportUrl, setReportUrl] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {

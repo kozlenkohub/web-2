@@ -90,9 +90,7 @@
     "items": "Przedmioty",
     "trackOrder": "Śledź Zamówienie",
     "status": {
-      "pending": "Oczekujące",
-      "completed": "Zakończone",
-      "canceled": "Anulowane"
+      "delivered": "Zostało dostarczone!"
     }
   },
   "allergens": {
