@@ -119,9 +119,6 @@
 .payments-fetcher__payments-section {
   margin-top: 1rem;
 }
-
-.payments-fetcher__payment {
-  padding: 0.5rem 0;
   border-bottom: 1px solid #ddd;
 }
 
@@ -134,7 +131,6 @@
   font-weight: bold;
 }
 
-/* Responsive Design */
 @media (max-width: 480px) {
   .payments-fetcher {
     margin: 20px;
