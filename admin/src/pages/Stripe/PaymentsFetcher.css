@@ -1,8 +1,8 @@
 /* Root Variables for Easy Customization */
 :root {
   --primary-color: #4a90e2;
-  --primary-color-hover: #4281c8; /* 10% темнее */
-  --primary-color-hover-link: #3b6fb5; /* 15% темнее */
+  --primary-color-hover: #4281c8; /* 10% darker */
+  --primary-color-hover-link: #3b6fb5; /* 15% darker */
   --secondary-color: #ffffff;
   --error-color: #e74c3c;
   --success-color: #2ecc71;
@@ -11,7 +11,7 @@
 }
 
 /* Container Styling */
-.PaymentsFetcher {
+.payments-fetcher {
   max-width: 400px;
   margin: 50px auto;
   padding: 25px 30px;
@@ -22,18 +22,18 @@
 }
 
 /* Form Elements */
-.PaymentsFetcher form {
+.payments-fetcher__form {
   display: flex;
   flex-direction: column;
 }
 
-.PaymentsFetcher label {
+.payments-fetcher__label {
   margin-bottom: 15px;
   font-weight: 500;
   color: #333333;
 }
 
-.PaymentsFetcher input {
+.payments-fetcher__input {
   width: 100%;
   padding: 10px 12px;
   margin-top: 5px;
@@ -43,14 +43,14 @@
   transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
 }
 
-.PaymentsFetcher input:focus {
+.payments-fetcher__input:focus {
   border-color: var(--primary-color);
   outline: none;
   box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
 }
 
 /* Submit Button */
-.PaymentsFetcher button {
+.payments-fetcher__button {
   padding: 12px;
   background-color: var(--primary-color);
   color: var(--secondary-color);
@@ -62,52 +62,52 @@
   transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
 
-.PaymentsFetcher button:disabled {
+.payments-fetcher__button:disabled {
   background-color: #a0c4e8;
   cursor: not-allowed;
 }
 
-.PaymentsFetcher button:hover:not(:disabled) {
+.payments-fetcher__button:hover:not(:disabled) {
   background-color: var(--primary-color-hover);
   transform: translateY(-2px);
 }
 
 /* Feedback Messages */
-.PaymentsFetcher p {
+.payments-fetcher__message {
   margin-top: 20px;
   font-size: 16px;
 }
 
-.PaymentsFetcher a {
+.payments-fetcher__link {
   color: var(--primary-color);
   text-decoration: none;
   font-weight: 600;
   transition: color var(--transition-speed);
 }
 
-.PaymentsFetcher a:hover {
+.payments-fetcher__link:hover {
   color: var(--primary-color-hover-link);
 }
 
-.PaymentsFetcher .error {
+.payments-fetcher__error {
   color: var(--error-color);
 }
 
-.PaymentsFetcher .success {
+.payments-fetcher__success {
   color: var(--success-color);
 }
 
 /* Upcoming Payouts Styling */
-.PaymentsFetcher .upcoming-payouts {
+.payments-fetcher__upcoming-payouts {
   margin-top: 20px;
 }
 
-.PaymentsFetcher .upcoming-payouts h3 {
+.payments-fetcher__upcoming-payouts-title {
   margin-bottom: 10px;
   color: #333333;
 }
 
-.PaymentsFetcher .upcoming-payouts .payout {
+.payments-fetcher__payout {
   padding: 10px;
   background-color: #f9f9f9;
   border-left: 4px solid var(--primary-color);
@@ -115,28 +115,47 @@
   border-radius: 4px;
 }
 
+/* Payments Section Styling */
+.payments-fetcher__payments-section {
+  margin-top: 1rem;
+}
+
+.payments-fetcher__payment {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.payments-fetcher__payment-date {
+  color: #555;
+  margin-right: 0.5rem;
+}
+
+.payments-fetcher__payment-amount {
+  font-weight: bold;
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
-  .PaymentsFetcher {
+  .payments-fetcher {
     margin: 20px;
     padding: 20px;
   }
 
-  .PaymentsFetcher input,
-  .PaymentsFetcher button {
+  .payments-fetcher__input,
+  .payments-fetcher__button {
     font-size: 14px;
     padding: 10px;
   }
 
-  .PaymentsFetcher p {
+  .payments-fetcher__message {
     font-size: 14px;
   }
 
-  .PaymentsFetcher .upcoming-payouts h3 {
+  .payments-fetcher__upcoming-payouts-title {
     font-size: 18px;
   }
 
-  .PaymentsFetcher .upcoming-payouts .payout {
+  .payments-fetcher__payout {
     font-size: 14px;
   }
 }

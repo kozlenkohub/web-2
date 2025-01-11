@@ -1,11 +1,16 @@
 import express from 'express';
-import { generateReport, reportRuns } from '../controllers/stripeController.js';
+import {
+  generateReport,
+  getPaymentItems,
+  last10Payments,
+} from '../controllers/stripeController.js';
 
 const router = express.Router();
 
 // Создать отчет
 router.post('/reports', generateReport);
-router.post('/report-runs', reportRuns);
+router.post('/payments', last10Payments);
+router.post('/items', getPaymentItems);
 
 // Скачать отчет
 

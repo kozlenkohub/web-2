@@ -38,19 +38,26 @@ export const reportRuns = async (req, res) => {
   }
 };
 
-const balanceTransactions = async (req, res) => {
+export const last10Payments = async (req, res) => {
   try {
-    const { limit = 10 } = req.query;
-    const transactions = await stripe.reporting.reportRuns.create({
-      report_type: 'balance.transactions.1',
-      parameters: {
-        limit: parseInt(limit, 10),
-      },
-    });
-
-    res.json(transactions);
+    const payments = await stripe.paymentIntents.list({ limit: 10 });
+    res.json(payments.data);
   } catch (error) {
-    console.error('Error fetching balance transactions:', error);
+    console.error('Error fetching last 10 payments:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const getPaymentItems = async (req, res) => {
+  const { paymentIntentId } = req.body;
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const rawItems = paymentIntent.metadata?.items || '[]';
+    const items = JSON.parse(rawItems);
+    res.json({ items });
+
+    console.log('Items:', items);
+  } catch (error) {
+    console.error('Error fetching payment details:', error);
   }
 };
