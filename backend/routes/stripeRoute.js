@@ -10,10 +10,18 @@ const router = express.Router();
 
 // Создать отчет
 router.post('/reports', generateReport);
-router.post('/payments', last10Payments);
-router.post('/items', getPaymentItems);
-router.post('/webhook', handleStripeWebhook);
 
-// Скачать отчет
+// Последние 10 платежей
+router.post('/payments', last10Payments);
+
+// Получить элементы платежа
+router.post('/items', getPaymentItems);
+
+// Вебхук Stripe
+router.post(
+  '/webhook',
+  express.raw({ type: 'application/json' }), // Используем express.raw для вебхука
+  handleStripeWebhook,
+);
 
 export default router;
