@@ -18,10 +18,16 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 router.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
 
+  // Логирование заголовков и типа тела
+  console.log('Headers:', req.headers);
+  console.log('Body type:', typeof req.body);
+  console.log('Body buffer:', req.body instanceof Buffer);
+
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    console.log('Webhook event constructed successfully.');
   } catch (err) {
     console.error('Ошибка проверки подписи вебхука:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
