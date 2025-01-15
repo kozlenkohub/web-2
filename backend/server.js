@@ -23,7 +23,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 
-// Middleware для вебхука Stripe подключаем раньше глобальных парсеров
+// Подключение маршрута вебхука **до** глобальных парсеров
 app.use('/webhook', webHookRoute);
 
 // Глобальные middleware
@@ -52,7 +52,7 @@ app.use(
 app.use(express.json({ limit: '10mb' })); // Устанавливаем лимит на JSON данные
 app.use(express.urlencoded({ limit: '10mb', extended: true })); // Лимит на urlencoded данные
 
-// Подключение маршрутов
+// Подключение остальных маршрутов
 app.use('/api/menu', menuRoutes);
 app.use('/api/stripe', stripeRouter);
 app.use('/api/email', emailRoutes);
