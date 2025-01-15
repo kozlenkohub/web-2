@@ -2,7 +2,7 @@ import express from 'express';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(
-  'sk_test_51PtzgmHpIlFhlJbKucpXb5HGR3PkunCZNH0upO9zHDYyS6IrApvp1TPcG4wiIT5d3pV1EGvKVmicVZXBPOxq8fKP00nLV7hysU',
+  'pk_test_51PtzgmHpIlFhlJbKkSTjQS3NrT4GcAwRm14JYEt3Y27MZAYeOUCAr8ReAFBiGdaBBu2pyCu7zCalC3mLY3zoPYKn00e66ghrIz',
 );
 const endpointSecret = 'whsec_Tqj0tPZjigY2acPgoWNv5lJE2sGjxnuv';
 
