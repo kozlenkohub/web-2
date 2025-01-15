@@ -37,7 +37,7 @@ const addFood = async (req, res) => {
     res.json({ success: true, message: 'Food Added' });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error adding food' });
+    res.status(500).json({ success: false, message: 'Error adding food' });
   }
 };
 
@@ -76,7 +76,7 @@ const updateFood = async (req, res) => {
     res.json({ success: true, message: 'Food Updated' });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error updating food' });
+    res.status(500).json({ success: false, message: 'Error updating food' });
   }
 };
 
@@ -89,7 +89,7 @@ const listFood = async (req, res) => {
     res.json({ success: true, data: sortedFoods });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error fetching food list' });
+    res.status(500).json({ success: false, message: 'Error fetching food list' });
   }
 };
 
@@ -102,7 +102,7 @@ const listActiveFood = async (req, res) => {
     res.json({ success: true, data: sortedFoods });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error fetching active food list' });
+    res.status(500).json({ success: false, message: 'Error fetching active food list' });
   }
 };
 
@@ -119,7 +119,7 @@ const removeFood = async (req, res) => {
     res.json({ success: true, message: 'Food Removed' });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: 'Error removing food' });
+    res.status(500).json({ success: false, message: 'Error removing food' });
   }
 };
 

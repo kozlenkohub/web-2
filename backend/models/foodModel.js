@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 const foodSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
-  description_en: { type: String, required: true },
-  description_ru: { type: String, required: true },
+  description_en: { type: String, required: false }, // Не обязательное поле
+  description_ru: { type: String, required: false }, // Не обязательное поле
   price: { type: Number, required: true },
   image: { type: String, required: true },
   category: { type: String, required: true },
