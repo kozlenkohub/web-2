@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Add.css';
 import { assets } from '../../assets/assets';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useDropzone } from 'react-dropzone';
 
 const Add = ({ url }) => {
   const [image, setImage] = useState(null);
@@ -30,13 +31,49 @@ const Add = ({ url }) => {
   }, []);
 
   const onChangeHandler = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setData((data) => ({ ...data, [name]: value }));
+    const { name, value } = event.target;
+    setData((prevData) => ({ ...prevData, [name]: value }));
   };
+
+  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+    if (rejectedFiles.length > 0) {
+      rejectedFiles.forEach((file) => {
+        file.errors.forEach((err) => {
+          if (err.code === 'file-too-large') {
+            toast.error('Размер изображения не должен превышать 5MB');
+          }
+          if (err.code === 'file-invalid-type') {
+            toast.error('Неподдерживаемый формат файла');
+          }
+        });
+      });
+      return;
+    }
+
+    const file = acceptedFiles[0];
+    if (file) {
+      setImage(
+        Object.assign(file, {
+          preview: URL.createObjectURL(file),
+        }),
+      );
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
+    onDrop,
+    accept: 'image/*',
+    maxSize: 5 * 1024 * 1024, // 5MB
+    multiple: false,
+  });
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
+    if (!image) {
+      toast.error('Пожалуйста, выберите изображение');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('description', data.description);
@@ -45,7 +82,11 @@ const Add = ({ url }) => {
     formData.append('image', image);
 
     try {
-      const response = await axios.post(`${url}/api/food/add`, formData);
+      const response = await axios.post(`${url}/api/food/add`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       if (response.data.success) {
         setData({
           name: '',
@@ -64,25 +105,32 @@ const Add = ({ url }) => {
     }
   };
 
+  // Очистка предварительного просмотра при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (image) {
+        URL.revokeObjectURL(image.preview);
+      }
+    };
+  }, [image]);
+
   return (
     <div className="add">
       <form className="flex-col" onSubmit={onSubmitHandler}>
         <div className="add-img-upload flex-col">
           <p>Dodaj obraz</p>
-          <label htmlFor="image">
-            <img
-              className="image"
-              src={image ? URL.createObjectURL(image) : assets.upload_area}
-              alt=""
-            />
-          </label>
-          <input
-            onChange={(e) => setImage(e.target.files[0])}
-            type="file"
-            id="image"
-            hidden
-            required
-          />
+          <div
+            {...getRootProps()}
+            className={`dropzone ${isDragActive ? 'active' : ''} ${isDragReject ? 'reject' : ''}`}>
+            <input {...getInputProps()} />
+            {image ? (
+              <img className="image" src={image.preview} alt="Preview" />
+            ) : isDragActive ? (
+              <p>Отпустите файл здесь...</p>
+            ) : (
+              <img className="image" src={assets.upload_area} alt="Upload" />
+            )}
+          </div>
         </div>
         <div className="add-product-name flex-col">
           <p>Nazwa produktu</p>
