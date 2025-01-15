@@ -1,4 +1,4 @@
-// server.js
+// server.js или app.js
 
 import express from 'express';
 import cors from 'cors';
@@ -23,7 +23,10 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 
-// Middleware
+// Middleware для вебхука Stripe подключаем раньше глобальных парсеров
+app.use('/webhook', webHookRoute);
+
+// Глобальные middleware
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
@@ -60,7 +63,6 @@ app.use('/api/settings', settingsRoute);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 app.use('/api/header', headerContentRouter);
-app.use('/webhook', webHookRoute); // Подключение маршрута вебхука
 
 // Соединение с базой данных
 connectDB();
