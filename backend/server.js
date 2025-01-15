@@ -5,9 +5,10 @@ import foodRouter from './routes/foodRoute.js';
 import userRouter from './routes/userRoute.js';
 import settingsRoute from './routes/settingsRoute.js';
 
-import 'dotenv/config';
 import headerContentRouter from './routes/headerContent.js';
 import userModel from './models/userModel.js'; // Импорт модели пользователя
+
+import webHookRoute from './routes/webHookRoute.js';
 
 import cartRouter from './routes/cartRoute.js';
 import menuRoutes from './routes/menuRoute.js';
@@ -60,6 +61,8 @@ app.use('/api/food', foodRouter);
 app.use('/images', express.static('uploads'));
 app.use('/api/user', userRouter);
 app.use('/api/settings', settingsRoute);
+
+// webhook stripe
 
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
@@ -117,6 +120,7 @@ app.get('/stats', async (req, res) => {
 });
 
 app.use('/api/header', headerContentRouter);
+app.use('/webhook', webHookRoute);
 
 app.listen(port, () => {
   console.log(`Server Started on https://web-2-backend-wbs4.onrender.com:${port}`);
