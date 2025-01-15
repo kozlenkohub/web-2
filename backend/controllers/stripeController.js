@@ -61,3 +61,47 @@ export const getPaymentItems = async (req, res) => {
     console.error('Error fetching payment details:', error);
   }
 };
+
+export const handleStripeWebhook = async (req, res) => {
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET; // Получи из Stripe Dashboard
+  const sig = req.headers['stripe-signature'];
+
+  let event;
+
+  try {
+    // Проверка подписи Stripe
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+  } catch (err) {
+    console.error(`⚠️ Webhook signature verification failed.`, err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Обработка разных типов событий
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const session = event.data.object;
+
+      // Пример: Вывод информации о заказе
+      console.log('✅ Checkout session completed:', session);
+
+      // Сохраняем или обрабатываем заказ
+      handleCheckoutSession(session);
+
+      break;
+    }
+
+    case 'payment_intent.succeeded': {
+      const paymentIntent = event.data.object;
+
+      // Логируем успешный платеж
+      console.log('✅ PaymentIntent succeeded:', paymentIntent);
+
+      break;
+    }
+
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+
+  res.status(200).send('Event received');
+};
