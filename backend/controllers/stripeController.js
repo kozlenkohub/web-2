@@ -105,3 +105,19 @@ export const handleStripeWebhook = async (req, res) => {
 
   res.status(200).send('Event received');
 };
+
+// Обработка завершенного сеанса Checkout
+const handleCheckoutSession = (session) => {
+  const { id, amount_total, currency, customer_details, metadata } = session;
+
+  console.log(session);
+
+  // Логируем информацию о заказе
+  console.log('📦 Новый заказ:');
+  console.log(`- ID: ${id}`);
+  console.log(`- Сумма: ${(amount_total / 100).toFixed(2)} ${currency.toUpperCase()}`);
+  console.log(`- Покупатель: ${customer_details.email}`);
+  console.log(`- Метаданные: ${JSON.stringify(metadata)}`);
+
+  // Вы можете отправить уведомление в Telegram или сохранить заказ в базе данных
+};
