@@ -3,6 +3,7 @@ import {
   generateReport,
   getPaymentItems,
   last10Payments,
+  handleStripeWebhook,
 } from '../controllers/stripeController.js';
 
 const router = express.Router();
@@ -11,6 +12,7 @@ const router = express.Router();
 router.post('/reports', generateReport);
 router.post('/payments', last10Payments);
 router.post('/items', getPaymentItems);
+router.post('/webhook', handleStripeWebhook);
 
 // Скачать отчет
 
