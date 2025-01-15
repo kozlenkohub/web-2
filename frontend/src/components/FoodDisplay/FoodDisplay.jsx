@@ -8,11 +8,19 @@ const FoodDisplay = ({ category }) => {
   const { t, i18n } = useTranslation();
   const { food_list } = useContext(StoreContext);
 
+  // Определяем "Бургер месяца"
+  const burgerOfTheMonth = food_list.find((item) => item.name === 'BURGER MIESIĄCA');
+
+  // Формируем список еды, начиная с "Бургера месяца", если он есть
+  const sortedFoodList = burgerOfTheMonth
+    ? [burgerOfTheMonth, ...food_list.filter((item) => item.name !== 'BURGER MIESIĄCA')]
+    : food_list;
+
   return (
     <div className="food-display" id="food-display">
       <h2 className="h2we t3">{t('foodDisplay.title')}</h2>
       <div className="food-display-list">
-        {food_list.map((item, index) => {
+        {sortedFoodList.map((item, index) => {
           if (category === 'All' || category === item.category) {
             // Выбираем описание в зависимости от текущего языка
             let description;
