@@ -9,12 +9,14 @@ const endpointSecret = 'whsec_Tqj0tPZjigY2acPgoWNv5lJE2sGjxnuv';
 const webHookRoute = express.Router();
 
 webHookRoute.post('/', express.raw({ type: 'application/json' }), (request, response) => {
+  console.log('Webhook received!');
+
   const sig = request.headers['stripe-signature'];
 
   let event;
 
   try {
-    // Проверка подписи вебхука
+    // Проверка подписи вебхука с сырым телом запроса
     event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
   } catch (err) {
     console.error(`Webhook signature verification failed: ${err.message}`);
