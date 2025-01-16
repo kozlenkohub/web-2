@@ -130,7 +130,7 @@ cron.schedule('0 22 * * *', async () => {
     // Находим заказы, сделанные за сегодняшний день
     const orders = await orderModel.find({
       date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
-      payment: true, // Только оплаченные заказы
+      status: 'Delivered',
     });
 
     const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
