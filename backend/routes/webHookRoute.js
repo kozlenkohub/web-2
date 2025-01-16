@@ -135,7 +135,7 @@ cron.schedule('0 22 * * *', async () => {
 
     const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
 
-    const message = `💰 Сумма заработка за сегодня: ${(totalAmount / 100).toFixed(2)} PLN`;
+    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;
 
     // Отправляем сообщение в Telegram
     await sendTelegramMessageToAll(message);
