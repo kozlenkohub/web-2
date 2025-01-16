@@ -26,6 +26,9 @@ async function sendTelegramMessage(message) {
 const webHook = express.Router();
 //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
 
+webHook.get('/', (req, res) => {
+  res.send('Webhook is working');
+});
 // Вебхук
 webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, response) => {
   console.log('Webhook received!');
