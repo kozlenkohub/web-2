@@ -3,17 +3,10 @@ import 'dotenv/config';
 import bodyParser from 'body-parser';
 import stripePackage from 'stripe';
 import TelegramBot from 'node-telegram-bot-api';
-import mongoose from 'mongoose';
 import UserAccessModel from '../models/userAccessModel.js'; // Путь к вашей модели
 
 const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true }); // Включаем polling
-
-// Подключение к MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
 
 // Функция для сохранения chatId
 async function saveChatId(chatId) {
