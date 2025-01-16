@@ -25,6 +25,8 @@ async function sendTelegramMessage(message) {
 
 // Вебхук
 router.post('/', bodyParser.raw({ type: 'application/json' }), async (request, response) => {
+  console.log('Webhook received!');
+
   const sig = request.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
