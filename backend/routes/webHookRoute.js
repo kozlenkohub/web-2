@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 import stripePackage from 'stripe';
 import TelegramBot from 'node-telegram-bot-api';
 import UserAccessModel from '../models/userAccessModel.js'; // Путь к вашей модели
+import orderModel from '../models/orderModel.js'; // Путь к вашей модели заказа
+import cron from 'node-cron'; // Импортируем node-cron
 
 const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true }); // Включаем polling
@@ -113,6 +115,32 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
   }
 
   response.json({ received: true });
+});
+
+// Задача по расписанию для отправки заработка за день
+cron.schedule('0 22 * * *', async () => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Находим заказы, сделанные за сегодняшний день
+    const orders = await orderModel.find({
+      date: { $gte: startOfDay, $lte: endOfDay },
+      payment: true, // Только оплаченные заказы
+    });
+
+    const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
+
+    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;
+
+    // Отправляем сообщение в Telegram
+    await sendTelegramMessageToAll(message);
+  } catch (error) {
+    console.error('Error sending daily earnings:', error.message);
+  }
 });
 
 export default webHook;
