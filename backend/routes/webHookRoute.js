@@ -6,6 +6,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import UserAccessModel from '../models/userAccessModel.js'; // Путь к вашей модели
 import orderModel from '../models/orderModel.js'; // Путь к вашей модели заказа
 import cron from 'node-cron'; // Импортируем node-cron
+import moment from 'moment-timezone'; // Импортируем moment-timezone
 
 const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true }); // Включаем polling
@@ -120,21 +121,21 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
 // Задача по расписанию для отправки заработка за день
 cron.schedule('0 22 * * *', async () => {
   try {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    // Получаем текущую дату в польском времени (Europe/Warsaw)
+    const now = moment.tz('Europe/Warsaw');
 
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = now.clone().startOf('day'); // Начало дня
+    const endOfDay = now.clone().endOf('day'); // Конец дня
 
     // Находим заказы, сделанные за сегодняшний день
     const orders = await orderModel.find({
-      date: { $gte: startOfDay, $lte: endOfDay },
+      date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
       payment: true, // Только оплаченные заказы
     });
 
     const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
 
-    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;
+    const message = `💰 Сумма заработка за сегодня: ${(totalAmount / 100).toFixed(2)} PLN`;
 
     // Отправляем сообщение в Telegram
     await sendTelegramMessageToAll(message);
