@@ -1,59 +1,97 @@
-// routes/webHookRoute.js
-
 import express from 'express';
-import Stripe from 'stripe';
+import 'dotenv/config';
+import bodyParser from 'body-parser';
+import stripePackage from 'stripe';
+import TelegramBot from 'node-telegram-bot-api';
+
 import dotenv from 'dotenv';
+
+const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
+
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 // Загружаем переменные окружения из .env файла
 dotenv.config();
 
-const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2022-11-15', // Укажите актуальную версию API Stripe
-});
+async function sendTelegramMessage(message) {
+  try {
+    await bot.sendMessage(TELEGRAM_CHAT_ID, message);
+    console.log('Message sent to Telegram');
+  } catch (error) {
+    console.error('Error sending message to Telegram:', error.message);
+  }
+}
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-// Используем встроенный middleware Express для обработки сырых данных
-router.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-
-  // Логирование заголовков и типа тела
-  console.log('Headers:', req.headers);
-  console.log('Body type:', typeof req.body);
-  console.log('Body buffer:', req.body instanceof Buffer);
+// Вебхук
+router.post('/', bodyParser.raw({ type: 'application/json' }), async (request, response) => {
+  const sig = request.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    console.log('Webhook event constructed successfully.');
+    // Проверка подписи события
+    event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
   } catch (err) {
-    console.error('Ошибка проверки подписи вебхука:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.error(`Webhook signature verification failed: ${err.message}`);
+    return response.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Обработка события
+  console.log('Parsed Event:', event);
+
+  // Обработка событий Stripe
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
+      console.log('Checkout session completed!');
+      console.log(`Session ID: ${session.id}`);
+      console.log(`Customer email: ${session.customer_email || 'Not provided'}`);
+
+      // Запрос line_items из Stripe
       try {
-        // Ваша логика обработки успешной оплаты
-        console.log('Оплата завершена для сессии:', session);
-        // Пример: обновите статус заказа в базе данных
-        // await updateOrderStatus(session);
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+
+        // Формируем список товаров
+        let itemsList = '🛒 Список товаров:\n';
+        lineItems.data.forEach((item) => {
+          itemsList += `- ${item.description}: ${item.quantity} x ${(
+            item.amount_total / 100
+          ).toFixed(2)} ${item.currency.toUpperCase()}\n`;
+        });
+
+        // Отправка уведомления о поступлении денег
+        await sendTelegramMessage(
+          `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
+            2,
+          )} ${session.currency.toUpperCase()}`,
+        );
       } catch (error) {
-        console.error('Ошибка обработки события checkout.session.completed:', error);
-        return res.status(500).send('Internal Server Error');
+        console.error('Error fetching line items:', error.message);
+        await sendTelegramMessage(`❌ Ошибка получения товаров для сессии: ${session.id}`);
       }
       break;
-    // Добавьте обработку других типов событий по необходимости
+
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      console.log(`PaymentIntent succeeded: ${paymentIntent.id}`);
+
+      // Отправка уведомления в Telegram
+      await sendTelegramMessage(
+        `💳 Платеж успешен!\nID платежа: ${paymentIntent.id}\nСумма: ${
+          paymentIntent.amount / 100
+        } ${paymentIntent.currency.toUpperCase()}`,
+      );
+      break;
+
     default:
-      console.log(`Необработанный тип события: ${event.type}`);
+      console.log(`Unhandled event type ${event.type}`);
   }
 
-  // Возвращаем ответ Stripe для подтверждения получения события
-  res.status(200).json({ received: true });
+  // Подтверждаем получение события
+  response.json({ received: true });
 });
+
+const router = express.Router();
 
 export default router;
