@@ -23,8 +23,11 @@ async function sendTelegramMessage(message) {
   }
 }
 
+const webHook = express.Router();
+//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
+
 // Вебхук
-router.post('/', bodyParser.raw({ type: 'application/json' }), async (request, response) => {
+webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, response) => {
   console.log('Webhook received!');
 
   const sig = request.headers['stripe-signature'];
@@ -94,6 +97,4 @@ router.post('/', bodyParser.raw({ type: 'application/json' }), async (request, r
   response.json({ received: true });
 });
 
-const router = express.Router();
-
-export default router;
+export default webHook;
