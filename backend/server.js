@@ -24,7 +24,6 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 // Подключение маршрута вебхука **до** глобальных парсеров
-app.use('/webhook', webHookRoute);
 
 // Глобальные middleware
 const allowedOrigins = [
@@ -48,6 +47,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use('/webhook', webHookRoute);
 
 app.use(express.json({ limit: '10mb' })); // Устанавливаем лимит на JSON данные
 app.use(express.urlencoded({ limit: '10mb', extended: true })); // Лимит на urlencoded данные
