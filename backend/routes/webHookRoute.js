@@ -3,33 +3,62 @@ import 'dotenv/config';
 import bodyParser from 'body-parser';
 import stripePackage from 'stripe';
 import TelegramBot from 'node-telegram-bot-api';
-
-import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import UserAccessModel from './models/UserAccess'; // Путь к вашей модели
 
 const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true }); // Включаем polling
 
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+// Подключение к MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-// Загружаем переменные окружения из .env файла
-dotenv.config();
-
-async function sendTelegramMessage(message) {
+// Функция для сохранения chatId
+async function saveChatId(chatId) {
   try {
-    await bot.sendMessage(TELEGRAM_CHAT_ID, message);
-    console.log('Message sent to Telegram');
+    const exists = await UserAccessModel.findOne({ chatId });
+    if (!exists) {
+      await UserAccessModel.create({ chatId });
+      console.log(`Chat ID ${chatId} saved to the database.`);
+    }
   } catch (error) {
-    console.error('Error sending message to Telegram:', error.message);
+    console.error('Error saving chat ID:', error.message);
   }
 }
 
+// Функция для отправки сообщений всем пользователям
+async function sendTelegramMessageToAll(message) {
+  try {
+    const users = await UserAccessModel.find();
+    for (const user of users) {
+      await bot.sendMessage(user.chatId, message);
+    }
+    console.log('Message sent to all users.');
+  } catch (error) {
+    console.error('Error sending message to all users:', error.message);
+  }
+}
+
+// Слушаем сообщения от пользователей
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+
+  // Сохраняем chatId в базе данных
+  await saveChatId(chatId);
+
+  // Приветственное сообщение
+  bot.sendMessage(chatId, 'Привет! Теперь вы будете получать уведомления.');
+});
+
 const webHook = express.Router();
-//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
 
 webHook.get('/', (req, res) => {
   res.send('Webhook is working');
 });
-// Вебхук
+
+// Вебхук для обработки событий Stripe
 webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, response) => {
   console.log('Webhook received!');
 
@@ -39,7 +68,6 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
   let event;
 
   try {
-    // Проверка подписи события
     event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
   } catch (err) {
     console.error(`Webhook signature verification failed: ${err.message}`);
@@ -48,7 +76,6 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
 
   console.log('Parsed Event:', event);
 
-  // Обработка событий Stripe
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
@@ -56,11 +83,9 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
       console.log(`Session ID: ${session.id}`);
       console.log(`Customer email: ${session.customer_email || 'Not provided'}`);
 
-      // Запрос line_items из Stripe
       try {
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
 
-        // Формируем список товаров
         let itemsList = '🛒 Список товаров:\n';
         lineItems.data.forEach((item) => {
           itemsList += `- ${item.description}: ${item.quantity} x ${(
@@ -68,15 +93,14 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
           ).toFixed(2)} ${item.currency.toUpperCase()}\n`;
         });
 
-        // Отправка уведомления о поступлении денег
-        await sendTelegramMessage(
+        await sendTelegramMessageToAll(
           `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
             2,
-          )} ${session.currency.toUpperCase()}`,
+          )} ${session.currency.toUpperCase()}\n\n${itemsList}`,
         );
       } catch (error) {
         console.error('Error fetching line items:', error.message);
-        await sendTelegramMessage(`❌ Ошибка получения товаров для сессии: ${session.id}`);
+        await sendTelegramMessageToAll(`❌ Ошибка получения товаров для сессии: ${session.id}`);
       }
       break;
 
@@ -84,11 +108,10 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
       const paymentIntent = event.data.object;
       console.log(`PaymentIntent succeeded: ${paymentIntent.id}`);
 
-      // Отправка уведомления в Telegram
-      await sendTelegramMessage(
-        `💳 Платеж успешен!\nID платежа: ${paymentIntent.id}\nСумма: ${
+      await sendTelegramMessageToAll(
+        `💳 Платеж успешен!\nID платежа: ${paymentIntent.id}\nСумма: ${(
           paymentIntent.amount / 100
-        } ${paymentIntent.currency.toUpperCase()}`,
+        ).toFixed(2)} ${paymentIntent.currency.toUpperCase()}`,
       );
       break;
 
@@ -96,7 +119,6 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
       console.log(`Unhandled event type ${event.type}`);
   }
 
-  // Подтверждаем получение события
   response.json({ received: true });
 });
 
