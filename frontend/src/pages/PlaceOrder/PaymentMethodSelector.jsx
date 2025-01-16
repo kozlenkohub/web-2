@@ -5,7 +5,7 @@ import React from 'react';
 const PaymentMethodSelector = ({ t, paymentMethod, handlePaymentMethodChange }) => {
   return (
     <div className="payment-methods">
-      {/* <label>
+      <label>
         <input
           type="radio"
           value="card"
@@ -13,7 +13,7 @@ const PaymentMethodSelector = ({ t, paymentMethod, handlePaymentMethodChange }) 
           onChange={handlePaymentMethodChange}
         />
         {t('placeOrder.paymentMethodCard')}
-      </label> */}
+      </label>
       <label>
         <input
           type="radio"
