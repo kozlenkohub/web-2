@@ -179,7 +179,7 @@ const Sidebar = () => {
 
         <div className="sidebar-users">
           <FaUsers className="sidebar-users-icon" />
-          <h3>Всего пользователей: {userCount + 10}</h3>
+          <h3 style={{ color: 'white' }}>Всего пользователей: {userCount + 10}</h3>
         </div>
 
         <div className="sidebar-toggle">
