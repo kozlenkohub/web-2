@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import './EmailSender.css';
 
 const EmailSender = ({ url }) => {
   const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState(''); // Поле для пользовательского текста
+  const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [unsubscribedUsers, setUnsubscribedUsers] = useState([]);
+  const [emailToUnsubscribe, setEmailToUnsubscribe] = useState('');
+  const [activeTab, setActiveTab] = useState('send'); // Переключатель вкладок
 
-  // Функция для форматирования текста: обработка пробелов и переводов строк
   const formatText = (text) => {
     let formattedText = text.replace(/ {2,}/g, (match) =>
       ' '.repeat(match.length).replace(/ /g, '&nbsp;'),
     );
 
     formattedText = formattedText.replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
-
-    // Markdown синтаксис:
     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
     formattedText = formattedText.replace(/^# (.*$)/gim, '<h1>$1</h1>');
@@ -32,10 +33,8 @@ const EmailSender = ({ url }) => {
     return formattedText;
   };
 
-  // Функция для оборачивания текста в HTML-шаблон
   const generateEmailTemplate = (text) => {
     const formattedText = formatText(text);
-
     return `
       <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
@@ -54,7 +53,6 @@ const EmailSender = ({ url }) => {
   };
 
   const handleSendBulkEmail = async () => {
-    // Проверка с подтверждением перед отправкой
     const confirmed = window.confirm(
       'Вы уверены, что хотите отправить это письмо всем подписчикам?',
     );
@@ -91,31 +89,104 @@ const EmailSender = ({ url }) => {
     }
   };
 
+  const fetchUnsubscribedUsers = async () => {
+    try {
+      const response = await axios.get(`${url}/api/email/unsubscribed-users`);
+      setUnsubscribedUsers(response.data.unsubscribedUsers || []);
+    } catch (error) {
+      toast.error('Ошибка при получении списка пользователей');
+    }
+  };
+
+  const handleUnsubscribeUser = async () => {
+    if (!emailToUnsubscribe) {
+      toast.error('Пожалуйста, укажите email пользователя');
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      await axios.post(`${url}/api/email/unsubscribe-email`, { email: emailToUnsubscribe });
+      toast.success('Пользователь успешно отписан');
+      setEmailToUnsubscribe('');
+      fetchUnsubscribedUsers(); // Обновляем список пользователей
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Ошибка при отписке пользователя');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnsubscribedUsers(); // Загружаем список пользователей при монтировании компонента
+  }, []);
+
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>
+    <div className="email-sender-container">
       <h2>Email Sender</h2>
-      <input
-        type="text"
-        placeholder="Subject"
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-        style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-      />
-      <textarea
-        placeholder="Message"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        style={{ width: '100%', padding: '10px', height: '200px', marginBottom: '10px' }}
-      />
-      <button
-        onClick={handleSendBulkEmail}
-        disabled={isSending}
-        style={{ marginRight: '10px', padding: '10px 20px' }}>
-        {isSending ? 'Sending...' : 'Рассылка всем'}
-      </button>
-      <button onClick={handleSendTestEmail} disabled={isSending} style={{ padding: '10px 20px' }}>
-        {isSending ? 'Sending...' : 'Тестовое письмо'}
-      </button>
+
+      {/* Табы */}
+      <div className="tabs">
+        <div
+          className={`tab ${activeTab === 'send' ? 'active' : ''}`}
+          onClick={() => setActiveTab('send')}>
+          Отправка писем
+        </div>
+        <div
+          className={`tab ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}>
+          Пользователи
+        </div>
+      </div>
+
+      {activeTab === 'send' && (
+        <div className="send-tab">
+          <input
+            type="text"
+            placeholder="Subject"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="input-field"
+          />
+          <textarea
+            placeholder="Message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="input-field textarea-field"
+          />
+          <div className="buttons">
+            <button onClick={handleSendBulkEmail} disabled={isSending}>
+              {isSending ? 'Sending...' : 'Рассылка всем'}
+            </button>
+            <button onClick={handleSendTestEmail} disabled={isSending}>
+              {isSending ? 'Sending...' : 'Тестовое письмо'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'users' && (
+        <div className="users-tab">
+          <h3>Не подписанные пользователи</h3>
+          <ul className="user-list">
+            {unsubscribedUsers.map((user) => (
+              <li key={user._id}>{user.email}</li>
+            ))}
+          </ul>
+
+          <h3>Отписка по email</h3>
+          <input
+            type="email"
+            placeholder="Введите email для отписки"
+            value={emailToUnsubscribe}
+            onChange={(e) => setEmailToUnsubscribe(e.target.value)}
+            className="input-field"
+          />
+          <button onClick={handleUnsubscribeUser} disabled={isSending}>
+            {isSending ? 'Отписка...' : 'Отписать пользователя'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
