@@ -81,6 +81,43 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
 
       try {
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+        const paymentTime = new Date(session.created * 1000); // Convert Stripe timestamp to Date
+
+        // Find matching order
+        const matchingOrder = await orderModel.findOne({
+          payment: false,
+          date: {
+            $gte: new Date(paymentTime.getTime() - 5 * 60000), // 5 minutes before
+            $lte: new Date(paymentTime.getTime() + 5 * 60000), // 5 minutes after
+          },
+          amount: session.amount_total / 100, // Convert cents to whole currency units
+        });
+
+        if (matchingOrder) {
+          matchingOrder.payment = true;
+          matchingOrder.paymentTime = paymentTime;
+          await matchingOrder.save();
+          console.log(`Order ${matchingOrder._id} marked as paid`);
+
+          const orderMessage = `💰 Поступление денег!
+Сумма: ${(session.amount_total / 100).toFixed(2)} ${session.currency.toUpperCase()}
+
+📍 Адрес доставки:
+Улица: ${matchingOrder.address.address}
+Квартира: ${matchingOrder.address.apartmentNumber}
+📱 Телефон: ${matchingOrder.address.phone}
+👤 Имя: ${matchingOrder.address.firstName}
+
+${itemsList}`;
+
+          await sendTelegramMessageToAll(orderMessage);
+        } else {
+          await sendTelegramMessageToAll(
+            `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
+              2,
+            )} ${session.currency.toUpperCase()}\n\n${itemsList}`,
+          );
+        }
 
         let itemsList = '🛒 Список товаров:\n';
         lineItems.data.forEach((item) => {
