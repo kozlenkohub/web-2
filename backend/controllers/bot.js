@@ -112,7 +112,7 @@ const initializeBot = (bot) => {
     const chatId = msg.chat.id;
 
     // Пропускаем обработку, если это команда
-    if (msg.text.startsWith('/')) return;
+    if (!msg.text || msg.text.startsWith('/')) return;
 
     // Проверка, находится ли пользователь в процессе установки времени доставки
     if (chatStates[chatId]?.pendingDeliveryTime) {
