@@ -81,6 +81,14 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
 
       try {
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+
+        let itemsList = '🛒 Список товаров:\n';
+        lineItems.data.forEach((item) => {
+          itemsList += `- ${item.description}: ${item.quantity} x ${(
+            item.amount_total / 100
+          ).toFixed(2)} ${item.currency.toUpperCase()}\n`;
+        });
+
         const paymentTime = new Date(session.created * 1000); // Convert Stripe timestamp to Date
 
         // Find matching order
@@ -115,22 +123,9 @@ ${itemsList}`;
           await sendTelegramMessageToAll(
             `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
               2,
-            )} ${session.currency.toUpperCase()}\n\n${itemsList}`,
+            )} ${session.currency.toUpperCase()}\n${itemsList}`,
           );
         }
-
-        let itemsList = '🛒 Список товаров:\n';
-        lineItems.data.forEach((item) => {
-          itemsList += `- ${item.description}: ${item.quantity} x ${(
-            item.amount_total / 100
-          ).toFixed(2)} ${item.currency.toUpperCase()}\n`;
-        });
-
-        await sendTelegramMessageToAll(
-          `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
-            2,
-          )} ${session.currency.toUpperCase()}\n\n${itemsList}`,
-        );
       } catch (error) {
         console.error('Error fetching line items:', error.message);
         await sendTelegramMessageToAll(`❌ Ошибка получения товаров для сессии: ${session.id}`);
