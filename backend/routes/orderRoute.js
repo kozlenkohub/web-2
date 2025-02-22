@@ -7,6 +7,7 @@ import {
   listOrders,
   updateStatus,
   deleteOrder,
+  cleanupUnconfirmedOrders,
   getLastOrder,
 } from '../controllers/orderController.js';
 
@@ -19,5 +20,6 @@ orderRouter.get('/list', listOrders);
 orderRouter.post('/status', updateStatus);
 orderRouter.post('/delete', deleteOrder);
 orderRouter.get('/last', authMiddleware, getLastOrder);
+orderRouter.get('/cleanup', cleanupUnconfirmedOrders);
 
 export default orderRouter;

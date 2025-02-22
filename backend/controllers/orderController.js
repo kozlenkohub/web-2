@@ -158,3 +158,20 @@ export const getLastOrder = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error retrieving last order' });
   }
 };
+
+export const cleanupUnconfirmedOrders = async (req, res) => {
+  try {
+    const result = await orderModel.deleteMany({ notificationSent: false });
+    res.json({
+      success: true,
+      message: 'Unconfirmed orders cleaned up successfully',
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('Error cleaning up unconfirmed orders:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error cleaning up unconfirmed orders',
+    });
+  }
+};
