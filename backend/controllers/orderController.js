@@ -69,6 +69,10 @@ export const verifyOrder = async (req, res) => {
   try {
     const order = await orderModel.findById(orderId);
 
+    if (order.notificationSent) {
+      return res.status(400).json({ success: false, message: 'Order already verified' });
+    }
+
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
