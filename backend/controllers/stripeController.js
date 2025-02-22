@@ -41,7 +41,7 @@ export const reportRuns = async (req, res) => {
 
 export const last10Payments = async (req, res) => {
   try {
-    const payments = await stripe.paymentIntents.list({ limit: 10 });
+    const payments = await stripe.paymentIntents.list({ limit: 10, status: 'succeeded' });
     res.json(payments.data);
   } catch (error) {
     console.error('Error in last10Payments:', error);
