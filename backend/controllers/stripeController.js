@@ -41,8 +41,11 @@ export const reportRuns = async (req, res) => {
 
 export const last10Payments = async (req, res) => {
   try {
-    const payments = await stripe.paymentIntents.list({ limit: 10, status: 'succeeded' });
-    res.json(payments.data);
+    const payments = await stripe.paymentIntents.list({
+      limit: 10,
+    });
+    const succeededPayments = payments.data.filter((payment) => payment.status === 'succeeded');
+    res.json(succeededPayments);
   } catch (error) {
     console.error('Error in last10Payments:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
