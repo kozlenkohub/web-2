@@ -29,14 +29,14 @@ const Footer = () => {
           <h2>{t('footer.contactUs')}</h2>
           <ul>
             <li>
-              <a href="tel:{t('footer.phone')}">{t('footer.phone')}</a>
+              <a href={`tel:${t('footer.phone')}`}>{t('footer.phone')}</a>
             </li>
             <li>
-              <a href="mailto:{t('footer.email')}">{t('footer.email')}</a>
+              <a href={`mailto:${t('footer.email')}`}>{t('footer.email')}</a>
             </li>
             <li>
               <a
-                href="https://maps.google.com/?q=(Maślicka-160,54-104-Wrocław)"
+                href={`https://maps.google.com/?q=${t('footer.address')}`}
                 target="_blank"
                 rel="noreferrer">
                 {t('footer.address')}
