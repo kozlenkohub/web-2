@@ -74,68 +74,37 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
   console.log('Parsed Event:', event);
 
   switch (event.type) {
-    case 'checkout.session.completed':
+    case 'checkout.session.completed': {
       const session = event.data.object;
-      console.log('Checkout session completed!');
-      console.log(`Session ID: ${session.id}`);
-      console.log(`Customer email: ${session.customer_email || 'Not provided'}`);
-
       try {
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-
-        let itemsList = '🛒 Список товаров:\n';
-        const paymentTime = new Date(session.created * 1000); // Convert Stripe timestamp to Date
-
-        // Find matching order
+        const paymentTime = new Date(session.created * 1000);
         const matchingOrder = await orderModel.findOne({
           payment: false,
           date: {
-            $gte: new Date(paymentTime.getTime() - 5 * 60000), // 5 minutes before
-            $lte: new Date(paymentTime.getTime() + 5 * 60000), // 5 minutes after
+            $gte: new Date(paymentTime.getTime() - 5 * 60000),
+            $lte: new Date(paymentTime.getTime() + 5 * 60000),
           },
-          amount: session.amount_total / 100, // Convert cents to whole currency units
+          amount: session.amount_total / 100,
         });
 
-        if (matchingOrder) {
-          matchingOrder.items.forEach((item) => {
-            itemsList += `- ${item.name} (${item.comment}): ${item.quantity} x ${item.price} PLN\n`;
-          });
+        await axios.post('https://web-2-backend-wbs4.onrender.com/api/order/verify', {
+          orderId: matchingOrder._id,
+          success: 'true',
+          sessionUrl: session.url,
+        });
 
-          await axios.post('https://web-2-backend-wbs4.onrender.com/api/order/verify', {
-            orderId: matchingOrder._id,
-            success: 'true',
-            sessionUrl: session.url,
-          });
-
-          const orderMessage = `💰 Поступление денег!
-Сумма: ${(session.amount_total / 100).toFixed(2)} ${session.currency.toUpperCase()}
-
-📍 Адрес доставки:
-Улица: ${matchingOrder.address.address}
-Квартира: ${matchingOrder.address.apartmentNumber}
-📱 Телефон: ${matchingOrder.address.phone}
-👤 Имя: ${matchingOrder.address.firstName}
-
-${itemsList}`;
-
-          await sendTelegramMessageToAll(orderMessage);
-        } else {
-          lineItems.data.forEach((item) => {
-            itemsList += `- ${item.description}: ${item.quantity} x ${(
-              item.amount_total / 100
-            ).toFixed(2)} ${item.currency.toUpperCase()}\n`;
-          });
-          await sendTelegramMessageToAll(
-            `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
-              2,
-            )} ${session.currency.toUpperCase()}\n${itemsList}`,
-          );
-        }
+        await sendTelegramMessageToAll(
+          `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
+            2,
+          )} ${session.currency.toUpperCase()}`,
+        );
       } catch (error) {
         console.error('Error fetching line items:', error.message);
         await sendTelegramMessageToAll(`❌ Ошибка получения товаров для сессии: ${session.id}`);
       }
       break;
+    }
 
     case 'payment_intent.succeeded':
       const paymentIntent = event.data.object;
