@@ -157,25 +157,18 @@ cron.schedule('0 22 * * *', async () => {
   try {
     // Получаем текущую дату в польском времени (Europe/Warsaw)
     const now = moment.tz('Europe/Warsaw');
-
-    const startOfDay = now.clone().startOf('day'); // Начало дня
-    const endOfDay = now.clone().endOf('day'); // Конец дня
-
+    const startOfDay = now.clone().startOf('day');
+    const endOfDay = now.clone().endOf('day');
+    const orders = await orderModel.find({
       date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
-      payment: true,wait orderModel.find({
-    });ate: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
       payment: true,
+    });
     const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
-
-    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;, 0);
-
-    // Отправляем сообщение в Telegramа за сегодня: ${totalAmount} PLN`;
+    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;
     await sendTelegramMessageToAll(message);
-  } catch (error) {ообщение в Telegram
-    console.error('Error sending daily earnings:', error.message);
   } catch (error) {
-}); console.error('Error sending daily earnings:', error.message);
+    console.error('Error sending daily earnings:', error.message);
   }
-export default webHook;
+});
 
 export default webHook;
