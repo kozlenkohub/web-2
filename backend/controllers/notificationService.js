@@ -13,7 +13,9 @@ export async function sendTelegramOrderMessage(order) {
 *Номер квартиры:* ${order.address.apartmentNumber}
 *Телефон:* ${order.address.phone}
 *Товары:*
-${order.items.map((item) => `- ${item.name} x ${item.quantity}`).join('\n')}
+${order.items
+  .map((item) => `- ${item.name} x ${item.quantity} (Комментарий: ${item.comment || 'Нет'})`)
+  .join('\n')}
 *Итого:* ${order.amount} zł
 *Способ оплаты:* ${order.paymentMethod}
   `;
