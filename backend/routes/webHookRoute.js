@@ -83,12 +83,6 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
 
         let itemsList = '🛒 Список товаров:\n';
-        lineItems.data.forEach((item) => {
-          itemsList += `- ${item.description}: ${item.quantity} x ${(
-            item.amount_total / 100
-          ).toFixed(2)} ${item.currency.toUpperCase()}\n`;
-        });
-
         const paymentTime = new Date(session.created * 1000); // Convert Stripe timestamp to Date
 
         // Find matching order
@@ -102,6 +96,9 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
         });
 
         if (matchingOrder) {
+          matchingOrder.items.forEach((item) => {
+            itemsList += `- ${item.name} (${item.comment}): ${item.quantity} x ${item.price} PLN\n`;
+          });
           matchingOrder.payment = true;
           matchingOrder.paymentTime = paymentTime;
           await matchingOrder.save();
@@ -120,6 +117,11 @@ ${itemsList}`;
 
           await sendTelegramMessageToAll(orderMessage);
         } else {
+          lineItems.data.forEach((item) => {
+            itemsList += `- ${item.description}: ${item.quantity} x ${(
+              item.amount_total / 100
+            ).toFixed(2)} ${item.currency.toUpperCase()}\n`;
+          });
           await sendTelegramMessageToAll(
             `💰 Поступление денег!\nСумма: ${(session.amount_total / 100).toFixed(
               2,
@@ -159,21 +161,21 @@ cron.schedule('0 22 * * *', async () => {
     const startOfDay = now.clone().startOf('day'); // Начало дня
     const endOfDay = now.clone().endOf('day'); // Конец дня
 
-    // Находим заказы, сделанные за сегодняшний день
-    const orders = await orderModel.find({
       date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
+      payment: true,wait orderModel.find({
+    });ate: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
       payment: true,
-    });
-
     const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
 
-    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;
+    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;, 0);
 
-    // Отправляем сообщение в Telegram
+    // Отправляем сообщение в Telegramа за сегодня: ${totalAmount} PLN`;
     await sendTelegramMessageToAll(message);
-  } catch (error) {
+  } catch (error) {ообщение в Telegram
     console.error('Error sending daily earnings:', error.message);
+  } catch (error) {
+}); console.error('Error sending daily earnings:', error.message);
   }
-});
+export default webHook;
 
 export default webHook;
