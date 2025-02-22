@@ -7,6 +7,7 @@ import UserAccessModel from '../models/userAccessModel.js'; // Путь к ва�
 import orderModel from '../models/orderModel.js'; // Путь к вашей модели заказа
 import cron from 'node-cron'; // Импортируем node-cron
 import moment from 'moment-timezone'; // Импортируем moment-timezone
+import axios from 'axios';
 
 const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true }); // Включаем polling
@@ -99,10 +100,12 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
           matchingOrder.items.forEach((item) => {
             itemsList += `- ${item.name} (${item.comment}): ${item.quantity} x ${item.price} PLN\n`;
           });
-          matchingOrder.payment = true;
-          matchingOrder.paymentTime = paymentTime;
-          await matchingOrder.save();
-          console.log(`Order ${matchingOrder._id} marked as paid`);
+
+          await axios.post('https://web-2-backend-wbs4.onrender.com/api/order/verify', {
+            orderId: matchingOrder._id,
+            success: 'true',
+            sessionUrl: session.url,
+          });
 
           const orderMessage = `💰 Поступление денег!
 Сумма: ${(session.amount_total / 100).toFixed(2)} ${session.currency.toUpperCase()}
