@@ -20,6 +20,6 @@ orderRouter.get('/list', listOrders);
 orderRouter.post('/status', updateStatus);
 orderRouter.post('/delete', deleteOrder);
 orderRouter.get('/last', authMiddleware, getLastOrder);
-orderRouter.post('/cleanup', cleanupUnconfirmedOrders);
+orderRouter.get('/cleanup', cleanupUnconfirmedOrders);
 
 export default orderRouter;
