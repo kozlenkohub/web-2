@@ -33,7 +33,7 @@ export const placeOrder = async (req, res) => {
 
     let deliveryCharge = 0;
     if (distance > 1.77 && distance <= deliveryRadius) {
-      deliveryCharge = 8;
+      deliveryCharge = 9;
     } else if (distance > deliveryRadius) {
       return res
         .status(400)
