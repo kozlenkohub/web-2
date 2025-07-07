@@ -217,16 +217,15 @@ const PlaceOrder = () => {
     let additionalPackagingCharge = 0;
 
     if (totalCartAmountWithoutZestaw > 0) {
-      additionalPackagingCharge = 2;
-
-      if (totalCartAmountWithoutZestaw > 50) {
+      if (totalCartAmountWithoutZestaw <= 50) {
+        additionalPackagingCharge = 2;
+      } else {
+        // For amounts > 50, charge increases by 1 PLN per 25 PLN
+        // 50 zł - 2 PLN, 75 zł - 3 PLN, 100 zł - 4 PLN, etc.
+        const step = 25;
         const baseCharge = 2;
-        const chargeIncrement = 1;
-        const step = 50;
         additionalPackagingCharge =
-          baseCharge +
-          chargeIncrement *
-            Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
+          baseCharge + Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
       }
     }
 

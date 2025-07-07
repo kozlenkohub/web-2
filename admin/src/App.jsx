@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar/Navbar';
-import Sidebar from './components/Sidebar/Sidebar';
-import { Routes, Route } from 'react-router-dom';
-import Add from './pages/Add/Add';
-import List from './pages/List/List';
-import Orders from './pages/Orders/Orders';
-import Stats from './pages/Stats/Stats';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import PaymentsFetcher from './pages/Stripe/PaymentsFetcher';
-import Login from './components/Login/Login';
-import AdminHeaderContent from './pages/AdminHeaderContent/AdminHeaderContent';
-import MenuAdmin from './pages/MenuAdmin/MenuAdmin';
-import EmailSender from './pages/EmailSender/EmailSender';
+import React, { useState, useEffect } from "react";
+import Navbar from "./components/Navbar/Navbar";
+import Sidebar from "./components/Sidebar/Sidebar";
+import { Routes, Route } from "react-router-dom";
+import Add from "./pages/Add/Add";
+import List from "./pages/List/List";
+import Orders from "./pages/Orders/Orders";
+import Stats from "./pages/Stats/Stats";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import PaymentsFetcher from "./pages/Stripe/PaymentsFetcher";
+import Login from "./components/Login/Login";
+import AdminHeaderContent from "./pages/AdminHeaderContent/AdminHeaderContent";
+import MenuAdmin from "./pages/MenuAdmin/MenuAdmin";
+import EmailSender from "./pages/EmailSender/EmailSender";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   //https://web-2-backend-wbs4.onrender.com
 
-  const url = 'https://web-2-backend-wbs4.onrender.com'; // URL для запросов
+  const url = "https://web-2-backend-wbs4.onrender.com";
 
-  // const url = 'http://localhost:4000'; // URL для запросов
+  // const url = "http://localhost:4000";
   const checkAuthentication = () => {
-    const authTime = localStorage.getItem('authTime');
+    const authTime = localStorage.getItem("authTime");
     if (authTime) {
       const currentTime = Date.now();
       const timeElapsed = (currentTime - authTime) / 1000 / 60; // Время в минутах
@@ -30,7 +30,7 @@ const App = () => {
         // 3 дня = 4320 минут
         setIsAuthenticated(true);
       } else {
-        localStorage.removeItem('authTime'); // Очистка, если прошло 3 дня
+        localStorage.removeItem("authTime"); // Очистка, если прошло 3 дня
         setIsAuthenticated(false);
       }
     }
@@ -42,7 +42,7 @@ const App = () => {
 
   const handleLogin = () => {
     setIsAuthenticated(true);
-    localStorage.setItem('authTime', Date.now()); // Сохранение времени аутентификации
+    localStorage.setItem("authTime", Date.now()); // Сохранение времени аутентификации
   };
 
   return (
@@ -60,9 +60,16 @@ const App = () => {
               <Route path="/orders" element={<Orders url={url} />} />
               <Route path="/stats" element={<Stats url={url} />} />
               <Route path="/stripe" element={<PaymentsFetcher url={url} />} />
-              <Route path="/adminheader" element={<AdminHeaderContent url={url} />} />
-              <Route path="/menu-admin" element={<MenuAdmin url={url} />} /> {/* Новый маршрут */}
-              <Route path="/email-sender" element={<EmailSender url={url} />} />{' '}
+              <Route
+                path="/adminheader"
+                element={<AdminHeaderContent url={url} />}
+              />
+              <Route path="/menu-admin" element={<MenuAdmin url={url} />} />{" "}
+              {/* Новый маршрут */}
+              <Route
+                path="/email-sender"
+                element={<EmailSender url={url} />}
+              />{" "}
             </Routes>
           </div>
         </>
