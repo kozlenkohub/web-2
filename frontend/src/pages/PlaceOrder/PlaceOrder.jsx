@@ -251,11 +251,14 @@ const PlaceOrder = () => {
       lng
     );
 
-    if (distance <= 1.77) {
-      setDeliveryCharge(0);
+    if (distance <= 2) {
+      setDeliveryCharge(3);
       setOutOfDeliveryZone(false);
-    } else if (distance > 1.77 && distance <= deliveryRadius) {
+    } else if (distance > 2 && distance <= 4) {
       setDeliveryCharge(9);
+      setOutOfDeliveryZone(false);
+    } else if (distance > 4 && distance <= deliveryRadius) {
+      setDeliveryCharge(11);
       setOutOfDeliveryZone(false);
     } else {
       setDeliveryCharge(null);
