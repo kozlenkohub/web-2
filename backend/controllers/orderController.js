@@ -36,11 +36,11 @@ export const placeOrder = async (req, res) => {
 
     let deliveryCharge = 0;
     if (distance <= 2) {
-      deliveryCharge = 3;
+      deliveryCharge = 4;
     } else if (distance > 2 && distance <= 4) {
-      deliveryCharge = 9;
+      deliveryCharge = 10;
     } else if (distance > 4 && distance <= deliveryRadius) {
-      deliveryCharge = 11;
+      deliveryCharge = 12;
     } else if (distance > deliveryRadius) {
       return res.status(400).json({
         success: false,

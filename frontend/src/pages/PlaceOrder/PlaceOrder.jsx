@@ -203,7 +203,7 @@ const PlaceOrder = () => {
         totalItemsInCart += cartItems[item._id];
 
         if (item.name.includes("Zestaw")) {
-          zestawCharge += 3 * cartItems[item._id];
+          zestawCharge += 4 * cartItems[item._id];
         } else {
           totalCartAmountWithoutZestaw += item.price * cartItems[item._id];
         }
@@ -218,12 +218,12 @@ const PlaceOrder = () => {
 
     if (totalCartAmountWithoutZestaw > 0) {
       if (totalCartAmountWithoutZestaw <= 50) {
-        additionalPackagingCharge = 2;
+        additionalPackagingCharge = 3;
       } else {
         // For amounts > 50, charge increases by 1 PLN per 25 PLN
-        // 50 zł - 2 PLN, 75 zł - 3 PLN, 100 zł - 4 PLN, etc.
+        // 50 zł - 3 PLN, 75 zł - 4 PLN, 100 zł - 5 PLN, etc.
         const step = 25;
-        const baseCharge = 2;
+        const baseCharge = 3;
         additionalPackagingCharge =
           baseCharge + Math.ceil((totalCartAmountWithoutZestaw - 50) / step);
       }
@@ -252,13 +252,13 @@ const PlaceOrder = () => {
     );
 
     if (distance <= 2) {
-      setDeliveryCharge(3);
+      setDeliveryCharge(4);
       setOutOfDeliveryZone(false);
     } else if (distance > 2 && distance <= 4) {
-      setDeliveryCharge(9);
+      setDeliveryCharge(10);
       setOutOfDeliveryZone(false);
     } else if (distance > 4 && distance <= deliveryRadius) {
-      setDeliveryCharge(11);
+      setDeliveryCharge(12);
       setOutOfDeliveryZone(false);
     } else {
       setDeliveryCharge(null);
