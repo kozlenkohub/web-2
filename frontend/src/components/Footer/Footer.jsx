@@ -58,16 +58,7 @@ const Footer = () => {
       </div>
       <hr />
       <p className="footer-copyright">{t('footer.rights')}</p>
-      {isAllergensOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={closeAllergensModal}>
-              &times;
-            </span>
-            <Allergens />
-          </div>
-        </div>
-      )}
+      <Allergens isOpen={isAllergensOpen} onClose={closeAllergensModal} />
     </footer>
   );
 };
