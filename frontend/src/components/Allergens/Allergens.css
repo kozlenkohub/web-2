@@ -15,8 +15,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Modal Container */
@@ -34,11 +38,11 @@
 }
 
 @keyframes slideUp {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(30px);
   }
-  to { 
+  to {
     opacity: 1;
     transform: translateY(0);
   }
@@ -333,7 +337,7 @@
 }
 
 .additional-info li::before {
-  content: '•';
+  content: "•";
   color: #e94560;
   position: absolute;
   left: 0;
@@ -349,17 +353,17 @@
   .allergens-overlay {
     padding: 10px;
   }
-  
+
   .allergens-modal {
     max-height: 95vh;
     border-radius: 12px;
   }
-  
+
   .allergens-modal h1 {
     font-size: 20px;
     padding: 20px 45px 12px;
   }
-  
+
   .allergens-close {
     width: 35px;
     height: 35px;
@@ -367,54 +371,54 @@
     top: 10px;
     right: 10px;
   }
-  
+
   .allergens-tabs {
     padding: 10px 15px;
   }
-  
+
   .tab-btn {
     padding: 8px 12px;
     font-size: 12px;
   }
-  
+
   .allergens-content {
     padding: 15px;
   }
-  
+
   .allergen-product {
     padding: 15px;
   }
-  
+
   .allergen-product h2 {
     font-size: 18px;
   }
-  
+
   .allergen-section h3 {
     font-size: 12px;
   }
-  
+
   .allergen-section p,
   .allergen-section li {
     font-size: 12px;
   }
-  
+
   .allergens-pagination {
     padding: 12px 15px;
     flex-wrap: wrap;
     gap: 10px;
   }
-  
+
   .pagination-btn {
     padding: 8px 15px;
     font-size: 12px;
     min-width: 100px;
   }
-  
+
   .product-dots {
     padding: 10px 15px 15px;
     gap: 6px;
   }
-  
+
   .dot {
     width: 8px;
     height: 8px;
