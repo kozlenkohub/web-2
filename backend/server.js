@@ -15,6 +15,7 @@ import menuRoutes from './routes/menuRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import emailRoutes from './routes/emailRoutes.js';
 import stripeRouter from './routes/stripeRoute.js';
+import contactRouter from './routes/contactRoute.js';
 
 // Загружаем переменные окружения
 dotenv.config();
@@ -64,6 +65,7 @@ app.use('/api/settings', settingsRoute);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 app.use('/api/header', headerContentRouter);
+app.use('/api/contact', contactRouter);
 
 // Соединение с базой данных
 connectDB();

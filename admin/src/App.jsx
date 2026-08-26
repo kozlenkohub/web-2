@@ -13,6 +13,7 @@ import Login from "./components/Login/Login";
 import AdminHeaderContent from "./pages/AdminHeaderContent/AdminHeaderContent";
 import MenuAdmin from "./pages/MenuAdmin/MenuAdmin";
 import EmailSender from "./pages/EmailSender/EmailSender";
+import AdminContact from "./pages/AdminContact/AdminContact";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -69,6 +70,10 @@ const App = () => {
               <Route
                 path="/email-sender"
                 element={<EmailSender url={url} />}
+              />{" "}
+              <Route
+                path="/admin-contact"
+                element={<AdminContact url={url} />}
               />{" "}
             </Routes>
           </div>
