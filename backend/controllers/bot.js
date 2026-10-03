@@ -1,6 +1,7 @@
 // bot.js
 
 import TelegramBot from 'node-telegram-bot-api';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
 import UserAccessModel from '../models/userAccessModel.js';
 import orderModel from '../models/orderModel.js';
@@ -11,14 +12,79 @@ dotenv.config();
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
 const adminChatId = process.env.ADMIN_TELEGRAM_CHAT_ID;
 
+const publicUrl = (process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || '').replace(
+  /\/+$/,
+  '',
+);
+
+export const TELEGRAM_WEBHOOK_PATH = '/telegram/webhook';
+
+// Фолбэк выводится из токена бота, чтобы роут не остался без защиты,
+// если TELEGRAM_WEBHOOK_SECRET забыли задать в окружении.
+export const TELEGRAM_WEBHOOK_SECRET =
+  process.env.TELEGRAM_WEBHOOK_SECRET ||
+  crypto.createHash('sha256').update(telegramBotToken || '').digest('hex').slice(0, 32);
+
 let botInstance;
 
 const getBotInstance = () => {
   if (!botInstance) {
-    botInstance = new TelegramBot(telegramBotToken, { polling: true });
+    // polling: false — апдейты приходят через webhook. Любой polling-инстанс
+    // вызывает getUpdates и конфликтует (409) с остальными инстансами на Render.
+    botInstance = new TelegramBot(telegramBotToken, { polling: false });
     initializeBot(botInstance);
   }
   return botInstance;
+};
+
+export const registerTelegramWebhook = async () => {
+  const bot = getBotInstance();
+
+  if (!telegramBotToken) {
+    console.warn('[telegram] TELEGRAM_BOT_TOKEN не задан — webhook не регистрируется.');
+    return;
+  }
+
+  if (!publicUrl) {
+    console.warn(
+      '[telegram] PUBLIC_URL / RENDER_EXTERNAL_URL не задан — webhook не регистрируется. ' +
+        'Бот сможет отправлять сообщения, но не будет получать апдейты.',
+    );
+    return;
+  }
+
+  const webhookUrl = `${publicUrl}${TELEGRAM_WEBHOOK_PATH}`;
+
+  try {
+    // drop_pending_updates очищает очередь, накопленную за время 409-конфликта.
+    await bot.setWebHook(webhookUrl, {
+      secret_token: TELEGRAM_WEBHOOK_SECRET,
+      drop_pending_updates: true,
+      allowed_updates: ['message', 'callback_query'],
+    });
+    console.log(`[telegram] Webhook зарегистрирован: ${webhookUrl}`);
+  } catch (error) {
+    console.error('[telegram] Не удалось зарегистрировать webhook:', error.message);
+  }
+};
+
+export const processTelegramUpdate = (update) => {
+  getBotInstance().processUpdate(update);
+};
+
+const saveChatId = async (chatId) => {
+  try {
+    const exists = await UserAccessModel.findOne({ chatId });
+    if (!exists) {
+      await UserAccessModel.create({ chatId });
+      console.log(`[telegram] Chat ID ${chatId} сохранён в базе.`);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('[telegram] Ошибка при сохранении chat ID:', error.message);
+    return false;
+  }
 };
 
 const initializeBot = (bot) => {
@@ -110,6 +176,11 @@ const initializeBot = (bot) => {
   // Обработчик входящих сообщений
   bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
+
+    const isNewUser = await saveChatId(chatId);
+    if (isNewUser) {
+      bot.sendMessage(chatId, 'Привет! Теперь вы будете получать уведомления.');
+    }
 
     // Пропускаем обработку, если это команда
     if (!msg.text || msg.text.startsWith('/')) return;

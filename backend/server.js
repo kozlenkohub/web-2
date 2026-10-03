@@ -9,7 +9,9 @@ import userRouter from './routes/userRoute.js';
 import settingsRoute from './routes/settingsRoute.js';
 import headerContentRouter from './routes/headerContent.js';
 import userModel from './models/userModel.js'; // Импорт модели пользователя
-import webHookRoute from './routes/webHookRoute.js';
+import webHookRoute, { startDailyEarningsCron } from './routes/webHookRoute.js';
+import telegramRouter from './routes/telegramRoute.js';
+import { registerTelegramWebhook } from './controllers/bot.js';
 import cartRouter from './routes/cartRoute.js';
 import menuRoutes from './routes/menuRoute.js';
 import orderRouter from './routes/orderRoute.js';
@@ -50,6 +52,7 @@ app.use(
 );
 
 app.use('/webhook', webHookRoute);
+app.use('/telegram', telegramRouter);
 
 app.use(express.json({ limit: '10mb' })); // Устанавливаем лимит на JSON данные
 app.use(express.urlencoded({ limit: '10mb', extended: true })); // Лимит на urlencoded данные
@@ -126,6 +129,10 @@ app.get('/stats', async (req, res) => {
 });
 
 // Запуск сервера
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Server Started on https://web-2-backend-wbs4.onrender.com:${port}`);
+
+  // Регистрируем webhook только после того, как сервер готов принимать запросы.
+  await registerTelegramWebhook();
+  startDailyEarningsCron();
 });

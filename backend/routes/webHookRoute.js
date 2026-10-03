@@ -2,52 +2,13 @@ import express from 'express';
 import 'dotenv/config';
 import bodyParser from 'body-parser';
 import stripePackage from 'stripe';
-import TelegramBot from 'node-telegram-bot-api';
-import UserAccessModel from '../models/userAccessModel.js'; // Путь к вашей модели
 import orderModel from '../models/orderModel.js'; // Путь к вашей модели заказа
 import cron from 'node-cron'; // Импортируем node-cron
 import moment from 'moment-timezone'; // Импортируем moment-timezone
 import axios from 'axios';
+import { sendTelegramMessageToAll } from '../controllers/notificationService.js';
 
 const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true }); // Включаем polling
-
-// Функция для сохранения chatId
-async function saveChatId(chatId) {
-  try {
-    const exists = await UserAccessModel.findOne({ chatId });
-    if (!exists) {
-      await UserAccessModel.create({ chatId });
-      console.log(`Chat ID ${chatId} saved to the database.`);
-    }
-  } catch (error) {
-    console.error('Error saving chat ID:', error.message);
-  }
-}
-
-// Функция для отправки сообщений всем пользователям
-async function sendTelegramMessageToAll(message) {
-  try {
-    const users = await UserAccessModel.find();
-    for (const user of users) {
-      await bot.sendMessage(user.chatId, message);
-    }
-    console.log('Message sent to all users.');
-  } catch (error) {
-    console.error('Error sending message to all users:', error.message);
-  }
-}
-
-// Слушаем сообщения от пользователей
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id;
-
-  // Сохраняем chatId в базе данных
-  await saveChatId(chatId);
-
-  // Приветственное сообщение
-  bot.sendMessage(chatId, 'Привет! Теперь вы будете получать уведомления.');
-});
 
 const webHook = express.Router();
 
@@ -125,22 +86,24 @@ webHook.post('/', bodyParser.raw({ type: 'application/json' }), async (request, 
 });
 
 // Задача по расписанию для отправки заработка за день
-cron.schedule('0 22 * * *', async () => {
-  try {
-    // Получаем текущую дату в польском времени (Europe/Warsaw)
-    const now = moment.tz('Europe/Warsaw');
-    const startOfDay = now.clone().startOf('day');
-    const endOfDay = now.clone().endOf('day');
-    const orders = await orderModel.find({
-      date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
-      payment: true,
-    });
-    const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
-    const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;
-    await sendTelegramMessageToAll(message);
-  } catch (error) {
-    console.error('Error sending daily earnings:', error.message);
-  }
-});
+export const startDailyEarningsCron = () => {
+  cron.schedule('0 22 * * *', async () => {
+    try {
+      // Получаем текущую дату в польском времени (Europe/Warsaw)
+      const now = moment.tz('Europe/Warsaw');
+      const startOfDay = now.clone().startOf('day');
+      const endOfDay = now.clone().endOf('day');
+      const orders = await orderModel.find({
+        date: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
+        payment: true,
+      });
+      const totalAmount = orders.reduce((sum, order) => sum + order.amount, 0);
+      const message = `💰 Сумма заработка за сегодня: ${totalAmount} PLN`;
+      await sendTelegramMessageToAll(message);
+    } catch (error) {
+      console.error('Error sending daily earnings:', error.message);
+    }
+  });
+};
 
 export default webHook;

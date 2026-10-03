@@ -3,6 +3,18 @@
 import UserAccessModel from '../models/userAccessModel.js';
 import bot from './bot.js'; // Убедитесь, что путь к боту корректен
 
+export async function sendTelegramMessageToAll(message) {
+  try {
+    const users = await UserAccessModel.find({});
+    for (const user of users) {
+      await bot.sendMessage(user.chatId, message);
+    }
+    console.log('[telegram] Сообщение отправлено всем пользователям.');
+  } catch (error) {
+    console.error('[telegram] Ошибка при массовой отправке:', error.message);
+  }
+}
+
 // Функция для отправки сообщения о новом заказе в Telegram
 export async function sendTelegramOrderMessage(order) {
   const orderMessage = `
